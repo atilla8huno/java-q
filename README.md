@@ -39,19 +39,19 @@ Use the **Topic** dropdown to practice one category. **Reset progress** clears s
 
 ## Topics
 
-125 questions across:
+153 high-yield questions across:
 
-- Core Java
-- Collections
-- Concurrency
-- Streams & Functional
-- JVM & GC
-- Spring & Hibernate
-- REST & Web
-- Database
-- Testing & Design
-- Architecture
-- Modern Java
+- Core Java (Inheritance, Overloading, String Pool, Try-With-Resources, Generics, Text Blocks)
+- Collections (PECS Wildcards, HashMaps, Unmodifiable Lists, Sequenced Collections)
+- Concurrency (ThreadLocal leaks, Volatile DCL, CompletableFuture, Virtual Threads, ForkJoinPool)
+- Streams & Functional (Lazy evaluation, Collectors.toMap, Optional best practices)
+- JVM & GC (Safepoints, Memory Layout, Metaspace, GC roots)
+- Spring & Hibernate (ProxyBeanMethods, Transactional propagation, N+1 problem)
+- REST & Web (HTTP semantics, Idempotency, Status codes)
+- Database (ACID, Isolation levels, Indexing)
+- Testing & Design (Clean architecture, GoF patterns, Unit/Integration testing)
+- Architecture (Microservices, Circuit Breaker, Event-Driven patterns)
+- Modern Java (Records, Sealed Classes, Pattern Matching for Switch, Virtual Threads)
 
 ## Project layout
 
