@@ -803,7 +803,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• `HashSet` is internally backed by a `HashMap` instance (specifically, `private transient HashMap<E,Object> map;`).\n• When you call `set.add(element)`, `HashSet` executes `map.put(element, PRESENT)`, where `PRESENT` is a static dummy `new Object()`.\n• Because `HashMap` requires unique keys, `HashSet` guarantees element uniqueness.\n• Constant-time performance: `add()`, `remove()`, and `contains()` run in $O(1)$ amortized time, assuming a proper hash distribution.\n\nWhy other options are incorrect:\n• `HashSet` does NOT maintain elements in a balanced red-black binary search tree; that is `TreeSet`.\n• `HashSet` does NOT sort elements or maintain insertion order (that is `LinkedHashSet`)."
+    "explanation": "Why this is correct:\n• `HashSet` is internally backed by a `HashMap` instance (specifically, `private transient HashMap<E,Object> map;`).\n• When you call `set.add(element)`, `HashSet` executes `map.put(element, PRESENT)`, where `PRESENT` is a static dummy `new Object()`.\n• Because `HashMap` requires unique keys, `HashSet` guarantees element uniqueness.\n• Constant-time performance: `add()`, `remove()`, and `contains()` run in O(1) amortized time, assuming a proper hash distribution.\n\nWhy other options are incorrect:\n• `HashSet` does NOT maintain elements in a balanced red-black binary search tree; that is `TreeSet`.\n• `HashSet` does NOT sort elements or maintain insertion order (that is `LinkedHashSet`)."
   },
   {
     "id": 28,
@@ -837,7 +837,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• `ArrayList` is backed by a contiguous resizable array. It provides $O(1)$ random access (`get(i)`), but element insertions or removals in the middle take $O(n)$ time due to shifting elements (`System.arraycopy`).\n• `LinkedList` is backed by a doubly-linked list. It provides $O(1)$ insertions or deletions once a node reference is located, but random access (`get(i)`) is $O(n)$ because it must traverse nodes from head or tail.\n• In practice, `ArrayList` is almost always preferred due to CPU cache locality and lower memory overhead per element (no node pointer overhead).\n\nWhy other options are incorrect:\n• `LinkedList` does NOT provide $O(1)$ index-based access; accessing by index requires linear traversal.\n• `ArrayList` does not allocate elements in CPU registers, and `LinkedList` is not allocated exclusively in native off-heap memory."
+    "explanation": "Why this is correct:\n• Capacity growth: ArrayList grows its backing array by about 50% (newCapacity = oldCapacity + oldCapacity/2). Vector doubles its capacity by default.\n• Legacy vs modern: Vector is a Java 1.0 class kept mainly for compatibility. ArrayList is the unsynchronized List used in the modern Collections Framework.\n• Synchronization: Every Vector method is synchronized, so it is thread-safe but pays lock overhead even in single-threaded code. ArrayList is unsynchronized and faster when one thread owns the list.\n\nWhy other options are incorrect:\n• Both ArrayList and Vector store objects, not primitives; primitives are autoboxed in both.\n• Vector does not allocate an infinite buffer. It resizes like ArrayList, just with a different growth factor."
   },
   {
     "id": 29,
@@ -871,7 +871,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• `TreeSet` implements `NavigableSet` (which extends `SortedSet`), guaranteeing that elements are stored in ascending order according to their natural ordering (`Comparable`) or an explicit `Comparator`.\n• Under the hood, `TreeSet` is backed by a `TreeMap`, which is implemented as a Red-Black tree (a self-balancing binary search tree).\n• Core operations (`add()`, `remove()`, `contains()`) guarantee $O(\\log n)$ time complexity.\n• In `TreeSet`, element equality is determined strictly by `compareTo()` or `compare()`, NOT by `equals()`. If `compare(a, b) == 0`, `TreeSet` treats them as duplicates.\n\nWhy other options are incorrect:\n• `TreeSet` uses red-black trees, NOT a hash table.\n• `TreeSet` does not maintain FIFO insertion order; that is `LinkedHashSet`."
+    "explanation": "Why this is correct:\n• `ArrayList` is backed by a contiguous resizable array. It provides O(1) random access (`get(i)`), but element insertions or removals in the middle take O(n) time due to shifting elements (`System.arraycopy`).\n• `LinkedList` is backed by a doubly-linked list. It provides O(1) insertions or deletions once a node reference is located, but random access (`get(i)`) is O(n) because it must traverse nodes from head or tail.\n• In practice, `ArrayList` is almost always preferred due to CPU cache locality and lower memory overhead per element (no node pointer overhead).\n\nWhy other options are incorrect:\n• `LinkedList` does NOT provide O(1) index-based access; accessing by index requires linear traversal.\n• `ArrayList` does not allocate elements in CPU registers, and `LinkedList` is not allocated exclusively in native off-heap memory."
   },
   {
     "id": 30,
@@ -905,7 +905,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• `Collection` is the root interface for `List`, `Set`, and `Queue`.\n• `Map` is NOT a subinterface of `Collection`; it sits in its own independent branch because key-value mappings have fundamentally different operations than single-element collections.\n• `Set` represents an unordered collection of unique elements; `List` is an ordered sequence that allows duplicates; `Queue` is designed for holding elements prior to processing.\n\nWhy other options are incorrect:\n• `Map` does NOT extend `Collection`; `Map.values()` returns a `Collection`, but `Map` itself is a distinct hierarchy.\n• `ArrayList` does not implement `Set`; it implements `List`."
+    "explanation": "Why this is correct:\n• `TreeSet` implements `NavigableSet` (which extends `SortedSet`), guaranteeing that elements are stored in ascending order according to their natural ordering (`Comparable`) or an explicit `Comparator`.\n• Under the hood, `TreeSet` is backed by a `TreeMap`, which is implemented as a Red-Black tree (a self-balancing binary search tree).\n• Core operations (`add()`, `remove()`, `contains()`) guarantee O(log n) time complexity.\n• In `TreeSet`, element equality is determined strictly by `compareTo()` or `compare()`, NOT by `equals()`. If `compare(a, b) == 0`, `TreeSet` treats them as duplicates.\n\nWhy other options are incorrect:\n• `TreeSet` uses red-black trees, NOT a hash table.\n• `TreeSet` does not maintain FIFO insertion order; that is `LinkedHashSet`."
   },
   {
     "id": 31,
@@ -933,7 +933,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `Comparable<T>`: Defines the natural ordering of a class. Implemented *internally* by the class itself via `int compareTo(T other)`. Found in `java.lang`.\n• `Comparator<T>`: Defines custom or alternative sorting orders. Implemented *externally* via `int compare(T o1, T o2)`. Found in `java.util`.\n• Modern Java provides convenient factory and combinator methods on `Comparator` (e.g., `Comparator.comparing(Person::getName).thenComparing(Person::getAge)`).\n\nWhy other options are incorrect:\n• `Comparable` is in `java.lang`, while `Comparator` is in `java.util` (the opposite of the incorrect distractor).\n• `Comparable` does NOT require implementing `Serializable`."
+    "explanation": "Why this is correct:\n• `Collection` is the root interface for `List`, `Set`, and `Queue`.\n• `Map` is NOT a subinterface of `Collection`; it sits in its own independent branch because key-value mappings have fundamentally different operations than single-element collections.\n• `Set` represents an unordered collection of unique elements; `List` is an ordered sequence that allows duplicates; `Queue` is designed for holding elements prior to processing.\n\nWhy other options are incorrect:\n• `Map` does NOT extend `Collection`; `Map.values()` returns a `Collection`, but `Map` itself is a distinct hierarchy.\n• `ArrayList` does not implement `Set`; it implements `List`."
   },
   {
     "id": 32,
@@ -962,7 +962,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• `Collections.shuffle(List<?> list)` randomly permutes the elements of the specified list in place.\n• It uses the Fisher-Yates shuffle algorithm, running in $O(n)$ linear time for lists implementing `RandomAccess` (like `ArrayList`).\n• An overloaded version accepts a custom `java.util.Random` instance (`Collections.shuffle(list, rnd)`), which is useful for reproducible testing.\n\nWhy other options are incorrect:\n• `Collections.shuffle()` modifies the list IN PLACE; it does not return a new list instance (return type is `void`).\n• It works on any `List`, not only arrays of primitive integers."
+    "explanation": "Why this is correct:\n• List is an ordered sequence: it allows duplicates and positional access with get(i) / set(i).\n• Set models uniqueness: add() returns false for an element already present according to equals() (and hashCode() for hash-based sets).\n\nWhy other options are incorrect:\n• Not every Set preserves insertion order. HashSet has no order; LinkedHashSet preserves insertion order; TreeSet sorts.\n• List does not auto-sort on insert. Sorting requires sort() or a sorted structure such as TreeSet / PriorityQueue."
   },
   {
     "id": 33,
@@ -990,7 +990,7 @@ const QUESTIONS = [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `Collections.unmodifiableList(list)` returns an unmodifiable *view* wrapper around the underlying list. If the backing list is modified, those modifications are visible through the unmodifiable view!\n• `List.copyOf(list)` (introduced in Java 10) creates an independent, truly immutable copy. Changes to the original list have NO effect on the copied list.\n• Neither list allows mutations like `add()` or `set()`; doing so throws `UnsupportedOperationException`.\n\nWhy other options are incorrect:\n• `Collections.unmodifiableList()` is a view, not an independent deep clone.\n• Modifying an unmodifiable collection throws `UnsupportedOperationException`, never `ConcurrentModificationException`."
+    "explanation": "Why this is correct:\n• The enhanced for-each loop compiles to Iterator usage. That contract lives on java.lang.Iterable via iterator().\n• java.util.Collection extends Iterable, so every Collection can be used in for (T item : collection).\n\nWhy other options are incorrect:\n• Collection is not the root: it extends Iterable. Map is a separate hierarchy and is not Iterable itself (you iterate entrySet(), keySet(), or values()).\n• Cloneable and Enumeration are not what for-each uses. Enumeration is the legacy cursor (Vector / Hashtable); Iterator replaced it."
   },
   {
     "id": 34,
@@ -1024,7 +1024,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• `LinkedHashSet` maintains a doubly-linked list running through all of its entries, preserving predictable iteration order matching the insertion order of elements.\n• Like `HashSet`, it guarantees element uniqueness and provides $O(1)$ performance for basic operations (`add`, `contains`, `remove`), with only slight overhead for maintaining link pointers.\n\nWhy other options are incorrect:\n• `LinkedHashSet` preserves insertion order, NOT natural sorted order (natural sorting is provided by `TreeSet`).\n• It is not a synchronized collection; concurrent access requires external synchronization or `Collections.synchronizedSet()`."
+    "explanation": "Why this is correct:\n• List.of(...) / Set.of(...) / Map.of(...) (Java 9) and List.copyOf(...) (Java 10) return unmodifiable collections. add() / remove() / set() throw UnsupportedOperationException.\n• Collections.emptyList() and List.of() both return empty unmodifiable lists with essentially no per-element storage.\n• List.of and List.copyOf reject null elements and throw NullPointerException.\n\nWhy other options are incorrect:\n• List.of collections cannot be mutated, including via a Comparator. They are structurally immutable.\n• Arrays.asList(...) is a fixed-size view over the array: set(i, value) is allowed, but add/remove throw. It is not a fully unmodifiable list and it permits null."
   },
   {
     "id": 35,
@@ -1053,7 +1053,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• `HashMap` is unsynchronized and allows one `null` key and multiple `null` values. It is not thread-safe.\n• `Hashtable` (legacy class since Java 1.0) synchronizes all public methods, making it thread-safe but suffering from heavy lock contention. It prohibits `null` keys and `null` values (throws `NullPointerException`).\n• In modern applications, `Hashtable` is considered obsolete; use `ConcurrentHashMap` for concurrent scenarios and `HashMap` for non-concurrent scenarios.\n\nWhy other options are incorrect:\n• `Hashtable` does NOT allow `null` keys or values.\n• `HashMap` does not maintain thread safety via optimistic locks; it is completely unsynchronized."
+    "explanation": "Why this is correct:\n• `Comparable<T>`: Defines the natural ordering of a class. Implemented *internally* by the class itself via `int compareTo(T other)`. Found in `java.lang`.\n• `Comparator<T>`: Defines custom or alternative sorting orders. Implemented *externally* via `int compare(T o1, T o2)`. Found in `java.util`.\n• Modern Java provides convenient factory and combinator methods on `Comparator` (e.g., `Comparator.comparing(Person::getName).thenComparing(Person::getAge)`).\n\nWhy other options are incorrect:\n• `Comparable` is in `java.lang`, while `Comparator` is in `java.util` (the opposite of the incorrect distractor).\n• `Comparable` does NOT require implementing `Serializable`."
   },
   {
     "id": 36,
@@ -1081,7 +1081,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Prior to Java 8, `ConcurrentHashMap` used Segment-based locking (ReentrantLock on 16 segment stripes).\n• In Java 8+, `ConcurrentHashMap` abandoned segments. It now uses a bucket array with:\n  1. Lock-free CAS (`compareAndSet`) for inserting the first node in an empty bucket.\n  2. Fine-grained `synchronized` locks on the specific bucket's head node when inserting into an occupied bucket.\n  3. Lock-free reads: reads use `volatile` node values and links, requiring no locks at all.\n\nWhy other options are incorrect:\n• `ConcurrentHashMap` does NOT lock the entire map with a single global lock; that would defeat concurrency.\n• It does not clone the entire array on every write (that is `CopyOnWriteArrayList`)."
+    "explanation": "Why this is correct:\n• `Collections.shuffle(List<?> list)` randomly permutes the elements of the specified list in place.\n• It uses the Fisher-Yates shuffle algorithm, running in O(n) linear time for lists implementing `RandomAccess` (like `ArrayList`).\n• An overloaded version accepts a custom `java.util.Random` instance (`Collections.shuffle(list, rnd)`), which is useful for reproducible testing.\n\nWhy other options are incorrect:\n• `Collections.shuffle()` modifies the list IN PLACE; it does not return a new list instance (return type is `void`).\n• It works on any `List`, not only arrays of primitive integers."
   },
   {
     "id": 37,
@@ -1115,7 +1115,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• In Java 8+, when the number of entries in a single hash bucket reaches the `TREEIFY_THRESHOLD` (default 8) and total map capacity reaches at least `MIN_TREEIFY_CAPACITY` (default 64), the bucket converts from a linked list to a balanced Red-Black tree (`TreeNode`).\n• This improves worst-case lookup from $O(n)$ down to $O(\\log n)$ in the event of poor hash distribution or malicious hash collision attacks.\n• If entries in a treeified bucket drop to `UNTREEIFY_THRESHOLD` (default 6) during deletion, it converts back to a linked list.\n\nWhy other options are incorrect:\n• Worst-case lookup without treeification is $O(n)$, not $O(1)$.\n• `HashMap` does not throw `HashCollisionException`; collisions are handled naturally by chaining and treeification."
+    "explanation": "Why this is correct:\n• `Collections.unmodifiableList(list)` returns an unmodifiable *view* wrapper around the underlying list. If the backing list is modified, those modifications are visible through the unmodifiable view!\n• `List.copyOf(list)` (introduced in Java 10) creates an independent, truly immutable copy. Changes to the original list have NO effect on the copied list.\n• Neither list allows mutations like `add()` or `set()`; doing so throws `UnsupportedOperationException`.\n\nWhy other options are incorrect:\n• `Collections.unmodifiableList()` is a view, not an independent deep clone.\n• Modifying an unmodifiable collection throws `UnsupportedOperationException`, never `ConcurrentModificationException`."
   },
   {
     "id": 38,
@@ -1143,7 +1143,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `Deque` (Double Ended Queue) supports element insertion and removal at both ends. It can function as both a FIFO queue (`offer()`, `poll()`) and a LIFO stack (`push()`, `pop()`).\n• `ArrayDeque` is backed by a circular resizable array and is significantly faster and more cache-friendly than `Stack` or `LinkedList` for stack and queue operations.\n• `ArrayDeque` prohibits `null` elements (throws `NullPointerException`), whereas `LinkedList` permits `null`.\n\nWhy other options are incorrect:\n• `ArrayDeque` is NOT thread-safe; use `ConcurrentLinkedDeque` or `BlockingDeque` for concurrency.\n• `ArrayDeque` does NOT allow `null` elements."
+    "explanation": "Why this is correct:\n• `LinkedHashSet` maintains a doubly-linked list running through all of its entries, preserving predictable iteration order matching the insertion order of elements.\n• Like `HashSet`, it guarantees element uniqueness and provides O(1) performance for basic operations (`add`, `contains`, `remove`), with only slight overhead for maintaining link pointers.\n\nWhy other options are incorrect:\n• `LinkedHashSet` preserves insertion order, NOT natural sorted order (natural sorting is provided by `TreeSet`).\n• It is not a synchronized collection; concurrent access requires external synchronization or `Collections.synchronizedSet()`."
   },
   {
     "id": 39,
@@ -1177,7 +1177,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Fail-Fast Iterators (e.g. `ArrayList`, `HashMap`): Detect structural modifications during iteration via a private `modCount` counter. If `modCount` changes while iterating (other than via the iterator's own `remove()` method), the iterator immediately throws `ConcurrentModificationException`.\n• Fail-Safe / Weakly Consistent Iterators (e.g. `CopyOnWriteArrayList`, `ConcurrentHashMap`): Operate on an immutable snapshot or traverse the live collection without throwing `ConcurrentModificationException` if modifications occur during iteration.\n\nWhy other options are incorrect:\n• Fail-fast iterators do NOT acquire database row locks.\n• Fail-safe iterators do NOT roll back transactions; they simply avoid throwing exceptions upon structural mutation."
+    "explanation": "Why this is correct:\n• HashSet: best average add / contains / remove when iteration order does not matter.\n• LinkedHashSet: same uniqueness as HashSet, plus a doubly linked list that preserves insertion order (useful for predictable iteration or simple LRU-style structures).\n• TreeSet: keeps elements sorted and supports range views (subSet, headSet, tailSet). Pay O(log n) per operation.\n\nWhy other options are incorrect:\n• TreeSet's red-black tree uses extra node pointers; it is not the low-memory choice versus a hash table.\n• HashSet does not keep duplicates and does not preserve insertion order."
   },
   {
     "id": 40,
@@ -1205,7 +1205,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `EnumSet` is a specialized, high-performance `Set` implementation designed exclusively for `enum` types.\n• Internally, it is implemented as a bit vector: if the enum has $\\le 64$ elements, it uses a single `long` field (`RegularEnumSet`), where each bit represents the presence or absence of an enum constant!\n• Operations (`add`, `contains`, `remove`) are executed via bitwise operations (`AND`, `OR`, `XOR`), resulting in blazing fast performance with minimal memory overhead.\n\nWhy other options are incorrect:\n• `EnumSet` does NOT use an internal hash table with open addressing.\n• `EnumSet` prohibits `null` elements (throws `NullPointerException`)."
+    "explanation": "Why this is correct:\n• `HashMap` is unsynchronized and allows one `null` key and multiple `null` values. It is not thread-safe.\n• `Hashtable` (legacy class since Java 1.0) synchronizes all public methods, making it thread-safe but suffering from heavy lock contention. It prohibits `null` keys and `null` values (throws `NullPointerException`).\n• In modern applications, `Hashtable` is considered obsolete; use `ConcurrentHashMap` for concurrent scenarios and `HashMap` for non-concurrent scenarios.\n\nWhy other options are incorrect:\n• `Hashtable` does NOT allow `null` keys or values.\n• `HashMap` does not maintain thread safety via optimistic locks; it is completely unsynchronized."
   },
   {
     "id": 41,
@@ -1239,7 +1239,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Process: An independent executing program with its own isolated address space and private system resources. Communication between processes requires Inter-Process Communication (IPC, e.g. sockets, pipes).\n• Thread: A lightweight unit of execution within a process. Multiple threads within the same process share the same memory heap and open resources, but each thread maintains its own private call stack and program counter (PC).\n• Context switching between threads is faster than switching between processes due to shared memory spaces.\n\nWhy other options are incorrect:\n• Threads do NOT have isolated private heaps; all threads in a JVM process share the exact same heap.\n• Processes do not share CPU registers across operating system boundaries without virtualization."
+    "explanation": "Why this is correct:\n• ConcurrentHashMap (Java 8+): lock-free CAS into empty bins, synchronized only on the bin head for contended updates, and lock-free volatile reads. Iterators are weakly consistent and do not throw ConcurrentModificationException.\n• Collections.synchronizedMap(map) and Hashtable wrap every method with a single monitor on the whole map, so reads and writes contend on one lock.\n\nWhy other options are incorrect:\n• ConcurrentHashMap does not allow null keys or null values (unlike HashMap).\n• synchronizedMap is not copy-on-write and is not lock-free; CopyOnWriteArrayList / CopyOnWriteArraySet are the copy-on-write collections."
   },
   {
     "id": 42,
@@ -1268,7 +1268,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• A Deadlock occurs when two or more threads are permanently blocked, each waiting for a lock held by the other.\n• Coffman Conditions (all 4 must hold simultaneously for a deadlock to occur):\n  1. Mutual Exclusion: At least one resource must be held in a non-shareable mode.\n  2. Hold and Wait: A thread holds a resource while requesting additional resources.\n  3. No Preemption: Resources cannot be forcibly confiscated from threads.\n  4. Circular Wait: A closed chain of threads exists where each waits for a resource held by the next.\n• Breaking circular wait (e.g. acquiring locks in a strict global order) prevents deadlocks.\n\nWhy other options are incorrect:\n• Deadlocks can occur with just 2 threads and 2 locks; 16 threads are not required.\n• Virtual threads do not eliminate deadlocks caused by synchronized monitors or lock ordering."
+    "explanation": "Why this is correct:\n• Prior to Java 8, `ConcurrentHashMap` used Segment-based locking (ReentrantLock on 16 segment stripes).\n• In Java 8+, `ConcurrentHashMap` abandoned segments. It now uses a bucket array with:\n  1. Lock-free CAS (`compareAndSet`) for inserting the first node in an empty bucket.\n  2. Fine-grained `synchronized` locks on the specific bucket's head node when inserting into an occupied bucket.\n  3. Lock-free reads: reads use `volatile` node values and links, requiring no locks at all.\n\nWhy other options are incorrect:\n• `ConcurrentHashMap` does NOT lock the entire map with a single global lock; that would defeat concurrency.\n• It does not clone the entire array on every write (that is `CopyOnWriteArrayList`)."
   },
   {
     "id": 43,
@@ -1296,7 +1296,7 @@ const QUESTIONS = [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• The expression `i++` (post-increment) is NOT an atomic operation.\n• At the bytecode level, it consists of three separate instructions:\n  1. `iload`: Read current value of `i` from memory into local operand stack.\n  2. `iadd`: Add 1 to the value.\n  3. `istore`: Write the incremented value back to memory.\n• If two threads execute `i++` concurrently, their read-modify-write sequences can interleave, causing lost updates (race condition).\n• Declaring `volatile int i` ensures visibility, but does NOT make `i++` atomic! Use `AtomicInteger.incrementAndGet()` or `synchronized`.\n\nWhy other options are incorrect:\n• `i++` is not atomic in 64-bit JVMs.\n• `volatile` alone does not make compound operations atomic."
+    "explanation": "Why this is correct:\n• Average case: HashMap.get(key) hashes the key, indexes the table, and finds the entry in O(1) time when hashes are well distributed.\n• Java 8+ worst case: if many keys collide in one bucket, that bin treeifies once it reaches TREEIFY_THRESHOLD (8) and the table is at least MIN_TREEIFY_CAPACITY (64). The linked list becomes a red-black tree (TreeNode), so lookup is O(log n) instead of O(n).\n• If a treeified bin later shrinks to UNTREEIFY_THRESHOLD (6), it converts back to a linked list.\n\nWhy other options are incorrect:\n• Worst-case get() is not O(1). Hashing does not prevent collisions, so a bin can still degrade.\n• Average-case get() is not O(n) or O(log n). Table resizing is amortized across puts; it is not what makes a typical get() O(n)."
   },
   {
     "id": 44,
@@ -1324,7 +1324,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `Runnable`: Found in `java.lang`. Its method `public void run()` takes no arguments, returns no result (`void`), and cannot throw checked exceptions.\n• `Callable<V>`: Introduced in Java 5 in `java.util.concurrent`. Its method `V call() throws Exception` returns a parameterized result of type `V` and can throw checked exceptions.\n• `ExecutorService.submit()` can accept both, returning a `Future<V>` to track completion.\n\nWhy other options are incorrect:\n• `Callable` is in `java.util.concurrent`, not `java.lang`.\n• `Runnable` cannot return values directly or declare checked exceptions."
+    "explanation": "Why this is correct:\n• `Deque` (Double Ended Queue) supports element insertion and removal at both ends. It can function as both a FIFO queue (`offer()`, `poll()`) and a LIFO stack (`push()`, `pop()`).\n• `ArrayDeque` is backed by a circular resizable array and is significantly faster and more cache-friendly than `Stack` or `LinkedList` for stack and queue operations.\n• `ArrayDeque` prohibits `null` elements (throws `NullPointerException`), whereas `LinkedList` permits `null`.\n\nWhy other options are incorrect:\n• `ArrayDeque` is NOT thread-safe; use `ConcurrentLinkedDeque` or `BlockingDeque` for concurrency.\n• `ArrayDeque` does NOT allow `null` elements."
   },
   {
     "id": 45,
@@ -1352,7 +1352,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `ExecutorService` decouples task submission from execution mechanics, managing a pool of worker threads.\n• Fixed vs Cached Pools: `newFixedThreadPool(n)` maintains a fixed number of threads, whereas `newCachedThreadPool()` creates new threads as needed and reclaims idle threads.\n• Shutdown lifecycle: `shutdown()` initiates an orderly shutdown allowing previously submitted tasks to complete before terminating. `shutdownNow()` attempts to stop actively executing tasks via thread interruption (`Thread.interrupt()`) and returns unexecuted tasks.\n\nWhy other options are incorrect:\n• `shutdownNow()` does NOT wait indefinitely for tasks to complete; it immediately attempts cancellation via interruption.\n• Thread pools are not garbage collected immediately upon task completion; they must be explicitly shut down."
+    "explanation": "Why this is correct:\n• Fail-Fast Iterators (e.g. `ArrayList`, `HashMap`): Detect structural modifications during iteration via a private `modCount` counter. If `modCount` changes while iterating (other than via the iterator's own `remove()` method), the iterator immediately throws `ConcurrentModificationException`.\n• Fail-Safe / Weakly Consistent Iterators (e.g. `CopyOnWriteArrayList`, `ConcurrentHashMap`): Operate on an immutable snapshot or traverse the live collection without throwing `ConcurrentModificationException` if modifications occur during iteration.\n\nWhy other options are incorrect:\n• Fail-fast iterators do NOT acquire database row locks.\n• Fail-safe iterators do NOT roll back transactions; they simply avoid throwing exceptions upon structural mutation."
   },
   {
     "id": 46,
@@ -1386,7 +1386,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• `map(Function<T, R>)`: Transforms each element of type `T` into a single value of type `R` (one-to-one mapping). For a stream of size $N$, `map()` yields a stream of size $N$.\n• `flatMap(Function<T, Stream<R>>)`: Transforms each element into a stream of values, then flattens all generated streams into a single composite stream (one-to-many mapping).\n• Example: Given a list of sentences, `map(s -> s.split(\" \"))` yields `Stream<String[]>`, whereas `flatMap(s -> Arrays.stream(s.split(\" \")))` yields `Stream<String>`.\n\nWhy other options are incorrect:\n• `flatMap()` does not execute operations across multiple worker threads asynchronously; parallel execution requires `parallelStream()`.\n• `map()` does not drop null values automatically; it processes nulls like any other element."
+    "explanation": "Why this is correct:\n• Arrays can store primitives (int[], long[]) and references. ArrayList<E> stores only references; primitives are autoboxed to Integer, Long, and so on.\n• An array's length is fixed at creation. ArrayList grows its backing Object[] as elements are added.\n• Arrays are covariant: String[] may be assigned to Object[] (and can then fail with ArrayStoreException). Generic ArrayList<String> is invariant and cannot be assigned to ArrayList<Object>.\n\nWhy other options are incorrect:\n• Arrays have no built-in resize API; you allocate a new array and copy. ArrayList handles that internally.\n• Arrays do not implement Collection or Iterable. To stream an array you use Arrays.stream(...) or Stream.of(...)."
   },
   {
     "id": 47,
@@ -1414,7 +1414,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `parallelStream()` splits data using a `Spliterator` and processes chunks concurrently using the common `ForkJoinPool.commonPool()`.\n• Not always faster: for small collections, the overhead of task decomposition, thread coordination, and context switching often outweighs sequential execution.\n• Side-effects and shared state: Operations must be stateless and thread-safe. Modifying shared mutable collections (like adding to an unsynchronized `ArrayList`) inside a parallel stream leads to data corruption.\n• Blocking I/O danger: Performing blocking network or database I/O inside a parallel stream starves the shared `ForkJoinPool`, degrading application-wide throughput.\n\nWhy other options are incorrect:\n• Parallel streams do NOT guarantee that element processing order matches original collection encounter order.\n• Parallel streams do not eliminate all concurrency bugs or lock contention."
+    "explanation": "Why this is correct:\n• Collection is a group of individual elements (List / Set / Queue). Map stores unique-key to value associations, so it sits in a parallel hierarchy and does not extend Collection.\n• You still view a Map as collections: keySet(), values(), and entrySet() return Collection (or Set) views of the mappings.\n\nWhy other options are incorrect:\n• Map is an interface, not an implementation of Collection, and keys and values may have different types (Map<K,V>).\n• Map is not limited to disk storage or Enumeration cursors. You iterate the views with Iterator or streams."
   },
   {
     "id": 48,
@@ -1448,7 +1448,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• `Optional<T>` was introduced in Java 8 to represent the presence or absence of a value, primarily as a method return type to eliminate `null` returns and prevent `NullPointerException`.\n• Idiomatic usage favors functional methods: `orElse()`, `orElseGet(() -> computeDefault())`, `orElseThrow()`, `map()`, and `filter()`.\n• Anti-patterns: Calling `opt.get()` without checking `opt.isPresent()` defeats the purpose of `Optional` and throws `NoSuchElementException`.\n• `Optional` is NOT `Serializable`, so it should not be used as field types in serializable entity classes or method parameter types.\n\nWhy other options are incorrect:\n• `Optional.of(null)` throws `NullPointerException` immediately! To accept null, use `Optional.ofNullable(null)`.\n• Using `Optional` for method arguments is discouraged as it clutters client call sites."
+    "explanation": "Why this is correct:\n• Process: An independent executing program with its own isolated address space and private system resources. Communication between processes requires Inter-Process Communication (IPC, e.g. sockets, pipes).\n• Thread: A lightweight unit of execution within a process. Multiple threads within the same process share the same memory heap and open resources, but each thread maintains its own private call stack and program counter (PC).\n• Context switching between threads is faster than switching between processes due to shared memory spaces.\n\nWhy other options are incorrect:\n• Threads do NOT have isolated private heaps; all threads in a JVM process share the exact same heap.\n• Processes do not share CPU registers across operating system boundaries without virtualization."
   },
   {
     "id": 49,
@@ -1482,7 +1482,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Java Records (finalized in Java 16) provide a compact syntax for declaring immutable data carriers: `record Point(int x, int y) {}`.\n• The compiler automatically generates: `private final` fields, canonical constructor, public accessors (`x()`, `y()`, not `getX()`), `equals()`, `hashCode()`, and `toString()`.\n• Records are implicitly `final` and cannot extend other classes (they implicitly extend `java.lang.Record`), but they can implement interfaces.\n\nWhy other options are incorrect:\n• Record accessor methods do NOT follow the JavaBeans prefix `get`: they match the component name directly (e.g. `point.x()`, NOT `point.getX()`).\n• Records cannot be extended by subclasses because they are final."
+    "explanation": "Why this is correct:\n• A Deadlock occurs when two or more threads are permanently blocked, each waiting for a lock held by the other.\n• Coffman Conditions (all 4 must hold simultaneously for a deadlock to occur):\n  1. Mutual Exclusion: At least one resource must be held in a non-shareable mode.\n  2. Hold and Wait: A thread holds a resource while requesting additional resources.\n  3. No Preemption: Resources cannot be forcibly confiscated from threads.\n  4. Circular Wait: A closed chain of threads exists where each waits for a resource held by the next.\n• Breaking circular wait (e.g. acquiring locks in a strict global order) prevents deadlocks.\n\nWhy other options are incorrect:\n• Deadlocks can occur with just 2 threads and 2 locks; 16 threads are not required.\n• Virtual threads do not eliminate deadlocks caused by synchronized monitors or lock ordering."
   },
   {
     "id": 50,
@@ -1510,7 +1510,7 @@ const QUESTIONS = [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Sealed Classes (finalized in Java 17) allow a class or interface to explicitly restrict which other classes or interfaces may extend or implement it.\n• Syntax: `sealed class Shape permits Circle, Rectangle, Triangle {}`.\n• Subclasses declared in the `permits` clause must reside in the same package (or module) and must explicitly declare one of three modifiers: `final`, `sealed`, or `non-sealed`.\n• Exhaustive Pattern Matching: The compiler can verify whether all permitted subclasses are covered in a `switch` expression, eliminating the need for a fallback `default` branch!\n\nWhy other options are incorrect:\n• Permitted subclasses are NOT required to be declared within the exact same source file (unless they are nested); they can be separate top-level classes in the same package.\n• Permitted subclasses cannot leave their inheritance status open without declaring `final`, `sealed`, or `non-sealed`."
+    "explanation": "Why this is correct:\n• The expression `i++` (post-increment) is NOT an atomic operation.\n• At the bytecode level, it consists of three separate instructions:\n  1. `iload`: Read current value of `i` from memory into local operand stack.\n  2. `iadd`: Add 1 to the value.\n  3. `istore`: Write the incremented value back to memory.\n• If two threads execute `i++` concurrently, their read-modify-write sequences can interleave, causing lost updates (race condition).\n• Declaring `volatile int i` ensures visibility, but does NOT make `i++` atomic! Use `AtomicInteger.incrementAndGet()` or `synchronized`.\n\nWhy other options are incorrect:\n• `i++` is not atomic in 64-bit JVMs.\n• `volatile` alone does not make compound operations atomic."
   },
   {
     "id": 51,
@@ -2054,7 +2054,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• `PhantomReference<T>`: Enqueued in a `ReferenceQueue` only after the referenced object has been finalized and reclaimed by the GC.\n• `get()` always returns `null`: Unlike Soft or Weak references, calling `phantomRef.get()` always returns `null` to prevent resurrecting the object.\n• Purpose: Used for pre-mortem cleanups and managing native (off-heap) resources more safely than `finalize()`.\n\nWhy other options are incorrect:\n• `PhantomReference` does NOT pin objects permanently in Metaspace.\n• Its `get()` method does NOT return the referenced object; it always returns `null`."
+    "explanation": "Why this is correct:\n• WeakHashMap wraps keys in WeakReference objects tied to an internal ReferenceQueue. Values are held with ordinary strong references.\n• When a key is no longer strongly reachable, GC reclaims it and enqueues the weak reference. The map later expunges that entry so the value can be collected too (if nothing else references it).\n\nWhy other options are incorrect:\n• Values are not stored as weak references by default. If you need weak values, wrap them yourself (or use a different structure).\n• WeakHashMap is not synchronized. Concurrent use needs external locking or a concurrent map."
   },
   {
     "id": 69,
@@ -2657,7 +2657,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Primary Function: Database indexes (commonly B-Tree or Hash indexes) provide quick random access paths to rows matching search criteria (`WHERE`, `JOIN`, `ORDER BY`), transforming $O(n)$ full table scans into $O(\\log n)$ tree traversals.\n• Performance Trade-off: Every index consumes disk and buffer memory, and incurs a performance penalty on write operations (`INSERT`, `UPDATE`, `DELETE`) because every index on the table must be updated whenever data changes.\n\nWhy other options are incorrect:\n• Indexes do NOT accelerate `INSERT` queries; they slow them down due to index tree maintenance.\n• Indexes do not encrypt table data."
+    "explanation": "Why this is correct:\n• Primary Function: Database indexes (commonly B-Tree or Hash indexes) provide quick random access paths to rows matching search criteria (`WHERE`, `JOIN`, `ORDER BY`), transforming O(n) full table scans into O(log n) tree traversals.\n• Performance Trade-off: Every index consumes disk and buffer memory, and incurs a performance penalty on write operations (`INSERT`, `UPDATE`, `DELETE`) because every index on the table must be updated whenever data changes.\n\nWhy other options are incorrect:\n• Indexes do NOT accelerate `INSERT` queries; they slow them down due to index tree maintenance.\n• Indexes do not encrypt table data."
   },
   {
     "id": 89,
@@ -3574,7 +3574,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Implementation: `EnumSet` is implemented internally as a bit vector (`RegularEnumSet` using a single `long` for enums with $\\le 64$ constants, or `JumboEnumSet` using a `long[]` array).\n• Performance: Operations like `contains()`, `add()`, and bulk operations (`containsAll()`, `addAll()`) are compiled down to extremely fast bitwise CPU instructions (`AND`, `OR`, `NOT`), outperforming `HashSet` by a wide margin while using negligible memory.\n• Null Safety: `EnumSet` does not permit `null` elements (throws `NullPointerException`).\n\nWhy other options are incorrect:\n• `EnumSet` does NOT use a dynamic hash table with open addressing.\n• It is not an immutable collection by default; instances created via `EnumSet.of()` are mutable."
+    "explanation": "Why this is correct:\n• Implementation: `EnumSet` is implemented internally as a bit vector (`RegularEnumSet` using a single `long` for enums with <= 64 constants, or `JumboEnumSet` using a `long[]` array).\n• Performance: Operations like `contains()`, `add()`, and bulk operations (`containsAll()`, `addAll()`) are compiled down to extremely fast bitwise CPU instructions (`AND`, `OR`, `NOT`), outperforming `HashSet` by a wide margin while using negligible memory.\n• Null Safety: `EnumSet` does not permit `null` elements (throws `NullPointerException`).\n\nWhy other options are incorrect:\n• `EnumSet` does NOT use a dynamic hash table with open addressing.\n• It is not an immutable collection by default; instances created via `EnumSet.of()` are mutable."
   },
   {
     "id": 119,
@@ -3716,7 +3716,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• The Pigeonhole Principle: In Java, `hashCode()` returns a 32-bit signed integer (`int`), which can represent at most $2^{32}$ (about 4.3 billion) distinct values.\n• Because the number of possible object states (e.g. all possible `String` combinations) is infinite, distinct objects WILL inevitably map to identical hash codes (hash collision).\n• The contract dictates:\n  - Equal objects MUST have equal hash codes.\n  - Unequal objects CAN share the same hash code.\n• Hash collisions are expected and handled in hash tables via separate chaining (linked list / red-black tree) or open addressing.\n\nWhy other options are incorrect:\n• Collisions do NOT throw an exception or invalidate the collection.\n• Hash algorithms cannot guarantee zero collisions across all input domains within 32 bits."
+    "explanation": "Why this is correct:\n• The Pigeonhole Principle: In Java, `hashCode()` returns a 32-bit signed integer (`int`), which can represent at most 2^{32} (about 4.3 billion) distinct values.\n• Because the number of possible object states (e.g. all possible `String` combinations) is infinite, distinct objects WILL inevitably map to identical hash codes (hash collision).\n• The contract dictates:\n  - Equal objects MUST have equal hash codes.\n  - Unequal objects CAN share the same hash code.\n• Hash collisions are expected and handled in hash tables via separate chaining (linked list / red-black tree) or open addressing.\n\nWhy other options are incorrect:\n• Collisions do NOT throw an exception or invalidate the collection.\n• Hash algorithms cannot guarantee zero collisions across all input domains within 32 bits."
   },
   {
     "id": 124,
@@ -3744,7 +3744,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `java.util.Collections.shuffle(List<?> list)` is the standard, optimized method for randomizing list element order.\n• It runs in $O(n)$ time using the Fisher-Yates (Knuth) shuffling algorithm.\n• It operates directly in place on the provided list. An overloaded variant `Collections.shuffle(list, Random rnd)` accepts a custom pseudo-random number generator for deterministic testing.\n\nWhy other options are incorrect:\n• `list.sort(Comparator.comparing(x -> Math.random()))` is flawed, violates the transitive contract of `Comparator`, and can throw `IllegalArgumentException: Comparison method violates its general contract!`.\n• `Arrays.shuffle()` does not exist in standard Java."
+    "explanation": "Why this is correct:\n• `java.util.Collections.shuffle(List<?> list)` is the standard, optimized method for randomizing list element order.\n• It runs in O(n) time using the Fisher-Yates (Knuth) shuffling algorithm.\n• It operates directly in place on the provided list. An overloaded variant `Collections.shuffle(list, Random rnd)` accepts a custom pseudo-random number generator for deterministic testing.\n\nWhy other options are incorrect:\n• `list.sort(Comparator.comparing(x -> Math.random()))` is flawed, violates the transitive contract of `Comparator`, and can throw `IllegalArgumentException: Comparison method violates its general contract!`.\n• `Arrays.shuffle()` does not exist in standard Java."
   },
   {
     "id": 125,
@@ -3931,7 +3931,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Reverse Close Order: Resources declared in `try (R1 r1 = ...; R2 r2 = ...)` are closed in the reverse order of their initialization: `r2.close()` runs first, followed by `r1.close()`.\n• Suppressed Exceptions: If the `try` block throws an exception $E_1$ and a resource's `close()` method subsequently throws an exception $E_2$, $E_1$ is propagated to the caller, and $E_2$ is appended to $E_1$ as a suppressed exception via `E1.addSuppressed(E2)`.\n• Inspection: Suppressed exceptions can be retrieved using `Throwable.getSuppressed()`.\n\nWhy other options are incorrect:\n• Resources are not closed in forward order.\n• Close exceptions do not discard the primary exception thrown by the try block."
+    "explanation": "Why this is correct:\n• Reverse Close Order: Resources declared in `try (R1 r1 = ...; R2 r2 = ...)` are closed in the reverse order of their initialization: `r2.close()` runs first, followed by `r1.close()`.\n• Suppressed Exceptions: If the `try` block throws an exception E_1 and a resource's `close()` method subsequently throws an exception E_2, E_1 is propagated to the caller, and E_2 is appended to E_1 as a suppressed exception via `E1.addSuppressed(E2)`.\n• Inspection: Suppressed exceptions can be retrieved using `Throwable.getSuppressed()`.\n\nWhy other options are incorrect:\n• Resources are not closed in forward order.\n• Close exceptions do not discard the primary exception thrown by the try block."
   },
   {
     "id": 131,
@@ -4883,7 +4883,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• `CountDownLatch`:\n  - Initialized with a count $N$.\n  - Threads call `countDown()` to decrement the latch, and other threads call `await()` until the count reaches 0.\n  - One-time use: Once count reaches 0, it cannot be reset or reused.\n• `CyclicBarrier`:\n  - A fixed number of threads call `await()`, blocking until all $N$ threads reach the barrier.\n  - Reusable: After releasing the waiting threads, it automatically resets for the next cycle. Can execute an optional `Runnable` barrier action when tripped.\n• `Semaphore`:\n  - Maintains $N$ permits. Threads call `acquire()` and `release()`.\n  - Classic use: Bounding access to limited resources (e.g. database connection pools or rate-limited external API calls).\n\nWhy other options are incorrect:\n• `CountDownLatch` does not use exclusive reentrant locks.\n• `Semaphore` permits are not revoked by OS context switches."
+    "explanation": "Why this is correct:\n• `CountDownLatch`:\n  - Initialized with a count N.\n  - Threads call `countDown()` to decrement the latch, and other threads call `await()` until the count reaches 0.\n  - One-time use: Once count reaches 0, it cannot be reset or reused.\n• `CyclicBarrier`:\n  - A fixed number of threads call `await()`, blocking until all N threads reach the barrier.\n  - Reusable: After releasing the waiting threads, it automatically resets for the next cycle. Can execute an optional `Runnable` barrier action when tripped.\n• `Semaphore`:\n  - Maintains N permits. Threads call `acquire()` and `release()`.\n  - Classic use: Bounding access to limited resources (e.g. database connection pools or rate-limited external API calls).\n\nWhy other options are incorrect:\n• `CountDownLatch` does not use exclusive reentrant locks.\n• `Semaphore` permits are not revoked by OS context switches."
   },
   {
     "id": 162,
@@ -5031,7 +5031,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• The N+1 Problem: When loading $N$ parent records (e.g. `SELECT * FROM orders`), accessing a lazy collection on each parent issues 1 initial query + $N$ individual queries (one per parent) to load child records (`SELECT * FROM order_items WHERE order_id = ?`).\n• Solution 1 (`JOIN FETCH`): `SELECT o FROM Order o JOIN FETCH o.items`. Issues a single SQL query joining `orders` and `order_items`, populating the collections in one trip.\n• Solution 2 (`@EntityGraph`): Declaratively specifies which associations should be fetched eagerly for a specific query repository method.\n• Solution 3 (`@BatchSize`): Instructs Hibernate to load collections using `WHERE order_id IN (?, ?, ?, ...)` in batches of e.g. 50, reducing $N+1$ queries to $1 + N/50$ queries.\n\nWhy other options are incorrect:\n• Changing to `FetchType.EAGER` is an antipattern: it does NOT eliminate N+1 queries for `findAll()` or JPQL queries (which don't join by default), and it causes massive unwanted data fetches across your entire application.\n• `transient` excludes fields from persistence, breaking the relationship entirely."
+    "explanation": "Why this is correct:\n• The N+1 Problem: When loading N parent records (e.g. `SELECT * FROM orders`), accessing a lazy collection on each parent issues 1 initial query + N individual queries (one per parent) to load child records (`SELECT * FROM order_items WHERE order_id = ?`).\n• Solution 1 (`JOIN FETCH`): `SELECT o FROM Order o JOIN FETCH o.items`. Issues a single SQL query joining `orders` and `order_items`, populating the collections in one trip.\n• Solution 2 (`@EntityGraph`): Declaratively specifies which associations should be fetched eagerly for a specific query repository method.\n• Solution 3 (`@BatchSize`): Instructs Hibernate to load collections using `WHERE order_id IN (?, ?, ?, ...)` in batches of e.g. 50, reducing N+1 queries to 1 + N/50 queries.\n\nWhy other options are incorrect:\n• Changing to `FetchType.EAGER` is an antipattern: it does NOT eliminate N+1 queries for `findAll()` or JPQL queries (which don't join by default), and it causes massive unwanted data fetches across your entire application.\n• `transient` excludes fields from persistence, breaking the relationship entirely."
   },
   {
     "id": 167,
@@ -5213,7 +5213,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Cache-Aside: Application controls the flow: Read Cache $\\rightarrow$ if miss, Read DB $\\rightarrow$ Write to Cache. Writes update the DB and invalidate/update the cache. (Most popular pattern, resilient to cache failures).\n• Write-Through: Cache acts as the primary datastore interface. Application writes to cache; cache writes synchronously to DB. High data consistency, but write latency is higher.\n• Write-Behind (Write-Back): Application writes to cache; cache acknowledges immediately and batches updates to the database asynchronously. Extremely fast write performance and reduces DB write load, but risks data loss if the cache node crashes before flushing.\n\nWhy other options are incorrect:\n• Cache-Aside is eventually consistent and prone to race conditions (stale reads can occur if a write occurs between DB read and cache populate).\n• Write-Through does not store database records in browser cookies."
+    "explanation": "Why this is correct:\n• Cache-Aside: Application controls the flow: Read Cache -> if miss, Read DB -> Write to Cache. Writes update the DB and invalidate/update the cache. (Most popular pattern, resilient to cache failures).\n• Write-Through: Cache acts as the primary datastore interface. Application writes to cache; cache writes synchronously to DB. High data consistency, but write latency is higher.\n• Write-Behind (Write-Back): Application writes to cache; cache acknowledges immediately and batches updates to the database asynchronously. Extremely fast write performance and reduces DB write load, but risks data loss if the cache node crashes before flushing.\n\nWhy other options are incorrect:\n• Cache-Aside is eventually consistent and prone to race conditions (stale reads can occur if a write occurs between DB read and cache populate).\n• Write-Through does not store database records in browser cookies."
   },
   {
     "id": 173,
@@ -5333,7 +5333,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Token Bucket:\n  - Tokens are added to a bucket of capacity $B$ at rate $R$ tokens/second.\n  - Allows bursts: If the bucket is full, an application can burst up to $B$ requests immediately. Once empty, it strictly throttles to $R$ req/sec.\n• Fixed Window vs Sliding Window:\n  - Fixed Window (e.g. 100 req/minute reset at :00): A client can send 100 requests at 00:59 and another 100 requests at 01:01, resulting in 200 requests in 2 seconds (2x limit)!\n  - Sliding Window (Log or Counter): Smooths out the boundary issue by calculating weighted request rates across overlapping window slices, preventing boundary burst exploitation.\n\nWhy other options are incorrect:\n• Rate limiters return HTTP 429 Too Many Requests; they do not kill the process.\n• Sliding window tracks small counters or timestamps, not full HTTP response bodies on disk."
+    "explanation": "Why this is correct:\n• Token Bucket:\n  - Tokens are added to a bucket of capacity B at rate R tokens/second.\n  - Allows bursts: If the bucket is full, an application can burst up to B requests immediately. Once empty, it strictly throttles to R req/sec.\n• Fixed Window vs Sliding Window:\n  - Fixed Window (e.g. 100 req/minute reset at :00): A client can send 100 requests at 00:59 and another 100 requests at 01:01, resulting in 200 requests in 2 seconds (2x limit)!\n  - Sliding Window (Log or Counter): Smooths out the boundary issue by calculating weighted request rates across overlapping window slices, preventing boundary burst exploitation.\n\nWhy other options are incorrect:\n• Rate limiters return HTTP 429 Too Many Requests; they do not kill the process.\n• Sliding window tracks small counters or timestamps, not full HTTP response bodies on disk."
   },
   {
     "id": 177,
@@ -5404,7 +5404,7 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The optimal pool size formula balances available CPU cores and disk spindles: $Connections \\approx (CPU Cores \\times 2) + Spindle Count$."
+        "text": "The optimal pool size formula balances available CPU cores and disk spindles: Connections ~ (CPU Cores x 2) + Spindle Count."
       },
       {
         "id": "B",
@@ -5424,7 +5424,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• The Connection Pool Sizing Fallacy: Many developers assume that if they have 200 concurrent HTTP threads, they need a connection pool of 200 connections. In reality, a database is constrained by physical hardware: CPU cores, disk I/O channels, and RAM.\n• Why Smaller is Faster:\n  - If a database server has 8 CPU cores, executing 8 queries concurrently keeps the cores 100% busy. If you send 200 queries simultaneously, the OS kernel wastes immense CPU time context-switching between 200 threads, and disk heads thrash.\n  - HikariCP documentation cites PostgreSQL research showing that a pool of 20-30 connections easily handles thousands of concurrent web requests because web requests hold DB connections for only a few milliseconds!\n• HikariCP Formula: $poolSize = (coreCount \\times 2) + effectiveSpindleCount$.\n\nWhy other options are incorrect:\n• Sizing connection pools equal to web threads (e.g. 500) destroys database performance.\n• 10,000 idle connections will exhaust database memory and crash the server."
+    "explanation": "Why this is correct:\n• The Connection Pool Sizing Fallacy: Many developers assume that if they have 200 concurrent HTTP threads, they need a connection pool of 200 connections. In reality, a database is constrained by physical hardware: CPU cores, disk I/O channels, and RAM.\n• Why Smaller is Faster:\n  - If a database server has 8 CPU cores, executing 8 queries concurrently keeps the cores 100% busy. If you send 200 queries simultaneously, the OS kernel wastes immense CPU time context-switching between 200 threads, and disk heads thrash.\n  - HikariCP documentation cites PostgreSQL research showing that a pool of 20-30 connections easily handles thousands of concurrent web requests because web requests hold DB connections for only a few milliseconds!\n• HikariCP Formula: poolSize = (coreCount x 2) + effectiveSpindleCount.\n\nWhy other options are incorrect:\n• Sizing connection pools equal to web threads (e.g. 500) destroys database performance.\n• 10,000 idle connections will exhaust database memory and crash the server."
   },
   {
     "id": 180,
@@ -5515,7 +5515,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• RPO (Recovery Point Objective):\n  - Answers: *\"How much data can we afford to lose?\"*\n  - Measured in time: If your database is backed up every 1 hour, your maximum data loss in a catastrophic failure is 1 hour of transactions ($RPO = 1 \\text{ hour}$). If business mandates zero data loss, you need synchronous multi-region replication ($RPO = 0$).\n• RTO (Recovery Time Objective):\n  - Answers: *\"How long can we afford to be down?\"*\n  - Measured in time: If a disaster strikes at 12:00 PM and services must be fully operational by 12:30 PM, your $RTO = 30 \\text{ minutes}$.\n\nWhy other options are incorrect:\n• RPO is not monetary cloud billing cost.\n• RTO is not network packet loss percentage."
+    "explanation": "Why this is correct:\n• RPO (Recovery Point Objective):\n  - Answers: *\"How much data can we afford to lose?\"*\n  - Measured in time: If your database is backed up every 1 hour, your maximum data loss in a catastrophic failure is 1 hour of transactions (RPO = 1  hour). If business mandates zero data loss, you need synchronous multi-region replication (RPO = 0).\n• RTO (Recovery Time Objective):\n  - Answers: *\"How long can we afford to be down?\"*\n  - Measured in time: If a disaster strikes at 12:00 PM and services must be fully operational by 12:30 PM, your RTO = 30  minutes.\n\nWhy other options are incorrect:\n• RPO is not monetary cloud billing cost.\n• RTO is not network packet loss percentage."
   },
   {
     "id": 183,
@@ -5635,12 +5635,12 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Separate Chaining (used by Java `HashMap`):\n  - Each bucket is a pointer to an external container (linked list, converted to red-black tree in Java 8 if bucket length $\\ge 8$).\n  - Can gracefully handle load factors $\u0007lpha > 1.0$ (more elements than buckets), though performance degrades to $O(n)$ or $O(\\log n)$ if not resized.\n• Open Addressing (Linear Probing, Quadratic Probing, Double Hashing):\n  - All elements reside directly within the array table (no external nodes or pointers).\n  - When collision occurs at index $i$, probe $i+1, i+2, \\dots$ until an empty slot is found.\n  - Load factor CANNOT exceed 1.0 (table fills up), and performance degrades rapidly as $\u0007lpha > 0.7$. Deletions require special \"tombstone\" markers.\n\nWhy other options are incorrect:\n• Open Addressing cannot have a load factor $> 1.0$; it must resize before filling.\n• Chaining does not throw `OutOfMemoryError` on hash collisions; collisions are standard and expected."
+    "explanation": "Why this is correct:\n• Separate Chaining (used by Java `HashMap`):\n  - Each bucket is a pointer to an external container (linked list, converted to red-black tree in Java 8 if bucket length >= 8).\n  - Can gracefully handle load factors alpha > 1.0 (more elements than buckets), though performance degrades to O(n) or O(log n) if not resized.\n• Open Addressing (Linear Probing, Quadratic Probing, Double Hashing):\n  - All elements reside directly within the array table (no external nodes or pointers).\n  - When collision occurs at index i, probe i+1, i+2, ... until an empty slot is found.\n  - Load factor CANNOT exceed 1.0 (table fills up), and performance degrades rapidly as alpha > 0.7. Deletions require special \"tombstone\" markers.\n\nWhy other options are incorrect:\n• Open Addressing cannot have a load factor > 1.0; it must resize before filling.\n• Chaining does not throw `OutOfMemoryError` on hash collisions; collisions are standard and expected."
   },
   {
     "id": 187,
     "category": "Algorithms & Data Structures",
-    "question": "What combination of data structures allows an LRU (Least Recently Used) cache to achieve $O(1)$ time complexity for both `get()` and `put()`?",
+    "question": "What combination of data structures allows an LRU (Least Recently Used) cache to achieve O(1) time complexity for both `get()` and `put()`?",
     "options": [
       {
         "id": "A",
@@ -5652,7 +5652,7 @@ const QUESTIONS = [
       },
       {
         "id": "C",
-        "text": "A Hash Map (for $O(1)$ key lookup) paired with a Doubly Linked List (for $O(1)$ node removal and insertion at head/tail)."
+        "text": "A Hash Map (for O(1) key lookup) paired with a Doubly Linked List (for O(1) node removal and insertion at head/tail)."
       },
       {
         "id": "D",
@@ -5663,7 +5663,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• $O(1)$ LRU Cache Architecture (e.g. Java `LinkedHashMap` with `accessOrder = true`):\n  1. Hash Map (`Map<Key, Node>`): Provides $O(1)$ lookup to find any key's corresponding node in memory.\n  2. Doubly Linked List: Maintains access order. Most recently accessed nodes are moved to the HEAD; least recently used nodes reside at the TAIL.\n• Operations:\n  - `get(key)`: Lookup node in map ($O(1)$) $\rightarrow$ remove node from current position in doubly linked list ($O(1)$) $\rightarrow$ insert at head ($O(1)$).\n  - `put(key, value)`: If key exists, update value and move to head ($O(1)$). If new, add to map and insert at head ($O(1)$). If capacity exceeded, remove node from tail ($O(1)$) and delete key from map ($O(1)$).\n• Why Doubly Linked List is Required: In a singly linked list, removing a node requires finding its predecessor, which takes $O(n)$ traversal. A doubly linked list provides node.prev, allowing $O(1)$ removal!\n\nWhy other options are incorrect:\n• Heaps have $O(\\log n)$ updates and $O(n)$ arbitrary search.\n• BSTs have $O(\\log n)$ lookups.\n• Singly linked lists require $O(n)$ node removal."
+    "explanation": "Why this is correct:\n• O(1) LRU Cache Architecture (e.g. Java `LinkedHashMap` with `accessOrder = true`):\n  1. Hash Map (`Map<Key, Node>`): Provides O(1) lookup to find any key's corresponding node in memory.\n  2. Doubly Linked List: Maintains access order. Most recently accessed nodes are moved to the HEAD; least recently used nodes reside at the TAIL.\n• Operations:\n  - `get(key)`: Lookup node in map (O(1)) -> remove node from current position in doubly linked list (O(1)) -> insert at head (O(1)).\n  - `put(key, value)`: If key exists, update value and move to head (O(1)). If new, add to map and insert at head (O(1)). If capacity exceeded, remove node from tail (O(1)) and delete key from map (O(1)).\n• Why Doubly Linked List is Required: In a singly linked list, removing a node requires finding its predecessor, which takes O(n) traversal. A doubly linked list provides node.prev, allowing O(1) removal!\n\nWhy other options are incorrect:\n• Heaps have O(log n) updates and O(n) arbitrary search.\n• BSTs have O(log n) lookups.\n• Singly linked lists require O(n) node removal."
   },
   {
     "id": 188,
@@ -5684,7 +5684,7 @@ const QUESTIONS = [
       },
       {
         "id": "D",
-        "text": "Binary search can locate the maximum element in an unsorted random array in $O(\\log n)$ worst-case time complexity."
+        "text": "Binary search can locate the maximum element in an unsorted random array in O(log n) worst-case time complexity."
       },
       {
         "id": "E",
@@ -5697,7 +5697,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Integer Overflow Bug (Joshua Bloch Famous Bug): `(low + high) / 2` fails in Java if `low + high > Integer.MAX_VALUE` ($2^{31}-1$), overflowing to a negative number and throwing `ArrayIndexOutOfBoundsException`. Using `low + (high - low) / 2` or unsigned shift `(low + high) >>> 1` is safe.\n• Monotonicity: Binary search works on any sorted array, or any problem where answers form a monotonic predicate (e.g. `[False, False, True, True, True]`).\n• Lower Bound (First Occurrence): When `arr[mid] == target`, don't return immediately! Set `high = mid - 1` (or `high = mid`) to keep searching the left half to find the earliest occurrence.\n\nWhy other options are incorrect:\n• Binary search CANNOT search unsorted arrays; finding an element in an unsorted array takes $O(n)$ linear time.\n• Binary search requires $O(1)$ space; it does not allocate secondary arrays."
+    "explanation": "Why this is correct:\n• Integer Overflow Bug (Joshua Bloch Famous Bug): `(low + high) / 2` fails in Java if `low + high > Integer.MAX_VALUE` (2^{31}-1), overflowing to a negative number and throwing `ArrayIndexOutOfBoundsException`. Using `low + (high - low) / 2` or unsigned shift `(low + high) >>> 1` is safe.\n• Monotonicity: Binary search works on any sorted array, or any problem where answers form a monotonic predicate (e.g. `[False, False, True, True, True]`).\n• Lower Bound (First Occurrence): When `arr[mid] == target`, don't return immediately! Set `high = mid - 1` (or `high = mid`) to keep searching the left half to find the earliest occurrence.\n\nWhy other options are incorrect:\n• Binary search CANNOT search unsorted arrays; finding an element in an unsorted array takes O(n) linear time.\n• Binary search requires O(1) space; it does not allocate secondary arrays."
   },
   {
     "id": 189,
@@ -5714,7 +5714,7 @@ const QUESTIONS = [
       },
       {
         "id": "C",
-        "text": "BFS consumes $O(1)$ auxiliary memory because it does not require tracking visited vertices during graph exploration."
+        "text": "BFS consumes O(1) auxiliary memory because it does not require tracking visited vertices during graph exploration."
       },
       {
         "id": "D",
@@ -5726,7 +5726,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Breadth-First Search (BFS):\n  - Explores all neighbors at distance 1, then distance 2, etc., using a FIFO Queue.\n  - Shortest Path Guarantee: In unweighted graphs, the first time BFS reaches a target vertex, it is GUARANTEED to be via the shortest path (minimum edge count)!\n  - Space Complexity: $O(V)$ in the queue (can consume significant memory if graph branching factor is high).\n• Depth-First Search (DFS):\n  - Explores as far as possible down each path using a LIFO Stack or recursive call stack before backtracking.\n  - Ideal for: Topological sorting, detecting cycles in directed graphs (3-coloring algorithm), finding strongly connected components (Tarjan/Kosaraju), and maze/backtracking generation.\n  - Space Complexity: $O(H)$ where $H$ is the maximum depth of the graph.\n\nWhy other options are incorrect:\n• BFS requires $O(V)$ space for the queue and visited set.\n• DFS does NOT guarantee the shortest path in unweighted graphs."
+    "explanation": "Why this is correct:\n• Breadth-First Search (BFS):\n  - Explores all neighbors at distance 1, then distance 2, etc., using a FIFO Queue.\n  - Shortest Path Guarantee: In unweighted graphs, the first time BFS reaches a target vertex, it is GUARANTEED to be via the shortest path (minimum edge count)!\n  - Space Complexity: O(V) in the queue (can consume significant memory if graph branching factor is high).\n• Depth-First Search (DFS):\n  - Explores as far as possible down each path using a LIFO Stack or recursive call stack before backtracking.\n  - Ideal for: Topological sorting, detecting cycles in directed graphs (3-coloring algorithm), finding strongly connected components (Tarjan/Kosaraju), and maze/backtracking generation.\n  - Space Complexity: O(H) where H is the maximum depth of the graph.\n\nWhy other options are incorrect:\n• BFS requires O(V) space for the queue and visited set.\n• DFS does NOT guarantee the shortest path in unweighted graphs."
   },
   {
     "id": 190,
@@ -5739,7 +5739,7 @@ const QUESTIONS = [
       },
       {
         "id": "B",
-        "text": "By allocating an auxiliary array of size $N$ on the heap and verifying that no node pointer appears more than once."
+        "text": "By allocating an auxiliary array of size N on the heap and verifying that no node pointer appears more than once."
       },
       {
         "id": "C",
@@ -5754,7 +5754,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Floyd's Cycle-Finding Algorithm:\n  - Slow pointer (`tortoise`) moves 1 node at a time.\n  - Fast pointer (`hare`) moves 2 nodes at a time.\n  - If the list is acyclic: The fast pointer will reach `null` ($O(n)$ time, $O(1)$ space).\n  - If a cycle exists: Inside the cycle, the fast pointer closes the distance by 1 node on each step ($2 - 1 = 1$). Therefore, the fast pointer is mathematically guaranteed to lap and collide with the slow pointer!\n• Finding Cycle Start: Once they meet, keep one pointer at the meeting point and place the other at the list head. Advance both 1 step at a time: they will meet exactly at the cycle entrance!\n\nWhy other options are incorrect:\n• It does not reverse node pointers or calculate MD5 hashes.\n• Using an auxiliary array consumes $O(n)$ space; Floyd's algorithm achieves $O(1)$ constant space."
+    "explanation": "Why this is correct:\n• Floyd's Cycle-Finding Algorithm:\n  - Slow pointer (`tortoise`) moves 1 node at a time.\n  - Fast pointer (`hare`) moves 2 nodes at a time.\n  - If the list is acyclic: The fast pointer will reach `null` (O(n) time, O(1) space).\n  - If a cycle exists: Inside the cycle, the fast pointer closes the distance by 1 node on each step (2 - 1 = 1). Therefore, the fast pointer is mathematically guaranteed to lap and collide with the slow pointer!\n• Finding Cycle Start: Once they meet, keep one pointer at the meeting point and place the other at the list head. Advance both 1 step at a time: they will meet exactly at the cycle entrance!\n\nWhy other options are incorrect:\n• It does not reverse node pointers or calculate MD5 hashes.\n• Using an auxiliary array consumes O(n) space; Floyd's algorithm achieves O(1) constant space."
   },
   {
     "id": 191,
@@ -5763,7 +5763,7 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It reduces time complexity from $O(n^2)$ brute-force subsegment checks down to $O(n)$ linear time by updating state incrementally."
+        "text": "It reduces time complexity from O(n^2) brute-force subsegment checks down to O(n) linear time by updating state incrementally."
       },
       {
         "id": "B",
@@ -5788,16 +5788,16 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Sliding Window Mechanics:\n  - Applicable to contiguous subarray and substring problems (e.g. longest substring without repeating characters, minimum window substring, maximum sum subarray of size $K$).\n  - Brute force checks all pairs of $(i, j)$, taking $O(n^2)$ or $O(n^3)$ time.\n  - Sliding window maintains state (e.g. sum or character frequency map) as `right` expands. When a condition is violated, `left` contracts, removing elements from state in $O(1)$ amortized time.\n  - Because both `left` and `right` traverse the array at most once, total time is $O(n)$!\n\nWhy other options are incorrect:\n• Sliding window does NOT require sorting (sorting destroys the contiguous order of original subarrays/substrings).\n• Pointers move monotonically forward; `left` never moves backward."
+    "explanation": "Why this is correct:\n• Sliding Window Mechanics:\n  - Applicable to contiguous subarray and substring problems (e.g. longest substring without repeating characters, minimum window substring, maximum sum subarray of size K).\n  - Brute force checks all pairs of (i, j), taking O(n^2) or O(n^3) time.\n  - Sliding window maintains state (e.g. sum or character frequency map) as `right` expands. When a condition is violated, `left` contracts, removing elements from state in O(1) amortized time.\n  - Because both `left` and `right` traverse the array at most once, total time is O(n)!\n\nWhy other options are incorrect:\n• Sliding window does NOT require sorting (sorting destroys the contiguous order of original subarrays/substrings).\n• Pointers move monotonically forward; `left` never moves backward."
   },
   {
     "id": 192,
     "category": "Algorithms & Data Structures",
-    "question": "What is the optimal time complexity to find the Top $K$ frequent elements in an array of $N$ items using a Min-Heap of size $K$?",
+    "question": "What is the optimal time complexity to find the Top K frequent elements in an array of N items using a Min-Heap of size K?",
     "options": [
       {
         "id": "A",
-        "text": "`O(N log K)` time, because frequency map construction takes $O(N)$ and maintaining a heap bounded at size $K$ takes $O(N \\log K)$."
+        "text": "`O(N log K)` time, because frequency map construction takes O(N) and maintaining a heap bounded at size K takes O(N log K)."
       },
       {
         "id": "B",
@@ -5805,7 +5805,7 @@ const QUESTIONS = [
       },
       {
         "id": "C",
-        "text": "`O(K log N)` time, because finding top elements requires sorting the entire collection of $N$ items in descending order."
+        "text": "`O(K log N)` time, because finding top elements requires sorting the entire collection of N items in descending order."
       },
       {
         "id": "D",
@@ -5816,7 +5816,7 @@ const QUESTIONS = [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Top $K$ Frequent Elements Algorithm:\n  1. Frequency Counting: Build a `HashMap<Element, Frequency>`. Takes $O(N)$ time and $O(N)$ space.\n  2. Bounded Min-Heap: Maintain a `PriorityQueue` of size $K$ ordered by frequency.\n     - For each of the $M$ unique elements: add to min-heap. If heap size exceeds $K$, poll the minimum frequency element (`heap.poll()`).\n     - Inserting/polling in a heap of size $K$ takes $O(\\log K)$ time.\n     - Total heap time: $O(M \\log K) \\le O(N \\log K)$.\n  3. Total Time: $O(N + N \\log K) = O(N \\log K)$.\n• Contrast with Full Sort: Sorting the entire frequency map takes $O(N \\log N)$. When $K \\ll N$ (e.g. top 10 out of 1,000,000 items), $O(N \\log K)$ is significantly faster and uses only $O(K)$ heap memory!\n\nWhy other options are incorrect:\n• It is not $O(N^2)$ (heap insert is $O(\\log K)$, not $O(N)$).\n• It is not $O(1)$."
+    "explanation": "Why this is correct:\n• Top K Frequent Elements Algorithm:\n  1. Frequency Counting: Build a `HashMap<Element, Frequency>`. Takes O(N) time and O(N) space.\n  2. Bounded Min-Heap: Maintain a `PriorityQueue` of size K ordered by frequency.\n     - For each of the M unique elements: add to min-heap. If heap size exceeds K, poll the minimum frequency element (`heap.poll()`).\n     - Inserting/polling in a heap of size K takes O(log K) time.\n     - Total heap time: O(M log K) <= O(N log K).\n  3. Total Time: O(N + N log K) = O(N log K).\n• Contrast with Full Sort: Sorting the entire frequency map takes O(N log N). When K << N (e.g. top 10 out of 1,000,000 items), O(N log K) is significantly faster and uses only O(K) heap memory!\n\nWhy other options are incorrect:\n• It is not O(N^2) (heap insert is O(log K), not O(N)).\n• It is not O(1)."
   },
   {
     "id": 193,
@@ -5825,7 +5825,7 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "QuickSort guarantees $O(n)$ linear time in the worst case when the input array is already completely sorted."
+        "text": "QuickSort guarantees O(n) linear time in the worst case when the input array is already completely sorted."
       },
       {
         "id": "B",
@@ -5833,7 +5833,7 @@ const QUESTIONS = [
       },
       {
         "id": "C",
-        "text": "MergeSort is a stable divide-and-conquer algorithm with guaranteed $O(n \\log n)$ worst-case time, requiring $O(n)$ auxiliary memory."
+        "text": "MergeSort is a stable divide-and-conquer algorithm with guaranteed O(n log n) worst-case time, requiring O(n) auxiliary memory."
       },
       {
         "id": "D",
@@ -5845,7 +5845,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• MergeSort:\n  - Divides array into halves, recursively sorts, and merges.\n  - Guaranteed $O(n \\log n)$ time in best, average, and worst cases.\n  - Stable: Preserves the relative order of duplicate elements.\n  - Space: Requires $O(n)$ auxiliary array for merging.\n• TimSort (Tim Peters, 2002):\n  - Standard sort for `Object[]` in Java and Python.\n  - Adaptive and Stable: Detects natural ascending or strictly descending \"runs\" in the input data. Uses InsertionSort for small chunks (<32 items) and merges runs using an optimized MergeSort.\n  - Best case on already sorted data is $O(n)$! Worst case $O(n \\log n)$.\n• QuickSort:\n  - Unstable, in-place ($O(\\log n)$ stack space). Average $O(n \\log n)$.\n  - Worst case is $O(n^2)$ if pivot selection is poor on sorted/reverse-sorted data.\n\nWhy other options are incorrect:\n• QuickSort worst-case is $O(n^2)$, not $O(n)$.\n• TimSort is strictly STABLE and never discards duplicates."
+    "explanation": "Why this is correct:\n• MergeSort:\n  - Divides array into halves, recursively sorts, and merges.\n  - Guaranteed O(n log n) time in best, average, and worst cases.\n  - Stable: Preserves the relative order of duplicate elements.\n  - Space: Requires O(n) auxiliary array for merging.\n• TimSort (Tim Peters, 2002):\n  - Standard sort for `Object[]` in Java and Python.\n  - Adaptive and Stable: Detects natural ascending or strictly descending \"runs\" in the input data. Uses InsertionSort for small chunks (<32 items) and merges runs using an optimized MergeSort.\n  - Best case on already sorted data is O(n)! Worst case O(n log n).\n• QuickSort:\n  - Unstable, in-place (O(log n) stack space). Average O(n log n).\n  - Worst case is O(n^2) if pivot selection is poor on sorted/reverse-sorted data.\n\nWhy other options are incorrect:\n• QuickSort worst-case is O(n^2), not O(n).\n• TimSort is strictly STABLE and never discards duplicates."
   },
   {
     "id": 194,
@@ -5854,11 +5854,11 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Post-order traversal (Left $\rightarrow$ Right $\rightarrow$ Root)."
+        "text": "Post-order traversal (Left -> Right -> Root)."
       },
       {
         "id": "B",
-        "text": "In-order traversal (Left $\rightarrow$ Root $\rightarrow$ Right)."
+        "text": "In-order traversal (Left -> Root -> Right)."
       },
       {
         "id": "C",
@@ -5866,14 +5866,14 @@ const QUESTIONS = [
       },
       {
         "id": "D",
-        "text": "Pre-order traversal (Root $\rightarrow$ Left $\rightarrow$ Right)."
+        "text": "Pre-order traversal (Root -> Left -> Right)."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Binary Search Tree (BST) Property: For every node $X$:\n  - All nodes in the left subtree have values $< X$.\n  - All nodes in the right subtree have values $> X$.\n• In-Order Traversal:\n  1. Recursively traverse Left subtree (all values smaller than Root).\n  2. Visit Root.\n  3. Recursively traverse Right subtree (all values larger than Root).\n  - Because it visits smaller $\rightarrow$ middle $\rightarrow$ larger, In-Order traversal ALWAYS produces elements in strictly ascending sorted order!\n• Uses of other traversals:\n  - Pre-order (Root, Left, Right): Used for serializing/cloning trees.\n  - Post-order (Left, Right, Root): Used for deleting trees or evaluating mathematical expression trees (subtrees evaluated before parent operator).\n\nWhy other options are incorrect:\n• Pre-order, Post-order, and Level-order do not produce sorted output on BSTs."
+    "explanation": "Why this is correct:\n• Binary Search Tree (BST) Property: For every node X:\n  - All nodes in the left subtree have values < X.\n  - All nodes in the right subtree have values > X.\n• In-Order Traversal:\n  1. Recursively traverse Left subtree (all values smaller than Root).\n  2. Visit Root.\n  3. Recursively traverse Right subtree (all values larger than Root).\n  - Because it visits smaller -> middle -> larger, In-Order traversal ALWAYS produces elements in strictly ascending sorted order!\n• Uses of other traversals:\n  - Pre-order (Root, Left, Right): Used for serializing/cloning trees.\n  - Post-order (Left, Right, Root): Used for deleting trees or evaluating mathematical expression trees (subtrees evaluated before parent operator).\n\nWhy other options are incorrect:\n• Pre-order, Post-order, and Level-order do not produce sorted output on BSTs."
   },
   {
     "id": 195,
@@ -5898,7 +5898,7 @@ const QUESTIONS = [
       },
       {
         "id": "E",
-        "text": "Searching, inserting, or prefix-matching a word of length $L$ takes $O(L)$ time, independent of total words $N$ stored."
+        "text": "Searching, inserting, or prefix-matching a word of length L takes O(L) time, independent of total words N stored."
       }
     ],
     "correct": [
@@ -5907,7 +5907,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Trie Architecture:\n  - Tree where each node represents a character (or array of 26 pointers for lowercase English letters).\n  - A boolean flag `isEndOfWord` marks the end of a complete stored word.\n• Time Complexity:\n  - Insert: $O(L)$ where $L$ is word length.\n  - Search: $O(L)$.\n  - Prefix Match (`startsWith`): $O(L)$.\n  - Notice that lookup time is completely independent of the number of words $N$ in the dictionary!\n• Applications: Autocomplete search boxes, spell checkers, T9 predictive text, and longest prefix matching in IP routing.\n\nWhy other options are incorrect:\n• Tries have high memory overhead per node (pointer arrays); for small collections of disjoint strings, a `HashSet` is much more memory efficient.\n• Deletion only removes unshared nodes along the word's path; it does not rebuild the entire tree."
+    "explanation": "Why this is correct:\n• Trie Architecture:\n  - Tree where each node represents a character (or array of 26 pointers for lowercase English letters).\n  - A boolean flag `isEndOfWord` marks the end of a complete stored word.\n• Time Complexity:\n  - Insert: O(L) where L is word length.\n  - Search: O(L).\n  - Prefix Match (`startsWith`): O(L).\n  - Notice that lookup time is completely independent of the number of words N in the dictionary!\n• Applications: Autocomplete search boxes, spell checkers, T9 predictive text, and longest prefix matching in IP routing.\n\nWhy other options are incorrect:\n• Tries have high memory overhead per node (pointer arrays); for small collections of disjoint strings, a `HashSet` is much more memory efficient.\n• Deletion only removes unshared nodes along the word's path; it does not rebuild the entire tree."
   },
   {
     "id": 196,
@@ -5924,7 +5924,7 @@ const QUESTIONS = [
       },
       {
         "id": "C",
-        "text": "Finding the median element in an unsorted array in $O(1)$ time is implemented using a single FIFO Queue."
+        "text": "Finding the median element in an unsorted array in O(1) time is implemented using a single FIFO Queue."
       },
       {
         "id": "D",
@@ -5932,7 +5932,7 @@ const QUESTIONS = [
       },
       {
         "id": "E",
-        "text": "Tracking the minimum element in constant $O(1)$ time alongside push and pop operations uses an auxiliary Min-Stack."
+        "text": "Tracking the minimum element in constant O(1) time alongside push and pop operations uses an auxiliary Min-Stack."
       }
     ],
     "correct": [
@@ -5941,7 +5941,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Stack (LIFO - Last In, First Out):\n  - Balanced Parentheses: Push open brackets onto stack; when a closing bracket is seen, pop and verify it matches the top of stack.\n  - Reverse Polish Notation: Push operands; on operator, pop 2 operands, evaluate, and push result.\n  - Min-Stack: Maintain an auxiliary stack storing the minimum value seen so far, allowing `getMin()` in $O(1)$ time.\n• Queue (FIFO - First In, First Out):\n  - BFS graph traversal: Enqueue neighbors, dequeue in arrival order.\n  - Producer-Consumer task processing: First task submitted is the first task processed.\n\nWhy other options are incorrect:\n• Finding running median in a stream requires TWO heaps (Max-Heap for lower half, Min-Heap for upper half), not a single queue.\n• DFS uses a LIFO Stack (or call stack), not a FIFO Queue."
+    "explanation": "Why this is correct:\n• Stack (LIFO - Last In, First Out):\n  - Balanced Parentheses: Push open brackets onto stack; when a closing bracket is seen, pop and verify it matches the top of stack.\n  - Reverse Polish Notation: Push operands; on operator, pop 2 operands, evaluate, and push result.\n  - Min-Stack: Maintain an auxiliary stack storing the minimum value seen so far, allowing `getMin()` in O(1) time.\n• Queue (FIFO - First In, First Out):\n  - BFS graph traversal: Enqueue neighbors, dequeue in arrival order.\n  - Producer-Consumer task processing: First task submitted is the first task processed.\n\nWhy other options are incorrect:\n• Finding running median in a stream requires TWO heaps (Max-Heap for lower half, Min-Heap for upper half), not a single queue.\n• DFS uses a LIFO Stack (or call stack), not a FIFO Queue."
   },
   {
     "id": 197,
@@ -5954,11 +5954,11 @@ const QUESTIONS = [
       },
       {
         "id": "B",
-        "text": "In dense graphs where edge existence checks between any two arbitrary vertices must execute in $O(1)$ time."
+        "text": "In dense graphs where edge existence checks between any two arbitrary vertices must execute in O(1) time."
       },
       {
         "id": "C",
-        "text": "In sparse graphs (where $E \\ll V^2$), because it consumes $O(V + E)$ space and enables faster iteration over a vertex's neighbors."
+        "text": "In sparse graphs (where E << V^2), because it consumes O(V + E) space and enables faster iteration over a vertex's neighbors."
       },
       {
         "id": "D",
@@ -5969,7 +5969,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Adjacency List:\n  - An array or map of lists: `List<Integer>[] adj`.\n  - Space Complexity: $O(V + E)$. In sparse graphs (e.g. a social network or road map where vertices have far fewer edges than $V$), space is minimal.\n  - Neighbor Iteration: Iterating over all neighbors of vertex $U$ takes $O(\\text{degree}(U))$ time.\n• Adjacency Matrix:\n  - A 2D array `int[][] matrix = new int[V][V]`.\n  - Space Complexity: $O(V^2)$. For a graph with 100,000 vertices, $V^2 = 10^{10}$ cells (~10 GB RAM), even if there are only 1,000 edges!\n  - Best for dense graphs ($E \\approx V^2$) where testing `matrix[u][v] != 0` in $O(1)$ time is critical.\n\nWhy other options are incorrect:\n• Dense graphs favor Adjacency Matrices, not lists.\n• Negative edge weights have no bearing on matrix vs list representation."
+    "explanation": "Why this is correct:\n• Adjacency List:\n  - An array or map of lists: `List<Integer>[] adj`.\n  - Space Complexity: O(V + E). In sparse graphs (e.g. a social network or road map where vertices have far fewer edges than V), space is minimal.\n  - Neighbor Iteration: Iterating over all neighbors of vertex U takes O(degree(U)) time.\n• Adjacency Matrix:\n  - A 2D array `int[][] matrix = new int[V][V]`.\n  - Space Complexity: O(V^2). For a graph with 100,000 vertices, V^2 = 10^{10} cells (~10 GB RAM), even if there are only 1,000 edges!\n  - Best for dense graphs (E ~ V^2) where testing `matrix[u][v] != 0` in O(1) time is critical.\n\nWhy other options are incorrect:\n• Dense graphs favor Adjacency Matrices, not lists.\n• Negative edge weights have no bearing on matrix vs list representation."
   },
   {
     "id": 198,
@@ -5978,7 +5978,7 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Dynamic Programming guarantees finding the global maximum in all NP-complete problems in strictly $O(1)$ constant time."
+        "text": "Dynamic Programming guarantees finding the global maximum in all NP-complete problems in strictly O(1) constant time."
       },
       {
         "id": "B",
@@ -6003,7 +6003,7 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Core DP Requirements:\n  1. Optimal Substructure: The optimal solution to the overall problem contains within it optimal solutions to subproblems (e.g. shortest path from $A \\to C$ through $B$ is shortest path $A \\to B$ + shortest path $B \\to C$).\n  2. Overlapping Subproblems: Unlike divide-and-conquer (MergeSort) where subproblems are independent, DP subproblems overlap (e.g. Fibonacci: $fib(5)$ computes $fib(3)$ multiple times).\n• Two Implementations:\n  - Top-Down with Memoization: Natural recursion, storing results in a hash map or array table so each subproblem is calculated once.\n  - Bottom-Up with Tabulation: Iterative table filling, starting from base cases and building up to the final answer (avoids recursion call stack overhead).\n\nWhy other options are incorrect:\n• DP does not solve NP-complete problems in $O(1)$ time.\n• It does not require red-black trees."
+    "explanation": "Why this is correct:\n• Core DP Requirements:\n  1. Optimal Substructure: The optimal solution to the overall problem contains within it optimal solutions to subproblems (e.g. shortest path from A -> C through B is shortest path A -> B + shortest path B -> C).\n  2. Overlapping Subproblems: Unlike divide-and-conquer (MergeSort) where subproblems are independent, DP subproblems overlap (e.g. Fibonacci: fib(5) computes fib(3) multiple times).\n• Two Implementations:\n  - Top-Down with Memoization: Natural recursion, storing results in a hash map or array table so each subproblem is calculated once.\n  - Bottom-Up with Tabulation: Iterative table filling, starting from base cases and building up to the final answer (avoids recursion call stack overhead).\n\nWhy other options are incorrect:\n• DP does not solve NP-complete problems in O(1) time.\n• It does not require red-black trees."
   },
   {
     "id": 199,
@@ -6031,7 +6031,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• How `n & (n - 1)` Works:\n  - Subtracting 1 from a number flips the lowest set bit (`1` $\rightarrow$ `0`) and flips all trailing zeros to `1`s.\n  - Example: $n = 8$ (`1000`), $n - 1 = 7$ (`0111`).\n    `1000 & 0111 = 0000` (evaluates to 0!).\n  - Example: $n = 6$ (`0110`), $n - 1 = 5$ (`0101`).\n    `0110 & 0101 = 0100` (evaluates to 4 $\ne 0$).\n• A positive integer is a power of 2 ($2^0, 2^1, 2^2, \\dots$) if and only if it has EXACTLY ONE bit set in its binary representation. Clearing that single bit leaves 0!\n• Brian Kernighan's Algorithm: `n = n & (n - 1)` can be looped to count set bits (Hamming weight) in $O(\\text{number of set bits})$ time instead of iterating all 32 bits.\n\nWhy other options are incorrect:\n• Testing odd numbers is `(n & 1) != 0`.\n• Negative numbers and divisibility by 10 are completely unrelated."
+    "explanation": "Why this is correct:\n• How `n & (n - 1)` Works:\n  - Subtracting 1 from a number flips the lowest set bit (`1` -> `0`) and flips all trailing zeros to `1`s.\n  - Example: n = 8 (`1000`), n - 1 = 7 (`0111`).\n    `1000 & 0111 = 0000` (evaluates to 0!).\n  - Example: n = 6 (`0110`), n - 1 = 5 (`0101`).\n    `0110 & 0101 = 0100` (evaluates to 4 != 0).\n• A positive integer is a power of 2 (2^0, 2^1, 2^2, ...) if and only if it has EXACTLY ONE bit set in its binary representation. Clearing that single bit leaves 0!\n• Brian Kernighan's Algorithm: `n = n & (n - 1)` can be looped to count set bits (Hamming weight) in O(number of set bits) time instead of iterating all 32 bits.\n\nWhy other options are incorrect:\n• Testing odd numbers is `(n & 1) != 0`.\n• Negative numbers and divisibility by 10 are completely unrelated."
   },
   {
     "id": 200,
@@ -6040,19 +6040,19 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Sorting an array of $N$ objects using Java's `Arrays.sort()` requires $O(N^2)$ auxiliary memory space."
+        "text": "Sorting an array of N objects using Java's `Arrays.sort()` requires O(N^2) auxiliary memory space."
       },
       {
         "id": "B",
-        "text": "Binary search on a sorted array of $N$ elements requires $O(N)$ linear time in the worst case."
+        "text": "Binary search on a sorted array of N elements requires O(N) linear time in the worst case."
       },
       {
         "id": "C",
-        "text": "Traversing a two-dimensional $N \times N$ matrix using nested loops executes in $O(N^2)$ polynomial time."
+        "text": "Traversing a two-dimensional N x N matrix using nested loops executes in O(N^2) polynomial time."
       },
       {
         "id": "D",
-        "text": "A recursive function with maximum call stack depth $D$ consumes $O(D)$ space, even if no heap objects are allocated."
+        "text": "A recursive function with maximum call stack depth D consumes O(D) space, even if no heap objects are allocated."
       }
     ],
     "correct": [
@@ -6060,6 +6060,6 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Nested Loops: An outer loop running $N$ times with an inner loop running $N$ times executes the inner body $N \\times N = N^2$ times, giving $O(N^2)$ quadratic time.\n• Call Stack Space Complexity: Each recursive method invocation allocates a new stack frame on the thread's execution call stack (storing local variables and return addresses). If recursion descends to depth $D$, $D$ stack frames exist simultaneously in memory, contributing $O(D)$ auxiliary space complexity!\n  (Ignoring call stack memory in Big-O analysis is a common interview mistake).\n\nWhy other options are incorrect:\n• Binary search runs in $O(\\log N)$ logarithmic time, NOT $O(N)$.\n• Java's `Arrays.sort()` uses TimSort which takes $O(N)$ auxiliary space (or $O(\\log N)$ for primitive Dual-Pivot QuickSort), never $O(N^2)$."
+    "explanation": "Why this is correct:\n• Nested Loops: An outer loop running N times with an inner loop running N times executes the inner body N x N = N^2 times, giving O(N^2) quadratic time.\n• Call Stack Space Complexity: Each recursive method invocation allocates a new stack frame on the thread's execution call stack (storing local variables and return addresses). If recursion descends to depth D, D stack frames exist simultaneously in memory, contributing O(D) auxiliary space complexity!\n  (Ignoring call stack memory in Big-O analysis is a common interview mistake).\n\nWhy other options are incorrect:\n• Binary search runs in O(log N) logarithmic time, NOT O(N).\n• Java's `Arrays.sort()` uses TimSort which takes O(N) auxiliary space (or O(log N) for primitive Dual-Pivot QuickSort), never O(N^2)."
   }
 ];
