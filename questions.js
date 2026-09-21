@@ -4639,5 +4639,1427 @@ const QUESTIONS = [
     ],
     "requiredCount": 1,
     "explanation": "Why this is correct:\n• In Spring `@Configuration` classes:\n  - `proxyBeanMethods = true` (default in `@Configuration`): Spring wraps the configuration class in a CGLIB runtime proxy. When one `@Bean` method calls another `@Bean` method directly in Java (e.g. `dataSource()`), the proxy intercepts the call and checks if an instance already exists in the container. If so, it returns the cached singleton bean, preserving singleton semantics.\n  - `proxyBeanMethods = false` (Lite mode): Spring skips CGLIB proxy generation. Direct `@Bean` method calls invoke the method as plain Java, creating a brand new object instance and bypassing container caching!\n• Lite mode is preferred when bean methods do not call each other, improving startup speed and GraalVM Native Image compatibility.\n\nWhy other options are incorrect:\n• `proxyBeanMethods = false` does NOT disable all Spring dependency injection.\n• Setting it to false does not prevent beans from being registered in the container."
+  },
+  {
+    "id": 154,
+    "category": "Staff Java & Kotlin",
+    "question": "Which TWO statements correctly contrast `CompletableFuture.handle()` and `CompletableFuture.exceptionally()` for asynchronous exception handling?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`exceptionally()` executes only if an upstream stage failed, taking the throwable and returning a fallback recovery value."
+      },
+      {
+        "id": "B",
+        "text": "`handle()` suppresses all exceptions by terminating the asynchronous pipeline and returning `null` to the calling thread."
+      },
+      {
+        "id": "C",
+        "text": "`handle()` executes in both success and failure cases, taking the result and throwable as arguments to return a transformed value."
+      },
+      {
+        "id": "D",
+        "text": "`exceptionally()` converts unchecked exceptions into checked `IOException` instances and re-throws them synchronously."
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `handle(BiFunction<T, Throwable, U>)`: Always executes, regardless of whether the previous stage completed normally or threw an exception. It receives both arguments `(result, throwable)`: if successful, `throwable` is null; if failed, `result` is null. This allows you to inspect both outcomes and return a unified result or recover gracefully.\n• `exceptionally(Function<Throwable, T>)`: A pure fallback mechanism that triggers ONLY when an exception occurs in an earlier stage. It receives the `Throwable` and returns a fallback value of the same type `T`. If the pipeline succeeds, `exceptionally()` is bypassed entirely.\n\nWhy other options are incorrect:\n• `handle()` does not terminate the pipeline or return null by default; it yields a new `CompletableFuture<U>` with whatever value the handler returns.\n• `exceptionally()` does not convert exceptions to `IOException` or throw synchronously; it returns a completed future containing the recovery value."
+  },
+  {
+    "id": 155,
+    "category": "Staff Java & Kotlin",
+    "question": "When does a Java Virtual Thread (Java 21 / Project Loom) become 'pinned' to its underlying carrier platform thread?",
+    "options": [
+      {
+        "id": "A",
+        "text": "When executing inside a `synchronized` block/method or invoking a native method through JNI, blocking the carrier thread."
+      },
+      {
+        "id": "B",
+        "text": "Whenever it performs non-blocking asynchronous socket reads using Java NIO `SocketChannel` or `HttpClient`."
+      },
+      {
+        "id": "C",
+        "text": "When allocating arrays or collection instances larger than 10 megabytes within young generation heap memory."
+      },
+      {
+        "id": "D",
+        "text": "Whenever a virtual thread executes a lambda expression that accesses effectively final local method variables."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Virtual Thread Pinning: Virtual threads are multiplexed across a small pool of carrier platform threads. Normally, when a virtual thread performs a blocking I/O operation (e.g. socket read, file I/O, `Thread.sleep`), the JVM unmounts it from the carrier thread, freeing the carrier thread to run other virtual threads.\n• Two Pinning Scenarios:\n  1. Synchronized blocks/methods: The thread holds a native JVM object monitor lock. In Java 21, the JVM cannot unmount a thread holding a monitor; the carrier thread remains blocked (pinned). Solution: Replace `synchronized` with `java.util.concurrent.locks.ReentrantLock`.\n  2. Native frames (JNI): When executing native C code via JNI or foreign function interfaces.\n• Pinning Diagnostics: Run with `-Djdk.tracePinnedThreads=full` to print stack traces when pinning occurs.\n\nWhy other options are incorrect:\n• NIO non-blocking reads unmount cleanly without pinning.\n• Heap allocations and lambda expressions have no effect on thread pinning."
+  },
+  {
+    "id": 156,
+    "category": "Staff Java & Kotlin",
+    "question": "Which THREE statements accurately characterize Kotlin Coroutines and their core concurrency model?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Every launched coroutine allocates a dedicated 1-megabyte native OS kernel call stack in physical hardware memory."
+      },
+      {
+        "id": "B",
+        "text": "Coroutines are lightweight user-space execution units that suspend without blocking their underlying OS carrier threads."
+      },
+      {
+        "id": "C",
+        "text": "`launch` starts a fire-and-forget coroutine returning a `Job`, whereas `async` starts a coroutine returning a `Deferred<T>`."
+      },
+      {
+        "id": "D",
+        "text": "A `CoroutineDispatcher` (such as `Dispatchers.IO` or `Dispatchers.Default`) determines which thread pool executes the coroutine."
+      },
+      {
+        "id": "E",
+        "text": "`runBlocking` launches an asynchronous background coroutine and immediately returns control to the caller thread."
+      }
+    ],
+    "correct": [
+      "B",
+      "C",
+      "D"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Non-blocking Suspension: Coroutines are managed in user space by the Kotlin runtime. Calling a `suspend` function yields execution without blocking the underlying OS thread, allowing that thread to execute other coroutines.\n• `launch` vs `async`:\n  - `launch`: Returns a `Job` to control lifecycle (cancellation, joining); used for fire-and-forget tasks with no return value.\n  - `async`: Returns a `Deferred<T>` (a light future); used when computing a result that will be retrieved via `.await()`.\n• Dispatchers: `Dispatchers.Main` (UI), `Dispatchers.IO` (blocking I/O with up to 64 threads), and `Dispatchers.Default` (CPU-bound work sized to CPU cores).\n\nWhy other options are incorrect:\n• `runBlocking` blocks the current thread until all child coroutines finish; it is intended for bridging synchronous code (like `main()` or unit tests), not for asynchronous background work.\n• Coroutines are tiny heap objects (~a few hundred bytes), not 1MB OS kernel stacks."
+  },
+  {
+    "id": 157,
+    "category": "Staff Java & Kotlin",
+    "question": "Which TWO statements describe how Kotlin handles nullability when interoperating with Java code?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The Kotlin compiler automatically wraps every Java return value inside a `java.util.Optional` container at compile time."
+      },
+      {
+        "id": "B",
+        "text": "Dereferencing a null platform type that is assigned to a non-nullable Kotlin variable throws a `NullPointerException` at the call site."
+      },
+      {
+        "id": "C",
+        "text": "Types returned from Java without nullability annotations are treated as 'platform types' denoted with an exclamation mark (`T!`)."
+      },
+      {
+        "id": "D",
+        "text": "Kotlin strictly rejects any compilation that invokes Java methods lacking explicit `@Nullable` or `@NotNull` annotations."
+      }
+    ],
+    "correct": [
+      "B",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Platform Types (`T!`): Because Java does not enforce nullability in its type system, Kotlin cannot determine whether an unannotated Java return value is nullable or non-nullable. Kotlin represents these as platform types (e.g. `String!`).\n• Developer Responsibility: You can treat `String!` as nullable (`String?`) or non-nullable (`String`). If you treat it as non-nullable and the Java method returns `null`, Kotlin's runtime assertion check throws a `NullPointerException` immediately at the assignment or call site.\n• Best Practice: Use nullability annotations in Java code (e.g. `@Nullable`, `@NonNull` from Jakarta or JetBrains) so Kotlin treats them as strictly `T?` or `T`.\n\nWhy other options are incorrect:\n• Kotlin does not wrap Java return values in `Optional`.\n• Kotlin does not refuse to compile unannotated Java code; it issues no compile error for platform types."
+  },
+  {
+    "id": 158,
+    "category": "Staff Java & Kotlin",
+    "question": "Which THREE statements accurately contrast `LongAdder`, `AtomicLong`, and `synchronized` counters under high thread contention?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`LongAdder` stripes counter updates across an internal array of cells, dramatically reducing CAS retry contention across CPU cores."
+      },
+      {
+        "id": "B",
+        "text": "`LongAdder` consumes significantly less heap memory than `AtomicLong` because it shares a single 64-bit integer word."
+      },
+      {
+        "id": "C",
+        "text": "`LongAdder.sum()` aggregates across cells without locking, returning an eventually consistent sum rather than an atomic snapshot."
+      },
+      {
+        "id": "D",
+        "text": "`AtomicLong` has been deprecated in modern Java and throws an `UnsupportedOperationException` when called from virtual threads."
+      },
+      {
+        "id": "E",
+        "text": "`AtomicLong` updates a single shared variable via CAS retry loops, which cause severe CPU spin overhead under heavy concurrent writes."
+      }
+    ],
+    "correct": [
+      "A",
+      "C",
+      "E"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• `AtomicLong` Bottleneck: Under high write contention from many threads, threads repeatedly execute Compare-And-Swap (CAS) loops against the same memory address. Failed CAS operations force CPU cores to spin and thrash cache lines, degrading throughput.\n• `LongAdder` (Striped64): Introduces an array of `Cell` counters. Different threads update different cells based on their thread hash, eliminating contention. Performance scales linearly with core count.\n• Snapshot Consistency: `LongAdder.sum()` iterates through cells without acquiring a global lock. If writes occur during `sum()`, the returned value is eventually consistent. Use `LongAdder` for metrics and high-volume counters; use `AtomicLong` when an exact atomic CAS transition or sequence ID is required.\n\nWhy other options are incorrect:\n• `LongAdder` consumes MORE memory than `AtomicLong` because each `Cell` object is padded to 64 bytes to prevent CPU cache false sharing.\n• `AtomicLong` is not deprecated and is widely used."
+  },
+  {
+    "id": 159,
+    "category": "Staff Java & Kotlin",
+    "question": "What is the primary difference between `lateinit var` and `val by lazy` in Kotlin?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`lateinit` can be applied to primitive types like `Int`; `by lazy` can only be applied to custom reference objects."
+      },
+      {
+        "id": "B",
+        "text": "`lateinit` is for mutable properties initialized after construction; `by lazy` is for read-only properties initialized on first access."
+      },
+      {
+        "id": "C",
+        "text": "`lateinit` properties are immutable once set; `by lazy` properties can be reassigned multiple times throughout runtime."
+      },
+      {
+        "id": "D",
+        "text": "`lateinit` initializes the property on a background thread; `by lazy` initializes it synchronously during class loading."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• `lateinit var`:\n  - Applied to mutable properties (`var`).\n  - Used when dependency injection (e.g. Spring `@Autowired`, Dagger) or lifecycle methods (e.g. Android `onCreate`, JUnit `@BeforeEach`) initialize the property after object construction.\n  - Restrictions: Cannot be applied to primitive types (`Int`, `Double`, `Boolean`) or nullable types (`String?`).\n  - Accessing before initialization throws `UninitializedPropertyAccessException`.\n• `val by lazy`:\n  - Applied to read-only properties (`val`).\n  - The lambda executes lazily on first access, caches the result, and returns that same result on subsequent reads.\n  - Thread-safe by default (`LazyThreadSafetyMode.SYNCHRONIZED`).\n\nWhy other options are incorrect:\n• `lateinit` does not run on background threads.\n• `lateinit` CANNOT be applied to primitive types.\n• `lateinit` is for `var` (mutable), whereas `by lazy` is for `val` (read-only)."
+  },
+  {
+    "id": 160,
+    "category": "Staff Java & Kotlin",
+    "question": "Which TWO diagnostic techniques are standard industry practices when troubleshooting suspected Java heap memory leaks in production?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Restarting all production server instances immediately without taking heap or thread dumps to clear volatile diagnostic logs."
+      },
+      {
+        "id": "B",
+        "text": "Generating a heap dump via `jcmd <pid> GC.heap_dump` or `-XX:+HeapDumpOnOutOfMemoryError` and analyzing retained sizes in Eclipse MAT."
+      },
+      {
+        "id": "C",
+        "text": "Increasing the thread stack size via `-Xss` to 100 megabytes to prevent heap memory exhaustion during recursive method calls."
+      },
+      {
+        "id": "D",
+        "text": "Monitoring Old Generation memory occupancy and inspecting garbage collection logs to check if memory drops after Full GC cycles."
+      }
+    ],
+    "correct": [
+      "B",
+      "D"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Heap Dump Analysis: A heap dump captures a snapshot of all live heap objects. Loading the dump into an analyzer (Eclipse MAT, VisualVM, YourKit) allows identifying:\n  - Dominator Tree: Which object instances retain the most heap memory.\n  - Shortest Path to GC Roots: Why an object cannot be garbage collected (e.g. held by a static collection, an uncleaned `ThreadLocal`, or an open resource).\n• GC Log Monitoring: In healthy applications, Full GC reclaims most allocated memory. If Old Gen occupancy climbs steadily after successive Full GC cycles (sawtooth pattern with rising baseline), a memory leak is occurring.\n\nWhy other options are incorrect:\n• `-Xss` controls thread stack memory, NOT the heap; increasing `-Xss` actually reduces memory available for the heap and native memory!\n• Restarting servers without capturing dumps destroys volatile memory evidence needed for root cause analysis."
+  },
+  {
+    "id": 161,
+    "category": "Staff Java & Kotlin",
+    "question": "Which THREE statements accurately contrast `CountDownLatch`, `CyclicBarrier`, and `Semaphore` in Java concurrency?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`Semaphore` automatically revokes all permits and terminates worker threads whenever an operating system context switch occurs."
+      },
+      {
+        "id": "B",
+        "text": "`CountDownLatch` acquires an exclusive reentrant lock that prevents reader threads from accessing shared memory caches."
+      },
+      {
+        "id": "C",
+        "text": "`CountDownLatch` cannot be reset once its count reaches zero; `CyclicBarrier` can be reused across repeated cyclic phases."
+      },
+      {
+        "id": "D",
+        "text": "`Semaphore` manages a set of permits, allowing a controlled number of concurrent threads to access a shared resource or pool."
+      },
+      {
+        "id": "E",
+        "text": "`CyclicBarrier` awaits a fixed number of threads meeting at a barrier point, optionally executing a barrier action upon arrival."
+      }
+    ],
+    "correct": [
+      "C",
+      "D",
+      "E"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• `CountDownLatch`:\n  - Initialized with a count $N$.\n  - Threads call `countDown()` to decrement the latch, and other threads call `await()` until the count reaches 0.\n  - One-time use: Once count reaches 0, it cannot be reset or reused.\n• `CyclicBarrier`:\n  - A fixed number of threads call `await()`, blocking until all $N$ threads reach the barrier.\n  - Reusable: After releasing the waiting threads, it automatically resets for the next cycle. Can execute an optional `Runnable` barrier action when tripped.\n• `Semaphore`:\n  - Maintains $N$ permits. Threads call `acquire()` and `release()`.\n  - Classic use: Bounding access to limited resources (e.g. database connection pools or rate-limited external API calls).\n\nWhy other options are incorrect:\n• `CountDownLatch` does not use exclusive reentrant locks.\n• `Semaphore` permits are not revoked by OS context switches."
+  },
+  {
+    "id": 162,
+    "category": "Staff Java & Kotlin",
+    "question": "What methods does the Kotlin compiler automatically generate for a `data class`?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A default no-argument constructor and asynchronous non-blocking reactive stream adapters for Kafka producers."
+      },
+      {
+        "id": "B",
+        "text": "Public getter and setter methods along with automated database schema migration scripts for SQL table generation."
+      },
+      {
+        "id": "C",
+        "text": "Canonical `equals()`, `hashCode()`, `toString()`, a `copy()` function, and destructuring component functions (`component1()`, `component2()`)."
+      },
+      {
+        "id": "D",
+        "text": "Synchronized thread monitors that guarantee all member properties are protected against concurrent multithreaded mutations."
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Kotlin Data Classes: Declared as `data class Person(val name: String, val age: Int)`.\n• Compiler Generates:\n  1. `equals()` and `hashCode()` that compare primary constructor properties.\n  2. `toString()` printing readable representations: `Person(name=Alice, age=30)`.\n  3. `copy()` for non-destructive mutation: `val older = p.copy(age = 31)`.\n  4. `componentN()` functions enabling destructuring declarations: `val (name, age) = person`.\n• Rules: Primary constructor must have at least one parameter; all parameters must be marked `val` or `var`; cannot be `abstract`, `open`, `sealed`, or `inner`.\n\nWhy other options are incorrect:\n• Data classes do not generate SQL migrations.\n• They do not generate reactive Kafka adapters.\n• They do not add synchronized monitors; thread-safety depends on making properties `val`."
+  },
+  {
+    "id": 163,
+    "category": "Staff Java & Kotlin",
+    "question": "Which TWO statements correctly contrast `ArrayBlockingQueue`, `LinkedBlockingQueue`, and `SynchronousQueue` in `java.util.concurrent`?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`LinkedBlockingQueue` bypasses CPU memory caching by executing all element lookups inside operating system kernel page buffers."
+      },
+      {
+        "id": "B",
+        "text": "`SynchronousQueue` has zero internal capacity; each `put()` operation must wait for a corresponding `take()` by another thread."
+      },
+      {
+        "id": "C",
+        "text": "`SynchronousQueue` stores up to 1024 elements in off-heap native memory to provide non-blocking asynchronous buffering."
+      },
+      {
+        "id": "D",
+        "text": "`ArrayBlockingQueue` allocates a fixed-size array upfront, whereas `LinkedBlockingQueue` dynamically allocates nodes on each insertion."
+      }
+    ],
+    "correct": [
+      "B",
+      "D"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `SynchronousQueue`:\n  - Capacity is 0. It is a rendezvous mechanism: a producer thread calling `put()` blocks until a consumer thread calls `take()`, directly handing off the task.\n  - Used by `Executors.newCachedThreadPool()`: If a thread is idle, it takes the task; if not, the pool creates a new thread immediately.\n• `ArrayBlockingQueue` vs `LinkedBlockingQueue`:\n  - `ArrayBlockingQueue`: Backed by a single fixed-size array. Single lock (or separate locks in custom variants) for read/write. Predictable memory footprint.\n  - `LinkedBlockingQueue`: Backed by linked nodes. Uses two separate locks (`takeLock` and `putLock`), allowing concurrent insertion and removal. Can be bounded or unbounded (default `Integer.MAX_VALUE`). Generates node object allocation on each insert.\n\nWhy other options are incorrect:\n• `LinkedBlockingQueue` does not run in kernel page buffers.\n• `SynchronousQueue` has 0 capacity, not 1024 off-heap elements."
+  },
+  {
+    "id": 164,
+    "category": "Staff Java & Kotlin",
+    "question": "Which THREE statements accurately describe the HotSpot JVM's JIT compilation and the application 'warm-up' phenomenon?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The Java compiler (`javac`) compiles all application source code into native x86 machine instructions ahead of time during the build."
+      },
+      {
+        "id": "B",
+        "text": "Frequently executed 'hot' methods and loops are dynamically compiled into optimized native machine code by C1 and C2 JIT compilers."
+      },
+      {
+        "id": "C",
+        "text": "The JVM initially executes methods via the interpreter while collecting runtime execution profiling counters."
+      },
+      {
+        "id": "D",
+        "text": "JIT compilation permanently disables CPU branch prediction to ensure deterministic execution times across all threads."
+      },
+      {
+        "id": "E",
+        "text": "The first requests to a newly deployed Java service often exhibit higher latency while classes are loaded and hot methods are compiled."
+      }
+    ],
+    "correct": [
+      "B",
+      "C",
+      "E"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Interpreter + JIT: The JVM is a hybrid execution engine. It begins in interpreted mode (fast startup), counting method invocations and loop iterations.\n• Tiered Compilation:\n  - Methods exceeding thresholds are flagged as \"hot\" and compiled into native machine code by C1 (fast compilation, basic optimization) and later C2 (aggressive profile-guided optimizations: inlining, escape analysis, loop unrolling).\n• Warm-up Effect:\n  - In microservices, when a pod starts, the first requests must pay the penalty of class loading, bytecode verification, and JIT compilation. Latency drops significantly once steady-state compiled code is reached.\n  - Techniques like AppCDS, CRaC (Coordinated Restore at Checkpoint), and GraalVM Native Image are used to alleviate warm-up delays.\n\nWhy other options are incorrect:\n• `javac` produces portable bytecode (`.class`), NOT native x86 machine code.\n• JIT compilation relies heavily on CPU branch prediction; it does not disable it."
+  },
+  {
+    "id": 165,
+    "category": "Staff Java & Kotlin",
+    "question": "Why does calling a `@Transactional` method from another method within the same Spring bean fail to start or participate in a database transaction?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Java prohibits calling one method from another method within the same class whenever database drivers are present on the classpath."
+      },
+      {
+        "id": "B",
+        "text": "The JDBC driver automatically closes all database connections whenever an internal method invocation is detected on the stack."
+      },
+      {
+        "id": "C",
+        "text": "Spring requires all transactional methods to be declared `static` so bytecode can be loaded into native Metaspace buffers."
+      },
+      {
+        "id": "D",
+        "text": "The call uses direct `this` reference dispatch, bypassing the Spring AOP proxy that intercepts calls to manage transactions."
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Spring AOP Proxy Mechanics: Spring manages `@Transactional` by wrapping your bean in a dynamic proxy (CGLIB or JDK dynamic proxy). When an *external* caller calls `bean.saveOrder()`, the call hits the proxy, which begins a transaction, calls the target method, and commits/rolls back.\n• The Self-Invocation Gotcha: If `methodA()` in `OrderService` calls `this.methodB()` (where `methodB()` has `@Transactional`), the call executes directly on `this` (the actual target instance), completely bypassing the Spring proxy! Thus, no transaction advice is ever executed.\n• Solutions:\n  1. Extract `methodB()` into a separate collaborator service bean.\n  2. Inject the self-proxy (e.g. `@Autowired private OrderService self;` with `@Lazy`).\n  3. Use AspectJ compile-time or load-time weaving instead of Spring AOP proxies.\n\nWhy other options are incorrect:\n• `@Transactional` cannot be `static`; it requires instance proxy interception.\n• JDBC drivers do not intercept internal method calls."
+  },
+  {
+    "id": 166,
+    "category": "Staff Java & Kotlin",
+    "question": "Which TWO approaches are standard, effective solutions to resolve the Hibernate / JPA N+1 query problem?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Using `JOIN FETCH` in JPQL / HQL queries to retrieve parent entities and their associated child collections in a single SQL query."
+      },
+      {
+        "id": "B",
+        "text": "Configuring an `@EntityGraph` or setting `@BatchSize` to fetch collections in batches rather than individual queries."
+      },
+      {
+        "id": "C",
+        "text": "Declaring all entity relationship fields with the `transient` keyword to prevent Hibernate from issuing SQL queries."
+      },
+      {
+        "id": "D",
+        "text": "Setting `fetch = FetchType.EAGER` on all entity relationships to force eager loading across the entire domain model."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• The N+1 Problem: When loading $N$ parent records (e.g. `SELECT * FROM orders`), accessing a lazy collection on each parent issues 1 initial query + $N$ individual queries (one per parent) to load child records (`SELECT * FROM order_items WHERE order_id = ?`).\n• Solution 1 (`JOIN FETCH`): `SELECT o FROM Order o JOIN FETCH o.items`. Issues a single SQL query joining `orders` and `order_items`, populating the collections in one trip.\n• Solution 2 (`@EntityGraph`): Declaratively specifies which associations should be fetched eagerly for a specific query repository method.\n• Solution 3 (`@BatchSize`): Instructs Hibernate to load collections using `WHERE order_id IN (?, ?, ?, ...)` in batches of e.g. 50, reducing $N+1$ queries to $1 + N/50$ queries.\n\nWhy other options are incorrect:\n• Changing to `FetchType.EAGER` is an antipattern: it does NOT eliminate N+1 queries for `findAll()` or JPQL queries (which don't join by default), and it causes massive unwanted data fetches across your entire application.\n• `transient` excludes fields from persistence, breaking the relationship entirely."
+  },
+  {
+    "id": 167,
+    "category": "Staff Java & Kotlin",
+    "question": "Which THREE statements accurately describe Spring bean lifecycle callbacks and initialization phases?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Methods annotated with `@PostConstruct` execute after dependency injection is complete and properties are set."
+      },
+      {
+        "id": "B",
+        "text": "`BeanPostProcessor` implementations can intercept, inspect, or wrap bean instances before and after their initialization callbacks."
+      },
+      {
+        "id": "C",
+        "text": "Spring singleton beans are automatically garbage collected and re-instantiated on every incoming HTTP request."
+      },
+      {
+        "id": "D",
+        "text": "Annotating a method with `@PreDestroy` allows singleton beans to release connections, sockets, and threads during container shutdown."
+      },
+      {
+        "id": "E",
+        "text": "`@PostConstruct` methods execute before the bean's constructor is called by the Spring IoC container."
+      }
+    ],
+    "correct": [
+      "A",
+      "B",
+      "D"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Spring Bean Lifecycle Order:\n  1. Instantiation (Constructor is called).\n  2. Populate Properties (Dependencies injected via `@Autowired` / setters).\n  3. BeanNameAware / BeanFactoryAware / ApplicationContextAware callbacks.\n  4. `BeanPostProcessor.postProcessBeforeInitialization()`.\n  5. `@PostConstruct` / `InitializingBean.afterPropertiesSet()` / custom `initMethod`.\n  6. `BeanPostProcessor.postProcessAfterInitialization()` (where dynamic AOP proxies are created!).\n  7. Bean is ready for use.\n  8. Shutdown: `@PreDestroy` / `DisposableBean.destroy()` / custom `destroyMethod`.\n\nWhy other options are incorrect:\n• `@PostConstruct` CANNOT run before constructor invocation; Java objects must be instantiated before methods can be called on them.\n• Singletons live for the lifetime of the `ApplicationContext`, not recreated per HTTP request."
+  },
+  {
+    "id": 168,
+    "category": "Staff Java & Kotlin",
+    "question": "Which standard JDK command-line diagnostic tool is used to inspect thread stack traces and automatically detect thread deadlocks?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`jstack <pid>` (or `jcmd <pid> Thread.print`), which outputs all thread call stacks and reports identified Java-level deadlocks."
+      },
+      {
+        "id": "B",
+        "text": "`jdeprscan <jar>`, which statically analyzes archived library JAR files for usage of deprecated Java runtime APIs."
+      },
+      {
+        "id": "C",
+        "text": "`jstat -gc <pid>`, which continuously streams garbage collection heap generation capacities and execution pause counts."
+      },
+      {
+        "id": "D",
+        "text": "`javap -c <class>`, which disassembles compiled class bytecode into raw Java Virtual Machine assembly instructions."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• `jstack <pid>`: Generates a thread dump of all live Java threads in the specified target process.\n• Deadlock Detection: `jstack` automatically analyzes lock monitors and `ReentrantLock` ownership. If a circular wait exists (e.g. Thread 1 waiting for Lock A held by Thread 2, and Thread 2 waiting for Lock B held by Thread 1), `jstack` outputs an explicit deadlock section:\n  `Found 1 deadlock.` with full thread names, IDs, and call stacks!\n• Modern alternative: `jcmd <pid> Thread.print`.\n\nWhy other options are incorrect:\n• `javap` is a bytecode disassembler.\n• `jstat` monitors GC statistics and memory pool percentages.\n• `jdeprscan` checks for deprecated APIs."
+  },
+  {
+    "id": 169,
+    "category": "Staff Java & Kotlin",
+    "question": "Which TWO statements correctly describe how uncaught exceptions propagate inside Kotlin Coroutine scopes?",
+    "options": [
+      {
+        "id": "A",
+        "text": "In a standard `coroutineScope`, an uncaught exception in a child coroutine cancels the parent scope and all sibling coroutines."
+      },
+      {
+        "id": "B",
+        "text": "Uncaught coroutine exceptions are silently suppressed by the runtime and automatically converted into `null` return values."
+      },
+      {
+        "id": "C",
+        "text": "In a `supervisorScope`, a failure in a child coroutine does not propagate upwards and does not cancel other sibling coroutines."
+      },
+      {
+        "id": "D",
+        "text": "`async` coroutines immediately re-throw uncaught exceptions on the calling thread without requiring a call to `await()`."
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Structured Concurrency Exception Propagation:\n  - In a regular `coroutineScope`: Concurrency is bidirectional. If child A fails with an unhandled exception, it immediately cancels its parent scope. The parent in turn cancels all other child coroutines (sibling B, C). This prevents orphaned leaking background work.\n  - In a `supervisorScope` (or with `SupervisorJob`): Failure propagation is one-way (downwards only). If child A crashes, it is cancelled, but the supervisor parent remains alive and sibling B continues running unaffected. This is standard in UI or server request handlers (one failing user request should not crash the server!).\n\nWhy other options are incorrect:\n• Coroutines do not silently suppress exceptions or convert them to null.\n• In `async`, exceptions are captured inside the `Deferred` and are thrown when `.await()` is invoked (unless using root `CoroutineScope` where behavior depends on the scope's job)."
+  },
+  {
+    "id": 170,
+    "category": "Architecture & System Design",
+    "question": "Which TWO statements correctly contrast synchronous REST/gRPC communication with asynchronous event-driven messaging (Kafka/RabbitMQ)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Synchronous REST calls automatically retry failed requests indefinitely with built-in exponential backoff at the OS socket level."
+      },
+      {
+        "id": "B",
+        "text": "Asynchronous messaging buffers requests in queues or topic logs, decoupling producers and consumers in both availability and time."
+      },
+      {
+        "id": "C",
+        "text": "Asynchronous messaging guarantees that all consumer services process transmitted messages with strictly zero network latency."
+      },
+      {
+        "id": "D",
+        "text": "Synchronous communication introduces temporal coupling where caller availability and latency depend directly on downstream services."
+      }
+    ],
+    "correct": [
+      "B",
+      "D"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Synchronous (REST/HTTP, gRPC):\n  - Request/Response model. The caller blocks or waits for the callee to respond.\n  - Temporal Coupling: Both services must be up and healthy simultaneously. A slow or failing downstream service causes cascading timeouts and thread exhaustion upstream.\n• Asynchronous (Kafka, RabbitMQ, SQS):\n  - Event-driven / Message-driven model. The producer publishes an event and moves on.\n  - Decoupled in time: The consumer does not need to be online when the event is published; it can process messages at its own pace.\n  - Traffic Smoothing: Spikes in load are buffered in message brokers rather than crashing downstream databases.\n\nWhy other options are incorrect:\n• No distributed messaging system has zero latency.\n• REST calls do not automatically retry indefinitely at the OS socket level; retry logic must be explicitly configured using resilience libraries."
+  },
+  {
+    "id": 171,
+    "category": "Architecture & System Design",
+    "question": "What is the 'Cache Stampede' (Thundering Herd) problem in high-throughput applications, and how is it standardly mitigated?",
+    "options": [
+      {
+        "id": "A",
+        "text": "When network firewalls block incoming TCP packets because client applications submit requests with invalid authorization headers."
+      },
+      {
+        "id": "B",
+        "text": "When a popular cached key expires, concurrent requests all miss the cache and overwhelm the database; mitigated using mutex locks or pre-expiration."
+      },
+      {
+        "id": "C",
+        "text": "When operating system memory runs out, causing the Linux kernel OOM killer to terminate Redis processes during peak traffic hours."
+      },
+      {
+        "id": "D",
+        "text": "When multiple microservices write conflicting updates to the same database row without acquiring distributed pessimistic locks."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Cache Stampede (Thundering Herd):\n  - Scenario: A hot cached key (e.g. homepage catalog or live scores) accessed by 10,000 requests per second reaches its TTL and expires.\n  - Problem: All 10,000 concurrent requests simultaneously experience a cache miss and execute the expensive SQL query against the database at the exact same moment. This spikes database CPU to 100%, causing cascading timeouts or outages.\n• Standard Mitigations:\n  1. Mutual Exclusion Lock (Mutex): The first request to miss acquires a distributed lock (e.g. Redis `SET NX` or local lock) to query the database and update the cache. Other requests wait or return stale data.\n  2. Probabilistic Early Expiration (XFetch algorithm): Background threads recompute the value slightly before it expires based on access probability and compute time.\n  3. Soft TTL: Return stale data to clients while an asynchronous background worker refreshes the cache.\n\nWhy other options are incorrect:\n• It is not Linux OOM process killing, database row write conflicts, or firewall blocking."
+  },
+  {
+    "id": 172,
+    "category": "Architecture & System Design",
+    "question": "Which THREE statements accurately characterize standard application caching strategies?",
+    "options": [
+      {
+        "id": "A",
+        "text": "In Cache-Aside (Lazy Loading), the application queries the cache first, reads from the database on a miss, and populates the cache."
+      },
+      {
+        "id": "B",
+        "text": "In Write-Behind (Write-Back), the application writes to the cache immediately, and updates are queued to write to the database asynchronously."
+      },
+      {
+        "id": "C",
+        "text": "Cache-Aside guarantees 100% strong transactional consistency between cache and database with zero possibility of stale reads."
+      },
+      {
+        "id": "D",
+        "text": "In Write-Through, the application updates the cache, and the cache synchronously writes to the database before acknowledging success."
+      },
+      {
+        "id": "E",
+        "text": "Write-Through caching stores all database records in client browser cookies to completely bypass server-side network memory."
+      }
+    ],
+    "correct": [
+      "A",
+      "B",
+      "D"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Cache-Aside: Application controls the flow: Read Cache $\\rightarrow$ if miss, Read DB $\\rightarrow$ Write to Cache. Writes update the DB and invalidate/update the cache. (Most popular pattern, resilient to cache failures).\n• Write-Through: Cache acts as the primary datastore interface. Application writes to cache; cache writes synchronously to DB. High data consistency, but write latency is higher.\n• Write-Behind (Write-Back): Application writes to cache; cache acknowledges immediately and batches updates to the database asynchronously. Extremely fast write performance and reduces DB write load, but risks data loss if the cache node crashes before flushing.\n\nWhy other options are incorrect:\n• Cache-Aside is eventually consistent and prone to race conditions (stale reads can occur if a write occurs between DB read and cache populate).\n• Write-Through does not store database records in browser cookies."
+  },
+  {
+    "id": 173,
+    "category": "Architecture & System Design",
+    "question": "Which TWO guidelines govern effective index design in relational database management systems?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A 'Covering Index' contains all columns referenced by a query (`SELECT`, `WHERE`, `ORDER BY`), avoiding secondary row data page lookups."
+      },
+      {
+        "id": "B",
+        "text": "Indexes on low-cardinality boolean columns are always the most efficient indexes because binary values consume minimal memory."
+      },
+      {
+        "id": "C",
+        "text": "Composite indexes (e.g. `(status, created_at)`) follow the leftmost prefix rule: queries must filter by the leading column(s) to use the index."
+      },
+      {
+        "id": "D",
+        "text": "Adding an index to every column in a database table accelerates all `INSERT` and `UPDATE` operations by eliminating disk scans."
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Leftmost Prefix Rule: If you create an index on `(A, B, C)`:\n  - Queries filtering by `A`, or `A AND B`, or `A AND B AND C` use the index.\n  - Queries filtering ONLY by `B` or `C` CANNOT use the index tree efficiently because the tree is ordered primarily by `A`.\n• Covering Index: When an index contains all columns requested by a query:\n  `SELECT status, created_at FROM orders WHERE status = 'PENDING'`\n  If an index on `(status, created_at)` exists, the database engine satisfies the query entirely from the B-Tree index pages without performing a secondary lookup to read the heap/table page.\n• Low Cardinality Caution: Indexes on columns with very few distinct values (e.g. `gender` or `is_active` with 50/50 distribution) are rarely used by the query optimizer because a full table scan is faster than traversing index and row pages.\n\nWhy other options are incorrect:\n• Adding indexes SLOWS DOWN `INSERT`, `UPDATE`, and `DELETE` operations because every index must be modified on write.\n• Low-cardinality boolean indexes are often ignored by query optimizers."
+  },
+  {
+    "id": 174,
+    "category": "Architecture & System Design",
+    "question": "Which THREE design practices are essential when implementing Idempotent REST payment and order APIs?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Clients supply a unique idempotency key (e.g. UUID in the `Idempotency-Key` HTTP header) representing the distinct business intent."
+      },
+      {
+        "id": "B",
+        "text": "The server records the idempotency key in an atomic datastore (such as a database unique constraint or Redis `SET NX`) before processing."
+      },
+      {
+        "id": "C",
+        "text": "If a duplicate idempotency key is received after successful processing, the server returns the cached original response without recharging."
+      },
+      {
+        "id": "D",
+        "text": "Idempotency keys must be derived from the client device's physical MAC address to ensure operating system network compliance."
+      },
+      {
+        "id": "E",
+        "text": "The server must automatically charge the user's payment method again whenever a duplicate idempotency key is detected."
+      }
+    ],
+    "correct": [
+      "A",
+      "B",
+      "C"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• The Double-Charge Problem: Network requests can fail ambiguously: a client sends a payment request, the server charges the credit card, but the network drops before the client receives the HTTP 200 response. The client retries. Without idempotency, the customer is charged twice!\n• Idempotency Key Workflow (Stripe standard):\n  1. Client generates a UUID and sends it in the `Idempotency-Key` header.\n  2. Server attempts an atomic lock/insert with status `IN_PROGRESS` (e.g. Redis `SET key value NX EX 120` or SQL unique constraint).\n  3. If already `COMPLETED`: Server returns the cached response immediately. No second charge occurs!\n  4. If already `IN_PROGRESS`: Server returns HTTP 409 Conflict or waits.\n  5. If new: Server processes charge, saves response alongside the key, and returns HTTP 200.\n\nWhy other options are incorrect:\n• Servers must NEVER recharge on duplicate keys.\n• Keys should be random UUIDs representing intent, not device MAC addresses."
+  },
+  {
+    "id": 175,
+    "category": "Architecture & System Design",
+    "question": "What is horizontal database sharding, and what primary architectural trade-off does it introduce?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Converting all relational SQL tables into non-relational document databases by deleting all primary key constraints."
+      },
+      {
+        "id": "B",
+        "text": "Splitting database columns into separate tables on the same server to reduce disk footprint without altering network routing."
+      },
+      {
+        "id": "C",
+        "text": "Partitioning rows of a table across multiple database servers based on a shard key; trade-off is complex cross-shard joins and transactions."
+      },
+      {
+        "id": "D",
+        "text": "Creating read replicas to offload read traffic from the primary master node without modifying write query distribution."
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Horizontal Sharding: When a database table grows beyond the storage or write throughput limits of a single physical server, data rows are partitioned across multiple database instances based on a Shard Key (e.g. `tenant_id` or `user_id % num_shards`).\n• Trade-offs and Challenges:\n  1. Cross-Shard Queries: Queries that don't include the shard key must be broadcast to ALL shards (scatter-gather), which is slow and resource-intensive.\n  2. Distributed Transactions: ACID transactions spanning multiple shards require distributed two-phase commit (2PC) or Sagas, degrading performance.\n  3. Re-sharding: Adding shards requires re-hashing and migrating massive volumes of data.\n\nWhy other options are incorrect:\n• Splitting columns into separate tables is vertical partitioning, not horizontal sharding.\n• Read replicas provide read scaling, not horizontal write sharding."
+  },
+  {
+    "id": 176,
+    "category": "Architecture & System Design",
+    "question": "Which TWO statements correctly contrast Token Bucket and Sliding Window rate limiting algorithms in API Gateways?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sliding Window algorithms track timestamps or segmented counters, preventing burst abuse at window boundaries seen in Fixed Window."
+      },
+      {
+        "id": "B",
+        "text": "Token Bucket immediately terminates the application process whenever incoming request traffic exceeds ten calls per second."
+      },
+      {
+        "id": "C",
+        "text": "Token Bucket permits bursts of traffic up to the bucket capacity while enforcing a constant long-term token refill rate."
+      },
+      {
+        "id": "D",
+        "text": "Sliding Window rate limiting requires storing complete HTTP response payloads on local server disk drives indefinitely."
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Token Bucket:\n  - Tokens are added to a bucket of capacity $B$ at rate $R$ tokens/second.\n  - Allows bursts: If the bucket is full, an application can burst up to $B$ requests immediately. Once empty, it strictly throttles to $R$ req/sec.\n• Fixed Window vs Sliding Window:\n  - Fixed Window (e.g. 100 req/minute reset at :00): A client can send 100 requests at 00:59 and another 100 requests at 01:01, resulting in 200 requests in 2 seconds (2x limit)!\n  - Sliding Window (Log or Counter): Smooths out the boundary issue by calculating weighted request rates across overlapping window slices, preventing boundary burst exploitation.\n\nWhy other options are incorrect:\n• Rate limiters return HTTP 429 Too Many Requests; they do not kill the process.\n• Sliding window tracks small counters or timestamps, not full HTTP response bodies on disk."
+  },
+  {
+    "id": 177,
+    "category": "Architecture & System Design",
+    "question": "Which THREE statements accurately describe the Resilience4j / Circuit Breaker operational model?",
+    "options": [
+      {
+        "id": "A",
+        "text": "In the CLOSED state, requests pass through to the dependency while failure and slow-call rates are measured in a sliding window."
+      },
+      {
+        "id": "B",
+        "text": "In the HALF-OPEN state, a limited trial number of probe requests are permitted through to verify if the downstream service has recovered."
+      },
+      {
+        "id": "C",
+        "text": "When failures exceed a configured threshold, the breaker trips to OPEN, immediately short-circuiting calls and invoking fallbacks."
+      },
+      {
+        "id": "D",
+        "text": "In the OPEN state, all incoming HTTP requests are permanently routed to an unencrypted public FTP server."
+      },
+      {
+        "id": "E",
+        "text": "Circuit breakers eliminate the need to configure network connection timeouts or read timeouts on HTTP client libraries."
+      }
+    ],
+    "correct": [
+      "A",
+      "B",
+      "C"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Circuit Breaker States:\n  1. `CLOSED`: Normal operation. Requests flow to the downstream dependency. Metrics (failure rate, slow call rate) are recorded. If the failure rate exceeds the threshold (e.g. >50% over 100 calls), it trips to `OPEN`.\n  2. `OPEN`: Fast fail. Calls are immediately blocked (throwing `CallNotPermittedException`) and routed to a fallback method without stressing the downstream service.\n  3. `HALF-OPEN`: After a wait duration (e.g. 10s), the circuit lets a small batch of trial requests through. If they succeed, it returns to `CLOSED`; if they fail, it trips back to `OPEN`.\n\nWhy other options are incorrect:\n• Circuit breakers do not route requests to public FTP servers.\n• Timeouts are STILL essential: circuit breakers rely on timeouts to detect that a downstream call is hanging and should count as a failure."
+  },
+  {
+    "id": 178,
+    "category": "Architecture & System Design",
+    "question": "What is the primary operational advantage of URI Path Versioning (`/api/v1/orders`) compared to Header / Content Negotiation Versioning in REST APIs?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It eliminates the need to maintain backward compatibility when deleting required fields from business entities."
+      },
+      {
+        "id": "B",
+        "text": "It guarantees that mobile applications will never experience network disconnection errors during client updates."
+      },
+      {
+        "id": "C",
+        "text": "It automatically converts all legacy database records into the latest JSON format without requiring application migrations."
+      },
+      {
+        "id": "D",
+        "text": "It is explicit, easy to test in browsers, simple to route at API gateways/proxies, and works cleanly with standard HTTP caching."
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• URI Path Versioning (`/v1/users`, `/v2/users`):\n  - Highly visible and explicit: Anyone looking at a log file, browser URL, or network trace instantly knows which API version is being called.\n  - Gateway & Proxy Friendly: Reverse proxies (NGINX, Envoy, AWS API Gateway) can easily route `/v1/` to legacy service clusters and `/v2/` to new service clusters based on simple URL path matching.\n  - Caching: CDNs and browser caches key off the URL path naturally.\n• Header Versioning (`Accept: application/vnd.company.v1+json`): Cleaner URIs (pure resource identifiers), but harder to test directly in browsers, harder to configure in standard CDN cache keys, and more complex to route at edge proxies.\n\nWhy other options are incorrect:\n• URI versioning does not convert database records.\n• It does not eliminate the need for backward compatibility or prevent network disconnection errors."
+  },
+  {
+    "id": 179,
+    "category": "Architecture & System Design",
+    "question": "Which TWO statements reflect best practices when configuring database connection pools (such as HikariCP)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The optimal pool size formula balances available CPU cores and disk spindles: $Connections \\approx (CPU Cores \\times 2) + Spindle Count$."
+      },
+      {
+        "id": "B",
+        "text": "Pool sizes should be kept relatively small; excessively large pools increase CPU thread context switching and disk I/O contention."
+      },
+      {
+        "id": "C",
+        "text": "Setting minimum idle connections to 10,000 ensures maximum performance by completely bypassing database connection validation."
+      },
+      {
+        "id": "D",
+        "text": "The connection pool size should always equal the maximum number of concurrent HTTP server threads (e.g. 500 connections for 500 threads)."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• The Connection Pool Sizing Fallacy: Many developers assume that if they have 200 concurrent HTTP threads, they need a connection pool of 200 connections. In reality, a database is constrained by physical hardware: CPU cores, disk I/O channels, and RAM.\n• Why Smaller is Faster:\n  - If a database server has 8 CPU cores, executing 8 queries concurrently keeps the cores 100% busy. If you send 200 queries simultaneously, the OS kernel wastes immense CPU time context-switching between 200 threads, and disk heads thrash.\n  - HikariCP documentation cites PostgreSQL research showing that a pool of 20-30 connections easily handles thousands of concurrent web requests because web requests hold DB connections for only a few milliseconds!\n• HikariCP Formula: $poolSize = (coreCount \\times 2) + effectiveSpindleCount$.\n\nWhy other options are incorrect:\n• Sizing connection pools equal to web threads (e.g. 500) destroys database performance.\n• 10,000 idle connections will exhaust database memory and crash the server."
+  },
+  {
+    "id": 180,
+    "category": "Architecture & System Design",
+    "question": "Which THREE architectural challenges are directly introduced by adopting the 'Database-per-Service' pattern in microservices?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Generating consolidated cross-domain reports requires streaming data into a central data lake or analytics warehouse via CDC."
+      },
+      {
+        "id": "B",
+        "text": "Maintaining transactional consistency across multiple services requires eventual consistency mechanisms (Sagas) instead of ACID 2PC."
+      },
+      {
+        "id": "C",
+        "text": "Cross-service queries cannot execute relational SQL `JOIN` operations and require API composition or event-driven read models."
+      },
+      {
+        "id": "D",
+        "text": "Microservice databases are strictly prohibited from implementing primary keys or foreign key constraints within their schemas."
+      },
+      {
+        "id": "E",
+        "text": "Operating systems completely disable all network communication between microservices that connect to different databases."
+      }
+    ],
+    "correct": [
+      "A",
+      "B",
+      "C"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Database-per-Service Pattern: Each microservice owns its private database. No other service can access it directly.\n• Inherent Challenges:\n  1. No SQL Joins: Joining `Customer` (in Customer Service) with `Orders` (in Order Service) cannot be done in a single query. You must use API Composition (querying both services and joining in memory) or CQRS (replicating data via Kafka into a read-optimized view).\n  2. Distributed Transactions: A business action spanning services (e.g. create order, debit payment, reserve inventory) cannot use single-database ACID transactions. You must use the Saga pattern with compensating actions.\n  3. Reporting: Building complex dashboards requires shipping data to a central warehouse (Snowflake, BigQuery) via Change Data Capture (Debezium/Kafka).\n\nWhy other options are incorrect:\n• Each service's database can and should use primary and foreign keys within its own boundary.\n• Network communication is not disabled."
+  },
+  {
+    "id": 181,
+    "category": "Architecture & System Design",
+    "question": "What sequence of actions occurs during a graceful shutdown of a Spring Boot microservice in Kubernetes upon receiving a `SIGTERM` signal?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The service stops accepting new requests, drains in-flight requests within a grace period, releases resources, and terminates."
+      },
+      {
+        "id": "B",
+        "text": "The service rolls back all database transactions committed over the preceding 24 hours to prevent data corruption."
+      },
+      {
+        "id": "C",
+        "text": "The service serializes the entire Java Virtual Machine heap to an external USB flash drive before disconnecting from the network."
+      },
+      {
+        "id": "D",
+        "text": "The service immediately sends a `SIGKILL` to all connected clients and deletes all local database tables from the cluster."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Kubernetes Graceful Shutdown Workflow:\n  1. Pod marked `Terminating`: Kubernetes removes the pod from the Service Endpoints / Load Balancer so no new traffic is routed to it.\n  2. `SIGTERM` sent: Spring Boot receives `SIGTERM`.\n  3. Stop accepting new connections: The embedded web server (Tomcat/Jetty) stops listening for new connections.\n  4. Grace period execution (`spring.lifecycle.timeout-per-shutdown-phase`): In-flight HTTP requests are allowed to complete within the configured timeout.\n  5. Resource cleanup: Spring shuts down beans, executes `@PreDestroy` methods, closes HikariCP database connection pools, and disconnects Kafka listeners.\n  6. Clean Exit (`SIGKILL` only sent if the grace period expires before the process terminates).\n\nWhy other options are incorrect:\n• Graceful shutdown does not drop connections immediately, roll back past transactions, or write heaps to USB drives."
+  },
+  {
+    "id": 182,
+    "category": "Architecture & System Design",
+    "question": "Which TWO definitions correctly contrast Recovery Point Objective (RPO) and Recovery Time Objective (RTO) in disaster recovery planning?",
+    "options": [
+      {
+        "id": "A",
+        "text": "RPO measures the total monetary cost in cloud infrastructure billing incurred during a disaster recovery failover event."
+      },
+      {
+        "id": "B",
+        "text": "RTO defines the percentage of network TCP packets dropped by firewalls during peak volumetric DDoS attacks."
+      },
+      {
+        "id": "C",
+        "text": "RTO defines the maximum acceptable duration of system downtime to restore operations and services after a disaster occurs."
+      },
+      {
+        "id": "D",
+        "text": "RPO defines the maximum acceptable amount of data loss measured in time (e.g. data lost between the last backup and disaster)."
+      }
+    ],
+    "correct": [
+      "C",
+      "D"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• RPO (Recovery Point Objective):\n  - Answers: *\"How much data can we afford to lose?\"*\n  - Measured in time: If your database is backed up every 1 hour, your maximum data loss in a catastrophic failure is 1 hour of transactions ($RPO = 1 \\text{ hour}$). If business mandates zero data loss, you need synchronous multi-region replication ($RPO = 0$).\n• RTO (Recovery Time Objective):\n  - Answers: *\"How long can we afford to be down?\"*\n  - Measured in time: If a disaster strikes at 12:00 PM and services must be fully operational by 12:30 PM, your $RTO = 30 \\text{ minutes}$.\n\nWhy other options are incorrect:\n• RPO is not monetary cloud billing cost.\n• RTO is not network packet loss percentage."
+  },
+  {
+    "id": 183,
+    "category": "Architecture & System Design",
+    "question": "Which THREE statements accurately describe the architecture and security considerations of JSON Web Tokens (JWT)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Stateless verification allows downstream microservices to validate authenticity locally using a public key without querying a central auth server."
+      },
+      {
+        "id": "B",
+        "text": "Storing sensitive unencrypted secrets (such as plaintext database passwords) inside JWT payload claims is recommended standard practice."
+      },
+      {
+        "id": "C",
+        "text": "Because standard JWTs are stateless, immediate server-side revocation is challenging and typically requires token blacklisting or short TTLs."
+      },
+      {
+        "id": "D",
+        "text": "The payload of a standard signed JWT is encrypted by default and completely unreadable by client browsers or proxies."
+      },
+      {
+        "id": "E",
+        "text": "A JWT consists of three Base64URL-encoded parts separated by periods: Header, Payload (claims), and Cryptographic Signature."
+      }
+    ],
+    "correct": [
+      "A",
+      "C",
+      "E"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• JWT Structure: `Header.Payload.Signature`.\n  - Header: Algorithm (`alg`) and token type (`typ`).\n  - Payload: Claims (`sub`, `iss`, `exp`, roles).\n  - Signature: Computed by hashing Header + Payload with a secret or signing with a private key (RSA/ECDSA).\n• Stateless Verification: Services holding the public key can verify the signature mathematically in microseconds without making an HTTP/database call to the Auth service.\n• Revocation Challenge: Once issued, a JWT is valid until it expires (`exp`). To revoke a compromised token immediately, you must maintain a distributed blacklist (e.g. in Redis) or keep access token lifetimes very short (e.g. 5–15 minutes) paired with refresh tokens.\n\nWhy other options are incorrect:\n• A signed JWT is NOT encrypted; the payload is merely Base64URL-encoded! Anyone with the token can decode and read the JSON payload.\n• Never store sensitive secrets or passwords in a JWT payload."
+  },
+  {
+    "id": 184,
+    "category": "Architecture & System Design",
+    "question": "Why do distributed message brokers (such as Apache Kafka and AWS SQS) provide 'At-Least-Once' delivery by default rather than exactly-once?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Distributed brokers intentionally send every message multiple times to improve consumer throughput across CPU cores."
+      },
+      {
+        "id": "B",
+        "text": "Network acknowledgments (ACKs) can be lost or delayed, causing producers or brokers to retry delivery to guarantee no data loss."
+      },
+      {
+        "id": "C",
+        "text": "Message consumers require receiving duplicate messages to calculate moving average metrics for load balancing algorithms."
+      },
+      {
+        "id": "D",
+        "text": "Operating system network cards cannot verify checksums on TCP packets, requiring duplicate transmissions for error correction."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• The Two Generals' Problem in Distributed Messaging:\n  - When a producer sends a message to a broker, or a broker delivers a message to a consumer, it waits for an acknowledgment (ACK).\n  - If the network drops or the consumer takes too long to ACK, the sender cannot distinguish between:\n    1. The message was lost before delivery.\n    2. The message was processed, but the ACK was lost on the return path!\n  - To guarantee NO DATA LOSS, the sender must retry. This means a message can be delivered more than once.\n• Architectural Implication: Consumers in distributed systems MUST be **idempotent** (e.g. tracking processed message IDs in a database or Redis).\n\nWhy other options are incorrect:\n• Brokers do not intentionally duplicate messages to increase throughput.\n• TCP checksums and consumer moving averages are irrelevant."
+  },
+  {
+    "id": 185,
+    "category": "Architecture & System Design",
+    "question": "Which TWO statements correctly contrast Layer 4 (Transport) and Layer 7 (Application) load balancing?",
+    "options": [
+      {
+        "id": "A",
+        "text": "L4 load balancers parse GraphQL query bodies to route database queries across distributed read replicas."
+      },
+      {
+        "id": "B",
+        "text": "L7 load balancers inspect HTTP headers, cookies, and URI paths, enabling content-based routing and SSL termination."
+      },
+      {
+        "id": "C",
+        "text": "L4 load balancers route traffic based on IP address and TCP/UDP port without inspecting application-level HTTP data."
+      },
+      {
+        "id": "D",
+        "text": "L7 load balancers operate strictly on raw ethernet hardware packets and cannot inspect HTTP application protocols."
+      }
+    ],
+    "correct": [
+      "B",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Layer 4 Load Balancing (Transport Layer - TCP/UDP):\n  - Operates purely at the connection level. Inspects source IP, destination IP, and port.\n  - Does NOT inspect or parse HTTP headers, URLs, or payloads.\n  - Extremely fast, high throughput, low CPU overhead (e.g. AWS NLB, HAProxy TCP mode).\n• Layer 7 Load Balancing (Application Layer - HTTP/HTTPS/gRPC):\n  - Terminates the TCP connection and decrypts TLS.\n  - Can inspect URL paths (`/api/v1/orders` vs `/static/`), HTTP headers, and cookies (for sticky sessions).\n  - Can modify headers, perform URL rewriting, enforce rate limits, and route to specific microservice target groups (e.g. AWS ALB, NGINX, Envoy).\n\nWhy other options are incorrect:\n• L4 load balancers cannot parse GraphQL or HTTP bodies.\n• L7 load balancers operate at the application layer, not raw ethernet packets."
+  },
+  {
+    "id": 186,
+    "category": "Algorithms & Data Structures",
+    "question": "Which TWO statements accurately contrast Chaining and Open Addressing for resolving hash collisions in hash tables?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Open Addressing stores all entries directly in the table array, probing for the next open slot via linear or quadratic probing."
+      },
+      {
+        "id": "B",
+        "text": "Chaining throws an `OutOfMemoryError` whenever two unequal keys produce identical 32-bit integer hash codes."
+      },
+      {
+        "id": "C",
+        "text": "Chaining stores colliding elements in a secondary data structure (such as a linked list or red-black tree) at each bucket index."
+      },
+      {
+        "id": "D",
+        "text": "Open Addressing permits an infinite load factor greater than 1.0 without requiring array resizing or rehashing."
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Separate Chaining (used by Java `HashMap`):\n  - Each bucket is a pointer to an external container (linked list, converted to red-black tree in Java 8 if bucket length $\\ge 8$).\n  - Can gracefully handle load factors $\u0007lpha > 1.0$ (more elements than buckets), though performance degrades to $O(n)$ or $O(\\log n)$ if not resized.\n• Open Addressing (Linear Probing, Quadratic Probing, Double Hashing):\n  - All elements reside directly within the array table (no external nodes or pointers).\n  - When collision occurs at index $i$, probe $i+1, i+2, \\dots$ until an empty slot is found.\n  - Load factor CANNOT exceed 1.0 (table fills up), and performance degrades rapidly as $\u0007lpha > 0.7$. Deletions require special \"tombstone\" markers.\n\nWhy other options are incorrect:\n• Open Addressing cannot have a load factor $> 1.0$; it must resize before filling.\n• Chaining does not throw `OutOfMemoryError` on hash collisions; collisions are standard and expected."
+  },
+  {
+    "id": 187,
+    "category": "Algorithms & Data Structures",
+    "question": "What combination of data structures allows an LRU (Least Recently Used) cache to achieve $O(1)$ time complexity for both `get()` and `put()`?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A Singly Linked List (for element traversal) paired with a Bloom Filter to test element presence in memory."
+      },
+      {
+        "id": "B",
+        "text": "A Min-Heap priority queue (for element ordering) paired with a contiguous dynamic array for key searching."
+      },
+      {
+        "id": "C",
+        "text": "A Hash Map (for $O(1)$ key lookup) paired with a Doubly Linked List (for $O(1)$ node removal and insertion at head/tail)."
+      },
+      {
+        "id": "D",
+        "text": "A Binary Search Tree (for sorted key lookup) paired with a circular queue for element eviction tracking."
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• $O(1)$ LRU Cache Architecture (e.g. Java `LinkedHashMap` with `accessOrder = true`):\n  1. Hash Map (`Map<Key, Node>`): Provides $O(1)$ lookup to find any key's corresponding node in memory.\n  2. Doubly Linked List: Maintains access order. Most recently accessed nodes are moved to the HEAD; least recently used nodes reside at the TAIL.\n• Operations:\n  - `get(key)`: Lookup node in map ($O(1)$) $\rightarrow$ remove node from current position in doubly linked list ($O(1)$) $\rightarrow$ insert at head ($O(1)$).\n  - `put(key, value)`: If key exists, update value and move to head ($O(1)$). If new, add to map and insert at head ($O(1)$). If capacity exceeded, remove node from tail ($O(1)$) and delete key from map ($O(1)$).\n• Why Doubly Linked List is Required: In a singly linked list, removing a node requires finding its predecessor, which takes $O(n)$ traversal. A doubly linked list provides node.prev, allowing $O(1)$ removal!\n\nWhy other options are incorrect:\n• Heaps have $O(\\log n)$ updates and $O(n)$ arbitrary search.\n• BSTs have $O(\\log n)$ lookups.\n• Singly linked lists require $O(n)$ node removal."
+  },
+  {
+    "id": 188,
+    "category": "Algorithms & Data Structures",
+    "question": "Which THREE rules and practices apply to implementing correct Binary Search algorithms?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Binary search requires the underlying search space or predicate to be monotonic (e.g. sorted data or boolean monotonicity)."
+      },
+      {
+        "id": "B",
+        "text": "Calculating midpoint via `mid = low + (high - low) / 2` (or `(low + high) >>> 1`) prevents 32-bit signed integer overflow."
+      },
+      {
+        "id": "C",
+        "text": "To find the first occurrence (lower bound) of a duplicate target, the search range must continue contracting left when `arr[mid] == target`."
+      },
+      {
+        "id": "D",
+        "text": "Binary search can locate the maximum element in an unsorted random array in $O(\\log n)$ worst-case time complexity."
+      },
+      {
+        "id": "E",
+        "text": "Binary search requires dynamically allocating a secondary heap array on every recursive or iterative division step."
+      }
+    ],
+    "correct": [
+      "A",
+      "B",
+      "C"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Integer Overflow Bug (Joshua Bloch Famous Bug): `(low + high) / 2` fails in Java if `low + high > Integer.MAX_VALUE` ($2^{31}-1$), overflowing to a negative number and throwing `ArrayIndexOutOfBoundsException`. Using `low + (high - low) / 2` or unsigned shift `(low + high) >>> 1` is safe.\n• Monotonicity: Binary search works on any sorted array, or any problem where answers form a monotonic predicate (e.g. `[False, False, True, True, True]`).\n• Lower Bound (First Occurrence): When `arr[mid] == target`, don't return immediately! Set `high = mid - 1` (or `high = mid`) to keep searching the left half to find the earliest occurrence.\n\nWhy other options are incorrect:\n• Binary search CANNOT search unsorted arrays; finding an element in an unsorted array takes $O(n)$ linear time.\n• Binary search requires $O(1)$ space; it does not allocate secondary arrays."
+  },
+  {
+    "id": 189,
+    "category": "Algorithms & Data Structures",
+    "question": "Which TWO statements correctly contrast Breadth-First Search (BFS) and Depth-First Search (DFS) on graphs?",
+    "options": [
+      {
+        "id": "A",
+        "text": "DFS traverses as deep as possible along each branch using a Stack (or recursion), making it ideal for topological sort and cycle detection."
+      },
+      {
+        "id": "B",
+        "text": "BFS traverses vertices level by level using a Queue, guaranteeing the shortest path in unweighted graphs."
+      },
+      {
+        "id": "C",
+        "text": "BFS consumes $O(1)$ auxiliary memory because it does not require tracking visited vertices during graph exploration."
+      },
+      {
+        "id": "D",
+        "text": "DFS guarantees finding the shortest path between any two vertices in an unweighted graph faster than BFS."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Breadth-First Search (BFS):\n  - Explores all neighbors at distance 1, then distance 2, etc., using a FIFO Queue.\n  - Shortest Path Guarantee: In unweighted graphs, the first time BFS reaches a target vertex, it is GUARANTEED to be via the shortest path (minimum edge count)!\n  - Space Complexity: $O(V)$ in the queue (can consume significant memory if graph branching factor is high).\n• Depth-First Search (DFS):\n  - Explores as far as possible down each path using a LIFO Stack or recursive call stack before backtracking.\n  - Ideal for: Topological sorting, detecting cycles in directed graphs (3-coloring algorithm), finding strongly connected components (Tarjan/Kosaraju), and maze/backtracking generation.\n  - Space Complexity: $O(H)$ where $H$ is the maximum depth of the graph.\n\nWhy other options are incorrect:\n• BFS requires $O(V)$ space for the queue and visited set.\n• DFS does NOT guarantee the shortest path in unweighted graphs."
+  },
+  {
+    "id": 190,
+    "category": "Algorithms & Data Structures",
+    "question": "How does Floyd's Tortoise and Hare algorithm detect a cycle in a singly linked list?",
+    "options": [
+      {
+        "id": "A",
+        "text": "By modifying node pointers to point backwards towards the list head and checking if the traversal returns to index zero."
+      },
+      {
+        "id": "B",
+        "text": "By allocating an auxiliary array of size $N$ on the heap and verifying that no node pointer appears more than once."
+      },
+      {
+        "id": "C",
+        "text": "By calculating the cryptographic MD5 hash of each node's memory address and checking for hash collisions in a set."
+      },
+      {
+        "id": "D",
+        "text": "Using two pointers where the slow pointer moves 1 step and the fast pointer moves 2 steps; if they meet, a cycle exists."
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Floyd's Cycle-Finding Algorithm:\n  - Slow pointer (`tortoise`) moves 1 node at a time.\n  - Fast pointer (`hare`) moves 2 nodes at a time.\n  - If the list is acyclic: The fast pointer will reach `null` ($O(n)$ time, $O(1)$ space).\n  - If a cycle exists: Inside the cycle, the fast pointer closes the distance by 1 node on each step ($2 - 1 = 1$). Therefore, the fast pointer is mathematically guaranteed to lap and collide with the slow pointer!\n• Finding Cycle Start: Once they meet, keep one pointer at the meeting point and place the other at the list head. Advance both 1 step at a time: they will meet exactly at the cycle entrance!\n\nWhy other options are incorrect:\n• It does not reverse node pointers or calculate MD5 hashes.\n• Using an auxiliary array consumes $O(n)$ space; Floyd's algorithm achieves $O(1)$ constant space."
+  },
+  {
+    "id": 191,
+    "category": "Algorithms & Data Structures",
+    "question": "Which THREE statements accurately characterize the Sliding Window algorithmic technique?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It reduces time complexity from $O(n^2)$ brute-force subsegment checks down to $O(n)$ linear time by updating state incrementally."
+      },
+      {
+        "id": "B",
+        "text": "The sliding window pattern requires sorting the entire input array before any pointer movements can be performed."
+      },
+      {
+        "id": "C",
+        "text": "The left pointer must move backwards towards index zero on every iteration to re-validate previous window elements."
+      },
+      {
+        "id": "D",
+        "text": "It maintains a contiguous window of elements bounded by two pointers (`left` and `right`) moving in the same direction."
+      },
+      {
+        "id": "E",
+        "text": "In dynamic windows, the right pointer expands the window to satisfy a condition, and the left pointer contracts it to find optimal bounds."
+      }
+    ],
+    "correct": [
+      "A",
+      "D",
+      "E"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Sliding Window Mechanics:\n  - Applicable to contiguous subarray and substring problems (e.g. longest substring without repeating characters, minimum window substring, maximum sum subarray of size $K$).\n  - Brute force checks all pairs of $(i, j)$, taking $O(n^2)$ or $O(n^3)$ time.\n  - Sliding window maintains state (e.g. sum or character frequency map) as `right` expands. When a condition is violated, `left` contracts, removing elements from state in $O(1)$ amortized time.\n  - Because both `left` and `right` traverse the array at most once, total time is $O(n)$!\n\nWhy other options are incorrect:\n• Sliding window does NOT require sorting (sorting destroys the contiguous order of original subarrays/substrings).\n• Pointers move monotonically forward; `left` never moves backward."
+  },
+  {
+    "id": 192,
+    "category": "Algorithms & Data Structures",
+    "question": "What is the optimal time complexity to find the Top $K$ frequent elements in an array of $N$ items using a Min-Heap of size $K$?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`O(N log K)` time, because frequency map construction takes $O(N)$ and maintaining a heap bounded at size $K$ takes $O(N \\log K)$."
+      },
+      {
+        "id": "B",
+        "text": "`O(1)` constant time, because heaps store all element frequencies directly inside hardware CPU cache lines."
+      },
+      {
+        "id": "C",
+        "text": "`O(K log N)` time, because finding top elements requires sorting the entire collection of $N$ items in descending order."
+      },
+      {
+        "id": "D",
+        "text": "`O(N^2)` quadratic time, because inserting an element into a heap requires shifting all elements across an internal array."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Top $K$ Frequent Elements Algorithm:\n  1. Frequency Counting: Build a `HashMap<Element, Frequency>`. Takes $O(N)$ time and $O(N)$ space.\n  2. Bounded Min-Heap: Maintain a `PriorityQueue` of size $K$ ordered by frequency.\n     - For each of the $M$ unique elements: add to min-heap. If heap size exceeds $K$, poll the minimum frequency element (`heap.poll()`).\n     - Inserting/polling in a heap of size $K$ takes $O(\\log K)$ time.\n     - Total heap time: $O(M \\log K) \\le O(N \\log K)$.\n  3. Total Time: $O(N + N \\log K) = O(N \\log K)$.\n• Contrast with Full Sort: Sorting the entire frequency map takes $O(N \\log N)$. When $K \\ll N$ (e.g. top 10 out of 1,000,000 items), $O(N \\log K)$ is significantly faster and uses only $O(K)$ heap memory!\n\nWhy other options are incorrect:\n• It is not $O(N^2)$ (heap insert is $O(\\log K)$, not $O(N)$).\n• It is not $O(1)$."
+  },
+  {
+    "id": 193,
+    "category": "Algorithms & Data Structures",
+    "question": "Which TWO statements accurately contrast QuickSort, MergeSort, and TimSort?",
+    "options": [
+      {
+        "id": "A",
+        "text": "QuickSort guarantees $O(n)$ linear time in the worst case when the input array is already completely sorted."
+      },
+      {
+        "id": "B",
+        "text": "TimSort is an unstable sorting algorithm that discards duplicate elements during merge operations to minimize memory consumption."
+      },
+      {
+        "id": "C",
+        "text": "MergeSort is a stable divide-and-conquer algorithm with guaranteed $O(n \\log n)$ worst-case time, requiring $O(n)$ auxiliary memory."
+      },
+      {
+        "id": "D",
+        "text": "Java's `Arrays.sort(Object[])` uses TimSort, an adaptive stable hybrid of MergeSort and InsertionSort optimized for real-world partially sorted data."
+      }
+    ],
+    "correct": [
+      "C",
+      "D"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• MergeSort:\n  - Divides array into halves, recursively sorts, and merges.\n  - Guaranteed $O(n \\log n)$ time in best, average, and worst cases.\n  - Stable: Preserves the relative order of duplicate elements.\n  - Space: Requires $O(n)$ auxiliary array for merging.\n• TimSort (Tim Peters, 2002):\n  - Standard sort for `Object[]` in Java and Python.\n  - Adaptive and Stable: Detects natural ascending or strictly descending \"runs\" in the input data. Uses InsertionSort for small chunks (<32 items) and merges runs using an optimized MergeSort.\n  - Best case on already sorted data is $O(n)$! Worst case $O(n \\log n)$.\n• QuickSort:\n  - Unstable, in-place ($O(\\log n)$ stack space). Average $O(n \\log n)$.\n  - Worst case is $O(n^2)$ if pivot selection is poor on sorted/reverse-sorted data.\n\nWhy other options are incorrect:\n• QuickSort worst-case is $O(n^2)$, not $O(n)$.\n• TimSort is strictly STABLE and never discards duplicates."
+  },
+  {
+    "id": 194,
+    "category": "Algorithms & Data Structures",
+    "question": "Which tree traversal visits all nodes of a Binary Search Tree (BST) in ascending sorted order?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Post-order traversal (Left $\rightarrow$ Right $\rightarrow$ Root)."
+      },
+      {
+        "id": "B",
+        "text": "In-order traversal (Left $\rightarrow$ Root $\rightarrow$ Right)."
+      },
+      {
+        "id": "C",
+        "text": "Level-order traversal (Breadth-First Search row by row)."
+      },
+      {
+        "id": "D",
+        "text": "Pre-order traversal (Root $\rightarrow$ Left $\rightarrow$ Right)."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Binary Search Tree (BST) Property: For every node $X$:\n  - All nodes in the left subtree have values $< X$.\n  - All nodes in the right subtree have values $> X$.\n• In-Order Traversal:\n  1. Recursively traverse Left subtree (all values smaller than Root).\n  2. Visit Root.\n  3. Recursively traverse Right subtree (all values larger than Root).\n  - Because it visits smaller $\rightarrow$ middle $\rightarrow$ larger, In-Order traversal ALWAYS produces elements in strictly ascending sorted order!\n• Uses of other traversals:\n  - Pre-order (Root, Left, Right): Used for serializing/cloning trees.\n  - Post-order (Left, Right, Root): Used for deleting trees or evaluating mathematical expression trees (subtrees evaluated before parent operator).\n\nWhy other options are incorrect:\n• Pre-order, Post-order, and Level-order do not produce sorted output on BSTs."
+  },
+  {
+    "id": 195,
+    "category": "Algorithms & Data Structures",
+    "question": "Which THREE characteristics accurately define a Trie (Prefix Tree) data structure?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A Trie consumes strictly less memory than a `HashSet` when storing small sets of completely disjoint strings."
+      },
+      {
+        "id": "B",
+        "text": "Nodes represent characters, and strings sharing common prefixes share the same ancestor path from the root."
+      },
+      {
+        "id": "C",
+        "text": "Deleting a word from a Trie requires recursively deallocating and rebuilding the entire tree structure from scratch."
+      },
+      {
+        "id": "D",
+        "text": "It is standardly used for autocomplete search suggestions, predictive text input, and IP network routing tables."
+      },
+      {
+        "id": "E",
+        "text": "Searching, inserting, or prefix-matching a word of length $L$ takes $O(L)$ time, independent of total words $N$ stored."
+      }
+    ],
+    "correct": [
+      "B",
+      "D",
+      "E"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Trie Architecture:\n  - Tree where each node represents a character (or array of 26 pointers for lowercase English letters).\n  - A boolean flag `isEndOfWord` marks the end of a complete stored word.\n• Time Complexity:\n  - Insert: $O(L)$ where $L$ is word length.\n  - Search: $O(L)$.\n  - Prefix Match (`startsWith`): $O(L)$.\n  - Notice that lookup time is completely independent of the number of words $N$ in the dictionary!\n• Applications: Autocomplete search boxes, spell checkers, T9 predictive text, and longest prefix matching in IP routing.\n\nWhy other options are incorrect:\n• Tries have high memory overhead per node (pointer arrays); for small collections of disjoint strings, a `HashSet` is much more memory efficient.\n• Deletion only removes unshared nodes along the word's path; it does not rebuild the entire tree."
+  },
+  {
+    "id": 196,
+    "category": "Algorithms & Data Structures",
+    "question": "Which THREE algorithmic scenarios correctly pair the problem requirement with its optimal linear data structure?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Depth-First Search (DFS) back-edge cycle detection is standardly implemented using an unbuffered FIFO Queue."
+      },
+      {
+        "id": "B",
+        "text": "Breadth-First Search (BFS) level-order traversal and asynchronous task buffering uses a Queue (FIFO)."
+      },
+      {
+        "id": "C",
+        "text": "Finding the median element in an unsorted array in $O(1)$ time is implemented using a single FIFO Queue."
+      },
+      {
+        "id": "D",
+        "text": "Validating balanced parentheses (e.g. `{[()]}`) or evaluating Reverse Polish Notation expressions uses a Stack (LIFO)."
+      },
+      {
+        "id": "E",
+        "text": "Tracking the minimum element in constant $O(1)$ time alongside push and pop operations uses an auxiliary Min-Stack."
+      }
+    ],
+    "correct": [
+      "B",
+      "D",
+      "E"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Stack (LIFO - Last In, First Out):\n  - Balanced Parentheses: Push open brackets onto stack; when a closing bracket is seen, pop and verify it matches the top of stack.\n  - Reverse Polish Notation: Push operands; on operator, pop 2 operands, evaluate, and push result.\n  - Min-Stack: Maintain an auxiliary stack storing the minimum value seen so far, allowing `getMin()` in $O(1)$ time.\n• Queue (FIFO - First In, First Out):\n  - BFS graph traversal: Enqueue neighbors, dequeue in arrival order.\n  - Producer-Consumer task processing: First task submitted is the first task processed.\n\nWhy other options are incorrect:\n• Finding running median in a stream requires TWO heaps (Max-Heap for lower half, Min-Heap for upper half), not a single queue.\n• DFS uses a LIFO Stack (or call stack), not a FIFO Queue."
+  },
+  {
+    "id": 197,
+    "category": "Algorithms & Data Structures",
+    "question": "When is an Adjacency List preferred over an Adjacency Matrix for representing a graph?",
+    "options": [
+      {
+        "id": "A",
+        "text": "When all vertices are represented by floating-point numbers rather than discrete integer identifiers."
+      },
+      {
+        "id": "B",
+        "text": "In dense graphs where edge existence checks between any two arbitrary vertices must execute in $O(1)$ time."
+      },
+      {
+        "id": "C",
+        "text": "In sparse graphs (where $E \\ll V^2$), because it consumes $O(V + E)$ space and enables faster iteration over a vertex's neighbors."
+      },
+      {
+        "id": "D",
+        "text": "When the graph has negative edge weights that cause adjacency matrix memory buffers to experience arithmetic overflow."
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Adjacency List:\n  - An array or map of lists: `List<Integer>[] adj`.\n  - Space Complexity: $O(V + E)$. In sparse graphs (e.g. a social network or road map where vertices have far fewer edges than $V$), space is minimal.\n  - Neighbor Iteration: Iterating over all neighbors of vertex $U$ takes $O(\\text{degree}(U))$ time.\n• Adjacency Matrix:\n  - A 2D array `int[][] matrix = new int[V][V]`.\n  - Space Complexity: $O(V^2)$. For a graph with 100,000 vertices, $V^2 = 10^{10}$ cells (~10 GB RAM), even if there are only 1,000 edges!\n  - Best for dense graphs ($E \\approx V^2$) where testing `matrix[u][v] != 0` in $O(1)$ time is critical.\n\nWhy other options are incorrect:\n• Dense graphs favor Adjacency Matrices, not lists.\n• Negative edge weights have no bearing on matrix vs list representation."
+  },
+  {
+    "id": 198,
+    "category": "Algorithms & Data Structures",
+    "question": "Which THREE foundational principles characterize Dynamic Programming (DP) algorithms?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Dynamic Programming guarantees finding the global maximum in all NP-complete problems in strictly $O(1)$ constant time."
+      },
+      {
+        "id": "B",
+        "text": "The problem exhibits Overlapping Subproblems: recursive formulations solve the exact same subproblems repeatedly."
+      },
+      {
+        "id": "C",
+        "text": "The problem exhibits Optimal Substructure: an optimal solution can be constructed from optimal solutions of its subproblems."
+      },
+      {
+        "id": "D",
+        "text": "Dynamic Programming requires converting all input data structures into balanced red-black binary search trees."
+      },
+      {
+        "id": "E",
+        "text": "Subproblem results can be cached via Top-Down with Memoization or evaluated iteratively via Bottom-Up Tabulation."
+      }
+    ],
+    "correct": [
+      "B",
+      "C",
+      "E"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Core DP Requirements:\n  1. Optimal Substructure: The optimal solution to the overall problem contains within it optimal solutions to subproblems (e.g. shortest path from $A \\to C$ through $B$ is shortest path $A \\to B$ + shortest path $B \\to C$).\n  2. Overlapping Subproblems: Unlike divide-and-conquer (MergeSort) where subproblems are independent, DP subproblems overlap (e.g. Fibonacci: $fib(5)$ computes $fib(3)$ multiple times).\n• Two Implementations:\n  - Top-Down with Memoization: Natural recursion, storing results in a hash map or array table so each subproblem is calculated once.\n  - Bottom-Up with Tabulation: Iterative table filling, starting from base cases and building up to the final answer (avoids recursion call stack overhead).\n\nWhy other options are incorrect:\n• DP does not solve NP-complete problems in $O(1)$ time.\n• It does not require red-black trees."
+  },
+  {
+    "id": 199,
+    "category": "Algorithms & Data Structures",
+    "question": "What does the bitwise expression `(n & (n - 1)) == 0` evaluate for a positive integer `n > 0`?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It returns `true` if `n` is a negative number, because negative numbers use two's complement sign bits."
+      },
+      {
+        "id": "B",
+        "text": "It returns `true` if `n` is divisible by 10, because decimal multiples cancel out binary bits during bitwise AND."
+      },
+      {
+        "id": "C",
+        "text": "It returns `true` if `n` is an odd number, because odd numbers have their least significant bit set to 1."
+      },
+      {
+        "id": "D",
+        "text": "It returns `true` if `n` is a power of 2, because powers of 2 have exactly one binary bit set to 1."
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• How `n & (n - 1)` Works:\n  - Subtracting 1 from a number flips the lowest set bit (`1` $\rightarrow$ `0`) and flips all trailing zeros to `1`s.\n  - Example: $n = 8$ (`1000`), $n - 1 = 7$ (`0111`).\n    `1000 & 0111 = 0000` (evaluates to 0!).\n  - Example: $n = 6$ (`0110`), $n - 1 = 5$ (`0101`).\n    `0110 & 0101 = 0100` (evaluates to 4 $\ne 0$).\n• A positive integer is a power of 2 ($2^0, 2^1, 2^2, \\dots$) if and only if it has EXACTLY ONE bit set in its binary representation. Clearing that single bit leaves 0!\n• Brian Kernighan's Algorithm: `n = n & (n - 1)` can be looped to count set bits (Hamming weight) in $O(\\text{number of set bits})$ time instead of iterating all 32 bits.\n\nWhy other options are incorrect:\n• Testing odd numbers is `(n & 1) != 0`.\n• Negative numbers and divisibility by 10 are completely unrelated."
+  },
+  {
+    "id": 200,
+    "category": "Algorithms & Data Structures",
+    "question": "Which TWO statements accurately characterize algorithmic Big-O time and space complexity?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sorting an array of $N$ objects using Java's `Arrays.sort()` requires $O(N^2)$ auxiliary memory space."
+      },
+      {
+        "id": "B",
+        "text": "Binary search on a sorted array of $N$ elements requires $O(N)$ linear time in the worst case."
+      },
+      {
+        "id": "C",
+        "text": "Traversing a two-dimensional $N \times N$ matrix using nested loops executes in $O(N^2)$ polynomial time."
+      },
+      {
+        "id": "D",
+        "text": "A recursive function with maximum call stack depth $D$ consumes $O(D)$ space, even if no heap objects are allocated."
+      }
+    ],
+    "correct": [
+      "C",
+      "D"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Nested Loops: An outer loop running $N$ times with an inner loop running $N$ times executes the inner body $N \\times N = N^2$ times, giving $O(N^2)$ quadratic time.\n• Call Stack Space Complexity: Each recursive method invocation allocates a new stack frame on the thread's execution call stack (storing local variables and return addresses). If recursion descends to depth $D$, $D$ stack frames exist simultaneously in memory, contributing $O(D)$ auxiliary space complexity!\n  (Ignoring call stack memory in Big-O analysis is a common interview mistake).\n\nWhy other options are incorrect:\n• Binary search runs in $O(\\log N)$ logarithmic time, NOT $O(N)$.\n• Java's `Arrays.sort()` uses TimSort which takes $O(N)$ auxiliary space (or $O(\\log N)$ for primitive Dual-Pivot QuickSort), never $O(N^2)$."
   }
 ];
