@@ -178,7 +178,7 @@
     const question = currentQuestion();
     const rec = question ? answerRecord(question.id) : null;
     const selectedCount = rec ? rec.selected.length : 0;
-    const required = question ? question.requiredCount : 1;
+    const required = question ? requiredCount(question) : 1;
     const atStart = state.index <= 0;
     const atEnd = state.index >= pool.length - 1;
 
@@ -225,10 +225,21 @@
     });
   }
 
+  function requiredCount(question) {
+    if (!question) return 1;
+    if (Array.isArray(question.correct) && question.correct.length) {
+      return question.correct.length;
+    }
+    return question.requiredCount || 1;
+  }
+
   function optionClass(question, optionId, rec) {
     const selected = rec.selected.includes(optionId);
+    const max = requiredCount(question);
+    const atLimit = !rec.submitted && max > 1 && rec.selected.length >= max && !selected;
     const classes = ["option"];
     if (selected) classes.push("selected");
+    if (atLimit) classes.push("at-limit");
     if (rec.submitted) {
       const isCorrect = question.correct.includes(optionId);
       if (isCorrect) classes.push("correct");
@@ -261,17 +272,29 @@
     }
 
     const rec = answerRecord(question.id);
+    const max = requiredCount(question);
+    const picked = rec.selected.length;
     els.categoryBadge.textContent = question.category;
-    els.selectHint.textContent = question.requiredCount === 1
-      ? "Select 1 option"
-      : `Select ${question.requiredCount} options`;
+    if (rec.submitted) {
+      els.selectHint.textContent = max === 1 ? "Select 1 option" : `Select ${max} options`;
+    } else if (max === 1) {
+      els.selectHint.textContent = "Select 1 option";
+    } else if (picked >= max) {
+      els.selectHint.textContent = `${max} of ${max} selected — deselect one to change`;
+    } else {
+      els.selectHint.textContent = `Select ${max} options (${picked} of ${max})`;
+    }
     els.questionText.innerHTML = formatRichText(question.question);
 
     els.optionsForm.innerHTML = "";
     question.options.forEach((option) => {
       const button = document.createElement("button");
+      const selected = rec.selected.includes(option.id);
+      const atLimit = !rec.submitted && max > 1 && picked >= max && !selected;
       button.type = "button";
       button.className = optionClass(question, option.id, rec);
+      button.disabled = rec.submitted || atLimit;
+      button.setAttribute("aria-disabled", button.disabled ? "true" : "false");
       button.innerHTML = `
         <span class="option-id">${option.id}</span>
         <span class="option-text">${formatRichText(option.text)}</span>
@@ -295,12 +318,13 @@
     const rec = answerRecord(question.id);
     if (rec.submitted) return;
 
+    const max = requiredCount(question);
     let selected = [...rec.selected];
     if (selected.includes(optionId)) {
       selected = selected.filter((id) => id !== optionId);
-    } else if (question.requiredCount === 1) {
+    } else if (max === 1) {
       selected = [optionId];
-    } else if (selected.length < question.requiredCount) {
+    } else if (selected.length < max) {
       selected.push(optionId);
     } else {
       return;
@@ -318,7 +342,7 @@
     const question = currentQuestion();
     if (!question) return;
     const rec = answerRecord(question.id);
-    if (rec.selected.length !== question.requiredCount) return;
+    if (rec.selected.length !== requiredCount(question)) return;
     const correct = arraysEqual(rec.selected, question.correct);
     setAnswer(question.id, {
       submitted: true,

@@ -254,6 +254,17 @@ select {
   opacity: 0.92;
 }
 
+.option.at-limit {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+.option.at-limit:hover {
+  border-color: var(--border);
+  transform: none;
+}
+
 .option-id {
   width: 28px;
   height: 28px;
