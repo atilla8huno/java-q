@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Practice Simulator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">Q</span>
+        <div>
+          <h1>Java Practice Simulator</h1>
+          <p>Frequently asked questions about Java</p>
+        </div>
+      </div>
+      <div class="topbar-controls">
+        <label class="filter-label" for="categoryFilter">Topic</label>
+        <select id="categoryFilter" aria-label="Filter by topic"></select>
+        <button id="resetBtn" class="btn btn-ghost" type="button">Reset progress</button>
+      </div>
+    </header>
+
+    <section class="stats">
+      <div class="stat">
+        <span class="stat-label">Question</span>
+        <strong id="questionCounter">1 / 0</strong>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Score</span>
+        <strong id="scoreValue">0 / 0</strong>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Answered</span>
+        <strong id="answeredValue">0</strong>
+      </div>
+      <div class="progress-wrap" aria-hidden="true">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+    </section>
+
+    <main class="layout">
+      <article class="question-panel">
+        <div class="question-meta">
+          <span id="categoryBadge" class="badge">Core Java</span>
+          <span id="selectHint" class="hint">Select 1 option</span>
+        </div>
+        <h2 id="questionText" class="question-text"></h2>
+        <form id="optionsForm" class="options"></form>
+
+        <div id="feedback" class="feedback hidden" role="status">
+          <div id="feedbackBanner" class="feedback-banner"></div>
+          <p id="explanationText" class="explanation"></p>
+        </div>
+
+        <div class="actions">
+          <button id="prevBtn" class="btn btn-secondary" type="button">Previous</button>
+          <button id="submitBtn" class="btn btn-primary" type="button" disabled>Submit answer</button>
+          <button id="nextBtn" class="btn btn-secondary" type="button">Next</button>
+        </div>
+      </article>
+
+      <aside class="palette-panel">
+        <h3>Question map</h3>
+        <p class="palette-legend">
+          <span class="dot unanswered"></span> Unanswered
+          <span class="dot correct"></span> Correct
+          <span class="dot locked"></span> Needs correction
+        </p>
+        <div id="questionPalette" class="palette"></div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
