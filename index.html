@@ -33,6 +33,10 @@
         <strong id="scoreValue">0 / 0</strong>
       </div>
       <div class="stat">
+        <span class="stat-label">Success</span>
+        <strong id="successRate">—</strong>
+      </div>
+      <div class="stat">
         <span class="stat-label">Answered</span>
         <strong id="answeredValue">0</strong>
       </div>
@@ -58,6 +62,7 @@
         <div class="actions">
           <button id="prevBtn" class="btn btn-secondary" type="button">Previous</button>
           <button id="submitBtn" class="btn btn-primary" type="button" disabled>Submit answer</button>
+          <button id="retryBtn" class="btn btn-retry hidden" type="button">Answer again</button>
           <button id="nextBtn" class="btn btn-secondary" type="button">Next</button>
         </div>
       </article>
@@ -67,7 +72,7 @@
         <p class="palette-legend">
           <span class="dot unanswered"></span> Unanswered
           <span class="dot correct"></span> Correct
-          <span class="dot locked"></span> Needs correction
+          <span class="dot locked"></span> Incorrect
         </p>
         <div id="questionPalette" class="palette"></div>
       </aside>

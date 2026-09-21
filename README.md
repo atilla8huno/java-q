@@ -31,15 +31,14 @@ Progress (current question, answers, score) is stored in `localStorage` on that 
 
 Navigation rules:
 
-- **Next** and **Previous** are always visible.
-- You can skip a question with **Next** until you submit it.
-- After a **wrong** submit, **Next** stays locked until you correct the answer and submit again.
-
-Use the **Topic** dropdown to practice one category. **Reset progress** clears saved answers.
+- **Next** and **Previous** are always visible and unlocked, allowing free navigation between questions at any time without being blocked on wrong answers.
+- After submitting an answer (correct or incorrect), an **Answer again** button appears, allowing you to reset that question back to unanswered and practice it afresh.
+- Use the **Topic** dropdown to take a **Quick Exam 1–8** (each is 25 unique mixed questions covering the full bank with no overlap), filter by topic, or select **Wrong Answers** to review incorrectly answered questions as a group.
+- The stats header displays current question, score, live **Success %**, and total answered. **Reset progress** clears all saved answers.
 
 ## Topics
 
-153 high-yield questions across:
+200 high-yield questions, plus 8 **Quick Exams** of 25 unique mixed questions each (every question appears in exactly one exam). Topics:
 
 - Core Java (Inheritance, Overloading, String Pool, Try-With-Resources, Generics, Text Blocks)
 - Collections (PECS Wildcards, HashMaps, Unmodifiable Lists, Sequenced Collections)
@@ -50,8 +49,10 @@ Use the **Topic** dropdown to practice one category. **Reset progress** clears s
 - REST & Web (HTTP semantics, Idempotency, Status codes)
 - Database (ACID, Isolation levels, Indexing)
 - Testing & Design (Clean architecture, GoF patterns, Unit/Integration testing)
-- Architecture (Microservices, Circuit Breaker, Event-Driven patterns)
 - Modern Java (Records, Sealed Classes, Pattern Matching for Switch, Virtual Threads)
+- Staff Java & Kotlin (CompletableFuture exception handling, Virtual Thread Pinning in synchronized/JNI, Kotlin Coroutines vs Threads, Kotlin Platform Types & Nullability, LongAdder vs AtomicLong under contention, lateinit vs by lazy, Heap Dump & GC Log Leak Diagnostics, CountDownLatch vs CyclicBarrier vs Semaphore, Kotlin Data Classes, BlockingQueue implementations, JIT Compilation & Service Warm-up, Spring @Transactional Self-Invocation Proxy Trap, JPA N+1 Query Resolution, Spring Bean Lifecycle Callbacks, jstack Deadlock Analysis, Kotlin Coroutine Exception Propagation)
+- Architecture & System Design (Sync REST/gRPC vs Async Event-Driven, Cache Stampede / Thundering Herd mitigation, Caching Strategies: Cache-Aside vs Write-Through vs Write-Behind, Composite Index Leftmost Prefix Rule & Covering Indexes, Idempotent REST API Design, Horizontal Database Sharding Trade-offs, Token Bucket vs Sliding Window Rate Limiting, Circuit Breakers & Cascading Failures, URI Path vs Header API Versioning, HikariCP Connection Pool Sizing, Database-per-Service Microservice Challenges, Graceful Shutdown in Kubernetes, Disaster Recovery: RPO vs RTO, JWT Architecture & Revocation, At-Least-Once Delivery & Idempotent Consumers, L4 vs L7 Load Balancing)
+- Algorithms & Data Structures (Hash Table Collisions: Chaining vs Open Addressing, $O(1)$ LRU Cache Design with HashMap + Doubly Linked List, Binary Search Integer Overflow & Monotonicity, BFS vs DFS Traversal & Shortest Path, Floyd's Cycle Detection with Fast & Slow Pointers, Sliding Window Pattern, Top K Frequent Elements with Min-Heap, MergeSort vs TimSort vs QuickSort, Binary Search Tree In-Order Traversal, Trie (Prefix Tree) Lookup & Autocomplete, Stack vs Queue Optimal Use Cases, Adjacency List vs Matrix for Sparse Graphs, Dynamic Programming: Optimal Substructure & Overlapping Subproblems, Bit Manipulation: Powers of 2 with `n & (n - 1)`, Big-O Time & Call Stack Space Complexity Analysis)
 
 ## Project layout
 
