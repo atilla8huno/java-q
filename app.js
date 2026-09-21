@@ -36,11 +36,20 @@
   }
 
   function formatRichText(text) {
-    const escaped = escapeHtml(text);
-    const withCodeBlocks = escaped.replace(/```([\s\S]*?)```/g, (_, code) => {
-      return `<pre><code>${code.trim()}</code></pre>`;
+    if (!text) return "";
+    const codeBlocks = [];
+    const placeholderText = String(text).replace(/```([\s\S]*?)```/g, (_, code) => {
+      codeBlocks.push(`<pre><code>${escapeHtml(code.trim())}</code></pre>`);
+      return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
     });
-    return withCodeBlocks.replace(/`([^`]+)`/g, "<code>$1</code>");
+    let escaped = escapeHtml(placeholderText);
+    escaped = escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+    escaped = escaped.replace(/\n\n+/g, "<br><br>");
+    escaped = escaped.replace(/(?<!<br>)\n/g, "<br>");
+    codeBlocks.forEach((block, i) => {
+      escaped = escaped.replace(`___CODE_BLOCK_${i}___`, block);
+    });
+    return escaped;
   }
 
   function loadState() {

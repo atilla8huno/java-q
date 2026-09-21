@@ -311,8 +311,27 @@ select {
 
 .explanation {
   margin: 0;
-  padding: 12px;
+  padding: 14px 16px;
   color: var(--text);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.explanation code {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  background: #0b1220;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+.explanation pre {
+  margin: 10px 0;
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
 }
 
 .actions {
