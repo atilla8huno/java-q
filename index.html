@@ -17,6 +17,10 @@
         </div>
       </div>
       <div class="topbar-controls">
+        <nav class="page-nav" aria-label="Pages">
+          <a href="index.html" aria-current="page">Simulator</a>
+          <a href="review.html">Interview lab</a>
+        </nav>
         <label class="filter-label" for="categoryFilter">Topic</label>
         <select id="categoryFilter" aria-label="Filter by topic"></select>
         <button id="resetBtn" class="btn btn-ghost" type="button">Reset progress</button>
@@ -48,7 +52,14 @@
     <main class="layout">
       <article class="question-panel">
         <div class="question-meta">
+          <div class="meta-topic">
           <span id="categoryBadge" class="badge">Core Java</span>
+          <button id="saveBtn" class="bookmark" type="button" aria-pressed="false" aria-label="Save for later" title="Save for later">
+            <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16">
+              <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/>
+            </svg>
+          </button>
+          </div>
           <span id="selectHint" class="hint">Select 1 option</span>
         </div>
         <h2 id="questionText" class="question-text"></h2>

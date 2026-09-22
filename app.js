@@ -32,6 +32,7 @@
     prevBtn: document.getElementById("prevBtn"),
     submitBtn: document.getElementById("submitBtn"),
     retryBtn: document.getElementById("retryBtn"),
+    saveBtn: document.getElementById("saveBtn"),
     nextBtn: document.getElementById("nextBtn"),
     questionPalette: document.getElementById("questionPalette"),
   };
@@ -41,6 +42,7 @@
     index: 0,
     answers: {},
     wrongReviewIds: null,
+    savedIds: [],
   };
 
   function escapeHtml(value) {
@@ -79,6 +81,9 @@
       if (Array.isArray(saved.wrongReviewIds)) {
         state.wrongReviewIds = saved.wrongReviewIds;
       }
+      if (Array.isArray(saved.savedIds)) {
+        state.savedIds = saved.savedIds;
+      }
     } catch {
       state.answers = {};
     }
@@ -90,6 +95,7 @@
       index: state.index,
       answers: state.answers,
       wrongReviewIds: state.wrongReviewIds || null,
+      savedIds: state.savedIds,
     }));
   }
 
@@ -123,6 +129,9 @@
         }).map((q) => q.id);
       }
       return QUESTIONS.filter((q) => state.wrongReviewIds.includes(q.id));
+    }
+    if (state.category === "Saved") {
+      return questionsById(state.savedIds);
     }
     if (isQuickExam(state.category)) {
       return questionsById(QUICK_EXAMS[state.category]);
@@ -257,6 +266,10 @@
         els.categoryBadge.textContent = "Review";
         els.selectHint.textContent = "";
         els.questionText.textContent = "No wrong answers to review! You answered all questions correctly.";
+      } else if (state.category === "Saved") {
+        els.categoryBadge.textContent = "Saved";
+        els.selectHint.textContent = "";
+        els.questionText.textContent = "No saved questions yet. Use the bookmark next to the topic name.";
       } else if (isQuickExam(state.category)) {
         els.categoryBadge.textContent = state.category;
         els.selectHint.textContent = "";
@@ -268,6 +281,7 @@
       }
       els.optionsForm.innerHTML = "";
       els.feedback.classList.add("hidden");
+      if (els.saveBtn) els.saveBtn.disabled = true;
       return;
     }
 
@@ -275,6 +289,13 @@
     const max = requiredCount(question);
     const picked = rec.selected.length;
     els.categoryBadge.textContent = question.category;
+    if (els.saveBtn) {
+      const saved = state.savedIds.includes(question.id);
+      els.saveBtn.disabled = false;
+      els.saveBtn.setAttribute("aria-pressed", saved ? "true" : "false");
+      els.saveBtn.setAttribute("aria-label", saved ? "Remove from saved" : "Save for later");
+      els.saveBtn.title = saved ? "Remove from saved" : "Save for later";
+    }
     if (rec.submitted) {
       els.selectHint.textContent = max === 1 ? "Select 1 option" : `Select ${max} options`;
     } else if (max === 1) {
@@ -390,6 +411,7 @@
     reviewGroup.label = "Review";
     addOption(reviewGroup, "All", `All Topics (${QUESTIONS.length})`);
     addOption(reviewGroup, "Wrong Answers", `Wrong Answers (${countWrongAnswers()})`);
+    addOption(reviewGroup, "Saved", `Saved (${state.savedIds.length})`);
     els.categoryFilter.appendChild(reviewGroup);
 
     const topicGroup = document.createElement("optgroup");
@@ -415,6 +437,25 @@
     if (wrongOpt) {
       wrongOpt.textContent = `Wrong Answers (${countWrongAnswers()})`;
     }
+    const savedOpt = els.categoryFilter.querySelector('option[value="Saved"]');
+    if (savedOpt) {
+      savedOpt.textContent = `Saved (${state.savedIds.length})`;
+    }
+  }
+
+  function toggleSaved() {
+    const question = currentQuestion();
+    if (!question) return;
+    if (state.savedIds.includes(question.id)) {
+      state.savedIds = state.savedIds.filter((id) => id !== question.id);
+      if (state.category === "Saved" && state.index >= state.savedIds.length) {
+        state.index = Math.max(0, state.savedIds.length - 1);
+      }
+    } else {
+      state.savedIds = state.savedIds.concat(question.id);
+    }
+    persistState();
+    render();
   }
 
   function resetProgress() {
@@ -433,6 +474,9 @@
   els.submitBtn.addEventListener("click", submitAnswer);
   if (els.retryBtn) {
     els.retryBtn.addEventListener("click", resetCurrentQuestion);
+  }
+  if (els.saveBtn) {
+    els.saveBtn.addEventListener("click", toggleSaved);
   }
   els.resetBtn.addEventListener("click", resetProgress);
   els.categoryFilter.addEventListener("change", () => {

@@ -3052,7 +3052,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Thread Dumps (`jstack`, `jcmd <pid> Thread.print`): Capture the execution stack trace and lock states of all threads. Essential for diagnosing thread contention, deadlocks (BLOCKED threads), and CPU spikes (RUNNABLE threads in tight loops).\n• Heap Dumps (`jcmd <pid> GC.heap_dump`, `-XX:+HeapDumpOnOutOfMemoryError`): Capture an instantaneous snapshot of all heap objects. Essential for analyzing memory leaks and identifying which object classes consume the most memory using tools like Eclipse Memory Analyzer (MAT).\n\nWhy other options are incorrect:\n• Deleting the Linux swap partition does not solve JVM memory leaks and can cause kernel panic / OOM killer terminations.\n• Restarting servers without capturing dumps destroys volatile memory state, discarding critical diagnostic evidence needed for root cause analysis."
+    "explanation": "Why this is correct:\n• Start with evidence, not guesswork. `EXPLAIN` / `EXPLAIN ANALYZE` shows whether the planner uses an index or falls back to a sequential full-table scan, plus actual row counts and timing.\n• In the application, N+1 loops (one query per parent row for a lazy association) often look like a \"slow database\" problem. Fetch joins, entity graphs, or batch fetching collapse those extra selects.\n\nWhy other options are incorrect:\n• Blowing the connection pool up to thousands of connections usually makes contention and lock waits worse; it does not fix a bad plan or an N+1 loop.\n• Turning off transaction / WAL logging trades away durability and is not a query-tuning step."
   },
   {
     "id": 102,
@@ -3806,7 +3806,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Overload Resolution Rule (JLS §15.12.2): When multiple overloaded methods are applicable for an argument, the compiler chooses the **most specific** method.\n• Here, `null` is a valid argument for both `print(Object)` and `print(String)`.\n• Because `String` is a subtype of `Object` (every `String` is an `Object`, but not every `Object` is a `String`), `String` is strictly more specific than `Object`.\n• Therefore, `print(String)` is chosen and invoked at compile time.\n\nWhy other options are incorrect:\n• The code compiles without error; it would only be ambiguous if two sibling types at the same hierarchy level (e.g., `print(String)` and `print(Integer)`) both accepted `null`.\n• It does not invoke `print(Object)` because `String` is more specific."
+    "explanation": "Why this is correct:\n• `10` is an `int` literal. Overload resolution (JLS §15.12.2) runs in three phases and stops at the first phase that finds a match.\n• Phase 1 (strict): allow primitive widening, but not boxing and not varargs. `int` widens to `long`, so `test(long)` is applicable and is chosen.\n• Phase 2 (boxing) and Phase 3 (varargs) are never reached once Phase 1 succeeds. That is why `test(Integer)` and `test(int...)` lose.\n• Output is therefore `primitive `.\n\nWhy other options are incorrect:\n• Autoboxing to `Integer` is Phase 2. It does not beat primitive widening.\n• `int...` is Phase 3, the last-resort match.\n• There is no ambiguity: `test(long)` is the only Phase 1 candidate, so the call compiles and runs."
   },
   {
     "id": 127,
@@ -3835,7 +3835,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• In Java:\n```java\nString s1 = \"Java\";\nString s2 = \"Java\";\nString s3 = new String(\"Java\");\n```\n• Literal Pooling: `s1` and `s2` are string literals. The JVM interns literals in the String Pool, so `s1` and `s2` point to the EXACT same object in the pool. Therefore, `s1 == s2` is `true`.\n• Explicit Instantiation: `new String(\"Java\")` explicitly allocates a brand new `String` object on the heap, bypassing pool reuse. Therefore, `s1 == s3` is `false` (different memory references).\n• Logical Content: All three strings have the identical character sequence `\"Java\"`, so `s1.equals(s2)` and `s1.equals(s3)` are both `true`.\n\nWhy other options are incorrect:\n• `s1 == s3` is `false`, NOT `true`.\n• `s1.equals(s3)` is `true`, NOT `false`."
+    "explanation": "Why this is correct:\n• `s1` is the interned literal `\"Java\"`.\n• `s2 = \"Ja\" + \"va\"` is a compile-time constant expression. The compiler folds it to `\"Java\"` and interns that, so `s1 == s2` is `true`.\n• `part` is a non-final variable. `s3 = \"Ja\" + part` is concatenated at runtime and allocates a new `String` on the heap (not automatically interned), so `s1 == s3` is `false` even though `s1.equals(s3)` is `true`.\n\nWhy other options are incorrect:\n• Runtime concatenation is not interned automatically; `s1 == s3` is `false`.\n• The `+` operator does not always skip the pool. Constant concatenations of literals are interned, which is why `s1 == s2` is `true`."
   },
   {
     "id": 128,

@@ -17,7 +17,26 @@ python3 -m http.server 8765
 
 Then visit [http://127.0.0.1:8765](http://127.0.0.1:8765).
 
-Progress (current question, answers, score) is stored in `localStorage` on that browser.
+Progress (current question, answers, score, and saved questions) is stored in `localStorage` on that browser.
+
+## Interview lab
+
+Open `review.html` the same way, from disk or from GitHub Pages. No server and no build are required.
+
+The lab is eight system-design interviews, plus short must-know lists that point back at those interviews:
+
+- 100k events per second
+- High-traffic API, Redis, and database
+- Order, payment, and inventory
+- Distributed rate limiter
+- Notification platform
+- Database writes that do not fit one primary
+- Reliable calls between services
+- Authentication for many services
+
+**Practice this prompt** hides the answer. **Reveal next** walks requirements, questions, failures, the board, then the checklist.
+
+The same area menu has a **Focus** group after the lab: databases, Kafka, caching, scale, consistency, reliability, idempotency, HTTP, capacity, observability, and security. Each subtopic is a page of its own. Use **Simulator** and **Interview lab** in the header to move between the quiz and the lab. The last page is remembered in this browser.
 
 ## How to practice
 
@@ -33,8 +52,9 @@ Navigation rules:
 
 - **Next** and **Previous** are always visible and unlocked, allowing free navigation between questions at any time without being blocked on wrong answers.
 - After submitting an answer (correct or incorrect), an **Answer again** button appears, allowing you to reset that question back to unanswered and practice it afresh.
-- Use the **Topic** dropdown to take a **Quick Exam 1–8** (each is 25 unique mixed questions covering the full bank with no overlap), filter by topic, or select **Wrong Answers** to review incorrectly answered questions as a group.
-- The stats header displays current question, score, live **Success %**, and total answered. **Reset progress** clears all saved answers.
+- Use the **Topic** dropdown to take a **Quick Exam 1–8** (each is 25 unique mixed questions covering the full bank with no overlap), filter by topic, select **Wrong Answers**, or select **Saved** to review questions you bookmarked.
+- The bookmark next to the topic name saves the current question for later. Click it again to remove it.
+- The stats header displays current question, score, live **Success %**, and total answered. **Reset progress** clears answers and score. Saved questions stay.
 
 ## Topics
 
