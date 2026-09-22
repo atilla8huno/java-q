@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Design Interview Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">Q</span>
+        <div>
+          <h1>System Design Interview Lab</h1>
+          <p>Think like a Principal Engineer. Design for scale, failure, and change.</p>
+        </div>
+      </div>
+      <div class="topbar-controls">
+        <nav class="page-nav" aria-label="Pages">
+          <a href="index.html">Simulator</a>
+          <a href="review.html" aria-current="page">Interview lab</a>
+        </nav>
+        <label class="filter-label" for="areaFilter">Area</label>
+        <select id="areaFilter" aria-label="Study area"></select>
+      </div>
+    </header>
+
+    <main class="review-layout">
+      <aside class="topic-list">
+        <p id="areaBlurb" class="area-blurb"></p>
+        <div id="topicList"></div>
+      </aside>
+      <article class="note-panel">
+        <div class="question-meta">
+          <span id="areaBadge" class="badge">Scenarios</span>
+          <div class="practice-controls">
+            <button id="practiceBtn" class="btn btn-secondary" type="button">Practice this prompt</button>
+            <button id="revealBtn" class="btn btn-primary hidden" type="button">Reveal next</button>
+          </div>
+        </div>
+        <h2 id="noteTitle" class="question-text"></h2>
+        <div id="noteBody" class="note-body"></div>
+      </article>
+    </main>
+  </div>
+
+  <script src="topics.js"></script>
+  <script src="focus.js"></script>
+  <script src="review.js"></script>
+</body>
+</html>
