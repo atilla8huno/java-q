@@ -254,6 +254,15 @@ body {
   margin: 8px 0;
 }
 
+.board-img {
+  width: 100%;
+  height: auto;
+  margin: 8px 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #0b1220;
+}
+
 .board {
   width: 100%;
   height: auto;

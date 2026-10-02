@@ -115,41 +115,9 @@ if (typeof FOCUS_AREAS !== "undefined") {
     return `<ul>${items.map((item) => `<li>${formatRichText(item)}</li>`).join("")}</ul>`;
   }
 
-  function renderBoard(rows) {
-    const width = 720;
-    const boxH = 48;
-    const gapY = 36;
-    const pad = 12;
-    const rowGap = 14;
-    const height = pad * 2 + rows.length * boxH + (rows.length - 1) * gapY;
-    const marker = `<defs><marker id="lab-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/></marker></defs>`;
-    const shapes = [];
-    const centers = [];
-    rows.forEach((row, i) => {
-      const n = row.length;
-      const boxW = Math.min(240, Math.floor((width - pad * 2 - (n - 1) * rowGap) / n));
-      const total = n * boxW + (n - 1) * rowGap;
-      let x = (width - total) / 2;
-      const y = pad + i * (boxH + gapY);
-      const xs = [];
-      row.forEach((label) => {
-        const cx = x + boxW / 2;
-        xs.push(cx);
-        shapes.push(`<rect x="${x}" y="${y}" width="${boxW}" height="${boxH}" rx="8"/>`);
-        shapes.push(`<text x="${cx}" y="${y + 29}" text-anchor="middle">${escapeHtml(label)}</text>`);
-        x += boxW + rowGap;
-      });
-      centers.push({ y, xs });
-    });
-    const arrows = [];
-    for (let i = 0; i < centers.length - 1; i += 1) {
-      const from = centers[i];
-      const to = centers[i + 1];
-      const x1 = from.xs[Math.floor((from.xs.length - 1) / 2)];
-      const x2 = to.xs[Math.floor((to.xs.length - 1) / 2)];
-      arrows.push(`<line x1="${x1}" y1="${from.y + boxH}" x2="${x2}" y2="${to.y}" marker-end="url(#lab-arrow)"/>`);
-    }
-    return `<svg class="board" viewBox="0 0 ${width} ${height}" role="img" aria-label="Architecture diagram">${marker}${arrows.join("")}${shapes.join("")}</svg>`;
+  function renderDiagram(step) {
+    const alt = step.alt || step.title;
+    return `<img class="board-img" src="${escapeHtml(step.image)}" alt="${escapeHtml(alt)}">`;
   }
 
   function section(title, html, stage) {
@@ -171,7 +139,7 @@ if (typeof FOCUS_AREAS !== "undefined") {
     const steps = (topic.steps || []).map((step, index) => `
       <div class="step-card">
         <h4>Step ${index + 1} — ${escapeHtml(step.title)}</h4>
-        ${renderBoard(step.rows)}
+        ${renderDiagram(step)}
         <p>${formatRichText(step.caption)}</p>
       </div>`).join("");
 

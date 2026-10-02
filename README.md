@@ -25,14 +25,14 @@ Open `review.html` the same way, from disk or from GitHub Pages. No server and n
 
 The lab is eight system-design interviews, plus short must-know lists that point back at those interviews:
 
-- 100k events per second
-- High-traffic API, Redis, and database
-- Order, payment, and inventory
-- Distributed rate limiter
-- Notification platform
-- Database writes that do not fit one primary
-- Reliable calls between services
-- Authentication for many services
+- System design overall
+- Spotify
+- TinyURL
+- Twitter
+- Payment system
+- Booking.com
+- WhatsApp
+- ChatGPT
 
 **Practice this prompt** hides the answer. **Reveal next** walks requirements, questions, failures, the board, then the checklist.
 
