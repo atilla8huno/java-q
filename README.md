@@ -52,13 +52,13 @@ Navigation rules:
 
 - **Next** and **Previous** are always visible and unlocked, allowing free navigation between questions at any time without being blocked on wrong answers.
 - After submitting an answer (correct or incorrect), an **Answer again** button appears, allowing you to reset that question back to unanswered and practice it afresh.
-- Use the **Topic** dropdown to take a **Quick Exam 1–8** (each is 25 unique mixed questions covering the full bank with no overlap), filter by topic, select **Wrong Answers**, or select **Saved** to review questions you bookmarked.
+- Use the **Topic** dropdown to take a **Quick Exam 1–8** (each is 30 unique mixed questions covering the full bank with no overlap), filter by topic, select **Wrong Answers**, or select **Saved** to review questions you bookmarked.
 - The bookmark next to the topic name saves the current question for later. Click it again to remove it.
 - The stats header displays current question, score, live **Success %**, and total answered. **Reset progress** clears answers and score. Saved questions stay.
 
 ## Topics
 
-200 high-yield questions, plus 8 **Quick Exams** of 25 unique mixed questions each (every question appears in exactly one exam). Topics:
+240 high-yield questions, plus 8 **Quick Exams** of 30 unique mixed questions each (every question appears in exactly one exam). Topics:
 
 - Core Java (Inheritance, Overloading, String Pool, Try-With-Resources, Generics, Text Blocks)
 - Collections (PECS Wildcards, HashMaps, Unmodifiable Lists, Sequenced Collections)
@@ -68,7 +68,8 @@ Navigation rules:
 - Spring & Hibernate (ProxyBeanMethods, Transactional propagation, N+1 problem)
 - REST & Web (HTTP semantics, Idempotency, Status codes)
 - Database (ACID, Isolation levels, Indexing)
-- Testing & Design (Clean architecture, GoF patterns, Unit/Integration testing)
+- Testing & Design (Clean architecture, TDD, Unit/Integration test doubles, SOLID principles: SRP, OCP, LSP, ISP, DIP; Domain-Driven Design: Entities, Value Objects, Aggregates, Domain vs Integration Events, Bounded Contexts, Anti-Corruption Layer, Specification; Enterprise Patterns: Unit of Work, Data Mapper vs Active Record, CQRS, Event Sourcing, EIP Content-Based Router & Splitter)
+- Design Patterns (Classic Gang of Four (GoF) Creational: Singleton, Factory Method, Abstract Factory, Builder, Prototype; Structural: Decorator, Facade, Composite, Bridge, Flyweight, Proxy, Adapter; Behavioral: Strategy, Observer, Command, Chain of Responsibility, State, Template Method, Iterator, Mediator, Memento, Visitor, Interpreter)
 - Modern Java (Records, Sealed Classes, Pattern Matching for Switch, Virtual Threads)
 - Staff Java & Kotlin (CompletableFuture exception handling, Virtual Thread Pinning in synchronized/JNI, Kotlin Coroutines vs Threads, Kotlin Platform Types & Nullability, LongAdder vs AtomicLong under contention, lateinit vs by lazy, Heap Dump & GC Log Leak Diagnostics, CountDownLatch vs CyclicBarrier vs Semaphore, Kotlin Data Classes, BlockingQueue implementations, JIT Compilation & Service Warm-up, Spring @Transactional Self-Invocation Proxy Trap, JPA N+1 Query Resolution, Spring Bean Lifecycle Callbacks, jstack Deadlock Analysis, Kotlin Coroutine Exception Propagation)
 - Architecture & System Design (Sync REST/gRPC vs Async Event-Driven, Cache Stampede / Thundering Herd mitigation, Caching Strategies: Cache-Aside vs Write-Through vs Write-Behind, Composite Index Leftmost Prefix Rule & Covering Indexes, Idempotent REST API Design, Horizontal Database Sharding Trade-offs, Token Bucket vs Sliding Window Rate Limiting, Circuit Breakers & Cascading Failures, URI Path vs Header API Versioning, HikariCP Connection Pool Sizing, Database-per-Service Microservice Challenges, Graceful Shutdown in Kubernetes, Disaster Recovery: RPO vs RTO, JWT Architecture & Revocation, At-Least-Once Delivery & Idempotent Consumers, L4 vs L7 Load Balancing)

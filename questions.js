@@ -2695,7 +2695,7 @@ const QUESTIONS = [
   },
   {
     "id": 90,
-    "category": "Testing & Design",
+    "category": "Design Patterns",
     "question": "What is the primary architectural distinction between the Adapter and Proxy design patterns?",
     "options": [
       {
@@ -6061,5 +6061,1139 @@ const QUESTIONS = [
     ],
     "requiredCount": 2,
     "explanation": "Why this is correct:\n• Nested Loops: An outer loop running N times with an inner loop running N times executes the inner body N x N = N^2 times, giving O(N^2) quadratic time.\n• Call Stack Space Complexity: Each recursive method invocation allocates a new stack frame on the thread's execution call stack (storing local variables and return addresses). If recursion descends to depth D, D stack frames exist simultaneously in memory, contributing O(D) auxiliary space complexity!\n  (Ignoring call stack memory in Big-O analysis is a common interview mistake).\n\nWhy other options are incorrect:\n• Binary search runs in O(log N) logarithmic time, NOT O(N).\n• Java's `Arrays.sort()` uses TimSort which takes O(N) auxiliary space (or O(log N) for primitive Dual-Pivot QuickSort), never O(N^2)."
+  }
+,
+  {
+    "id": 201,
+    "category": "Design Patterns",
+    "question": "Which TWO statements describe thread-safe, robust Singleton implementation strategies in Java?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Declaring the instance as `private static volatile Singleton instance;` and checking `if (instance == null)` twice inside a synchronized block guarantees thread visibility and prevents instruction reordering hazards."
+      },
+      {
+        "id": "B",
+        "text": "Bill Pugh's Initialization-on-demand Holder idiom relies on JVM classloader guarantees to load the static inner holder class only when `getInstance()` is called, achieving lazy loading without synchronization overhead."
+      },
+      {
+        "id": "C",
+        "text": "A simple non-volatile double-checked locking idiom is safe across all multi-core JVMs because the JIT compiler guarantees CPU memory barrier flushes automatically."
+      },
+      {
+        "id": "D",
+        "text": "Single-element `enum` singletons are vulnerable to reflection instantiation attacks via `Constructor.setAccessible(true)` and require a custom `readResolve()` method for deserialization safety."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Double-Checked Locking (DCL) with `volatile`: The `volatile` keyword is mandatory on the instance variable. Without `volatile`, the JVM/CPU can reorder the instructions during object instantiation (allocating memory -> assigning reference to `instance` -> executing constructor), allowing another thread to observe a partially constructed, non-null object reference!\n• Bill Pugh Holder Idiom: Leverages the Java Language Specification (JLS) guarantee that a nested static class (`private static class Holder { static final Singleton INSTANCE = new Singleton(); }`) is NOT loaded or initialized when the outer class is loaded, but only upon the first invocation of `getInstance()`. The JVM handles thread-safe class initialization internally with zero synchronization penalty.\n\nWhy other options are incorrect:\n• Non-volatile DCL is broken due to instruction reordering.\n• Java Enums provide built-in serialization safety (JVM guarantees no duplicate enum instances upon deserialization) and the JVM explicitly prevents reflection attacks via `Constructor.newInstance()` (throwing `IllegalArgumentException: Cannot reflectively create enum objects`)."
+  },
+  {
+    "id": 202,
+    "category": "Design Patterns",
+    "question": "What is the core structural intent of the Factory Method pattern according to the Gang of Four (GoF)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Provide an interface for creating families of related or dependent objects without specifying their concrete classes."
+      },
+      {
+        "id": "B",
+        "text": "Define an interface for creating an object, but let subclasses decide which class to instantiate, deferring instantiation to subclasses."
+      },
+      {
+        "id": "C",
+        "text": "Separate the construction of a complex object from its representation so that the same construction process can create different representations."
+      },
+      {
+        "id": "D",
+        "text": "Wrap multiple loosely coupled subsystems behind a single simplified facade interface."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Factory Method Pattern (GoF Creational):\n  \"Define an interface for creating an object, but let subclasses decide which class to instantiate. Factory Method lets a class defer instantiation to subclasses.\"\n• Structure: An abstract creator class declares a factory method (e.g., `protected abstract Document createDocument();`) that returns an abstract product. Concrete creator subclasses override this method to instantiate and return concrete product instances (e.g., `PdfDocument`, `WordDocument`).\n\nWhy other options are incorrect:\n• Creating families of related objects without specifying concrete classes is the Abstract Factory pattern.\n• Separating construction from representation is the Builder pattern.\n• Wrapping multiple subsystems behind a unified interface is the Facade pattern."
+  },
+  {
+    "id": 203,
+    "category": "Design Patterns",
+    "question": "In which scenario is the Abstract Factory pattern most appropriately applied over the Factory Method pattern?",
+    "options": [
+      {
+        "id": "A",
+        "text": "When an application needs to instantiate a single isolated object whose concrete class is determined by an environment variable at startup."
+      },
+      {
+        "id": "B",
+        "text": "When a system must be independent of how its products are created and must enforce that products from the same family (e.g., DarkThemeButton and DarkThemeScrollbar) are used together consistently."
+      },
+      {
+        "id": "C",
+        "text": "When an algorithm's execution steps must be executed in a strict invariant sequence with customizable sub-steps."
+      },
+      {
+        "id": "D",
+        "text": "When a class needs to dynamically attach responsibilities to individual objects at runtime without subclassing."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Abstract Factory Pattern (GoF Creational):\n  Provides an interface for creating entire families of related or dependent objects without specifying their concrete classes.\n• Classic Use Case: Cross-platform UI widget toolkits (e.g. `MacWidgetFactory` creating `MacButton` and `MacCheckbox`, versus `WindowsWidgetFactory` creating `WindowsButton` and `WindowsCheckbox`). It prevents client code from accidentally mixing incompatible products from different product suites.\n\nWhy other options are incorrect:\n• Single object instantiation is suitable for Factory Method or Simple Factory.\n• Strict invariant algorithm steps with customizable sub-steps describes Template Method.\n• Dynamic runtime attachment of responsibilities describes Decorator."
+  },
+  {
+    "id": 204,
+    "category": "Design Patterns",
+    "question": "Which TWO statements represent key architectural advantages of the Builder pattern in Java?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It enables the construction of immutable objects with many optional parameters without suffering from telescoping constructors."
+      },
+      {
+        "id": "B",
+        "text": "It allows comprehensive parameter validation and cross-field invariant enforcement before the target object is instantiated inside `build()`."
+      },
+      {
+        "id": "C",
+        "text": "It completely eliminates heap allocation overhead by creating objects entirely on the thread stack."
+      },
+      {
+        "id": "D",
+        "text": "It automatically generates database schemas and SQL inserts at compile time without bytecode inspection."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Telescoping Constructors Problem: When a class has 5+ parameters with various optional combinations, constructors quickly become unreadable and error-prone (e.g. accidentally swapping adjacent `int` or `String` arguments).\n• Immutability & Validation: The Builder pattern allows setting fields incrementally with fluent, readable methods (`builder.withTimeout(5000).withRetries(3)`). The target object constructor can be `private`, and the `build()` method validates that all required parameters are present and consistent before invoking the constructor, producing a fully immutable object.\n\nWhy other options are incorrect:\n• The Builder pattern allocates builder instances and the product on the JVM heap; it does not bypass heap memory.\n• Builder is a software design pattern, not an ORM or SQL generator."
+  },
+  {
+    "id": 205,
+    "category": "Design Patterns",
+    "question": "What is a known technical limitation and risk of implementing the Prototype pattern in Java via `java.lang.Cloneable` and `Object.clone()`?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`Object.clone()` performs a deep recursive copy of all member object graphs by default, creating severe memory thrashing."
+      },
+      {
+        "id": "B",
+        "text": "`Cloneable` is a marker interface that does not declare `clone()`, and `Object.clone()` performs a field-by-field shallow copy without calling class constructors, potentially bypassing invariant checks and leaking mutable references."
+      },
+      {
+        "id": "C",
+        "text": "The Java Virtual Machine prohibits overriding `clone()` in public classes unless reflection permissions are explicitly granted in `module-info.java`."
+      },
+      {
+        "id": "D",
+        "text": "Classes implementing `Cloneable` cannot be loaded by custom ClassLoaders in modular Java applications."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Flaws in Java's `Cloneable` (Josh Bloch, *Effective Java*):\n  1. `Cloneable` is an anomalous marker interface that does not declare any methods; `clone()` is protected in `Object`.\n  2. `Object.clone()` performs a shallow field-by-field copy (copying reference addresses for nested objects, not cloning the referenced objects).\n  3. It allocates objects without invoking any class constructors, which can bypass initialization invariants and security checks.\n• Best Practice: Prefer Copy Constructors (e.g., `public User(User other)`) or Copy Factory Methods (`public static User newInstance(User other)`) over `Cloneable`.\n\nWhy other options are incorrect:\n• `Object.clone()` performs a shallow copy, NOT a deep copy.\n• Overriding `clone()` does not require JPMS module reflection grants."
+  },
+  {
+    "id": 206,
+    "category": "Design Patterns",
+    "question": "How does the Decorator pattern provide extended functionality compared to class inheritance?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It attaches additional responsibilities to an object dynamically at runtime by wrapping it in an instance of the same interface, providing a flexible alternative to static subclassing."
+      },
+      {
+        "id": "B",
+        "text": "It modifies the bytecode of target classes at classloading time using Java instrumentation agents."
+      },
+      {
+        "id": "C",
+        "text": "It replaces the original object instance in memory by overwriting its vtable pointers during execution."
+      },
+      {
+        "id": "D",
+        "text": "It converts incompatible interfaces into a uniform protocol expected by client callers."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Decorator Pattern (GoF Structural):\n  Attach additional responsibilities to an object dynamically. Decorators provide a flexible alternative to subclassing for extending functionality.\n• Composition over Inheritance: Instead of creating a combinatorial explosion of static subclasses (e.g. `BufferedGzipEncryptedFileInputStream`), decorators implement the same interface as the wrapped object and delegate calls while adding behavior before or after delegation.\n• Canonical Java Example: Java I/O Streams (`new BufferedReader(new InputStreamReader(new FileInputStream(\"file.txt\")))`) where `BufferedReader` decorates `Reader`.\n\nWhy other options are incorrect:\n• Modifying bytecode at classloading is bytecode weaving/instrumentation, not Decorator.\n• Converting incompatible interfaces is the Adapter pattern."
+  },
+  {
+    "id": 207,
+    "category": "Design Patterns",
+    "question": "What is the primary objective of the Facade design pattern?",
+    "options": [
+      {
+        "id": "A",
+        "text": "To completely hide subsystem classes in private packages so clients cannot interact with them directly under any circumstances."
+      },
+      {
+        "id": "B",
+        "text": "To provide a unified, higher-level interface to a set of interfaces in a subsystem, making the subsystem easier to use without preventing access to lower-level classes if needed."
+      },
+      {
+        "id": "C",
+        "text": "To maintain a single point of thread synchronization across all subsystem worker threads."
+      },
+      {
+        "id": "D",
+        "text": "To share common state across many fine-grained objects to reduce heap memory footprint."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Facade Pattern (GoF Structural):\n  \"Provide a unified interface to a set of interfaces in a subsystem. Facade defines a higher-level interface that makes the subsystem easier to use.\"\n• Key Distinction: A Facade simplifies common operations for typical clients (e.g., `orderFulfillmentFacade.processOrder(orderId)` orchestrating inventory, payment, and shipping subsystems) while still permitting advanced clients direct access to lower-level classes if fine-grained control is required.\n\nWhy other options are incorrect:\n• Facades do not strictly encapsulate or forbid access to underlying subsystem classes.\n• Thread synchronization is handled by concurrency constructs (locks, monitors), not Facade.\n• Sharing fine-grained state to reduce memory is the Flyweight pattern."
+  },
+  {
+    "id": 208,
+    "category": "Design Patterns",
+    "question": "Which design problem does the Composite pattern solve?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Translating remote RPC invocations into local in-memory method calls."
+      },
+      {
+        "id": "B",
+        "text": "Composing objects into tree structures to represent part-whole hierarchies, allowing clients to treat individual objects (leaf nodes) and compositions of objects (composite nodes) uniformly."
+      },
+      {
+        "id": "C",
+        "text": "Coordinating asynchronous messaging between multiple publishers and subscribers via a broker."
+      },
+      {
+        "id": "D",
+        "text": "Managing undo/redo operations across distributed database transactions."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Composite Pattern (GoF Structural):\n  \"Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly.\"\n• Structure: A common Component interface is implemented by both `Leaf` objects (primitives) and `Composite` objects (containers holding child components). Operations like `render()` or `getSize()` recursively cascade down the tree without clients having to check `if (node instanceof Composite)`.\n• Real-world examples: File system directories containing files and subdirectories; UI layout containers (panels containing buttons and nested panels).\n\nWhy other options are incorrect:\n• Translating RPC invocations is the Remote Proxy / Stub pattern.\n• Asynchronous publish-subscribe messaging is the Observer or Message Broker pattern."
+  },
+  {
+    "id": 209,
+    "category": "Design Patterns",
+    "question": "Why would a software architect choose the Bridge pattern over standard class inheritance?",
+    "options": [
+      {
+        "id": "A",
+        "text": "To decouple an abstraction from its implementation so that both can vary independently, preventing a Cartesian product combinatorial explosion of subclasses."
+      },
+      {
+        "id": "B",
+        "text": "To ensure that only a single instance of an abstraction exists across all JVM cluster nodes."
+      },
+      {
+        "id": "C",
+        "text": "To convert synchronous blocking method calls into non-blocking reactive streams."
+      },
+      {
+        "id": "D",
+        "text": "To provide a surrogate placeholder that intercepts calls for security access checks."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Bridge Pattern (GoF Structural):\n  \"Decouple an abstraction from its implementation so that the two can vary independently.\"\n• The Cartesian Explosion Problem: If you have M abstractions (e.g., `Circle`, `Square`, `Triangle`) and N rendering implementations (e.g., `VectorRenderer`, `RasterRenderer`), inheritance requires M x N classes (`VectorCircle`, `RasterCircle`, etc.). With Bridge, you maintain two separate hierarchies linked by composition (the abstraction contains a reference to the implementor), requiring only M + N classes!\n\nWhy other options are incorrect:\n• Ensuring a single cluster-wide instance requires distributed locks/singletons.\n• Converting blocking calls to reactive streams describes Reactive Adapters.\n• Intercepting calls for security checks is the Proxy pattern."
+  },
+  {
+    "id": 210,
+    "category": "Design Patterns",
+    "question": "How does the Flyweight pattern achieve significant memory savings when handling vast numbers of fine-grained objects?",
+    "options": [
+      {
+        "id": "A",
+        "text": "By compressing object bytecode in Metaspace using LZ4 compression."
+      },
+      {
+        "id": "B",
+        "text": "By dividing object state into shared intrinsic state (stored internally within the flyweight and reused) and extrinsic state (passed in by the client or calculated contextually at runtime)."
+      },
+      {
+        "id": "C",
+        "text": "By evicting older instances to disk using memory-mapped swap files."
+      },
+      {
+        "id": "D",
+        "text": "By enforcing that all object fields are serialized into compact protocol buffers."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Flyweight Pattern (GoF Structural):\n  \"Use sharing to support large numbers of fine-grained objects efficiently.\"\n• Intrinsic vs Extrinsic State:\n  - Intrinsic State: Invariant, context-independent data stored inside the flyweight object (e.g., font glyph shape, color palette). This is shared across thousands of usages.\n  - Extrinsic State: Context-dependent data (e.g., coordinates (x, y) where the glyph is drawn on screen) passed into flyweight methods by callers.\n• Canonical Java Example: `Integer.valueOf(int)` caches values from -128 to 127; Java String interning (`String.intern()`) reuses identical character sequences.\n\nWhy other options are incorrect:\n• Flyweight does not compress bytecode or evict objects to disk swap files."
+  },
+  {
+    "id": 211,
+    "category": "Design Patterns",
+    "question": "Which TWO statements accurately contrast Java Dynamic Proxies (`java.lang.reflect.Proxy`) with CGLIB / ByteBuddy bytecode-generated proxies?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`java.lang.reflect.Proxy` can only proxy classes that implement one or more interfaces; it cannot proxy concrete classes without interfaces."
+      },
+      {
+        "id": "B",
+        "text": "CGLIB/ByteBuddy subclasses the target class at runtime, allowing it to proxy concrete classes without interfaces, but it cannot proxy `final` classes or intercept `final` methods."
+      },
+      {
+        "id": "C",
+        "text": "`java.lang.reflect.Proxy` creates subclasses at bytecode level and can intercept `private` method invocations."
+      },
+      {
+        "id": "D",
+        "text": "CGLIB proxies require all target methods to be annotated with `@Transactional` or proxy generation fails."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• JDK Dynamic Proxies (`java.lang.reflect.Proxy`):\n  Implemented directly in the standard Java runtime. Requires the target to implement at least one Java `interface`. The proxy dynamically implements the specified interfaces and routes method calls to an `InvocationHandler`.\n• Class-Based Proxies (CGLIB / ByteBuddy):\n  Generates a synthetic subclass of the target class at runtime (used heavily in Spring AOP when `@EnableAspectJAutoProxy(proxyTargetClass = true)` is set). Because it relies on subclassing, it CANNOT proxy `final` classes or override `final` methods, and it requires a default no-arg constructor.\n\nWhy other options are incorrect:\n• JDK dynamic proxy cannot intercept private methods or proxy concrete classes.\n• CGLIB does not require Spring annotations to create proxies."
+  },
+  {
+    "id": 212,
+    "category": "Design Patterns",
+    "question": "What is the structural difference between an Object Adapter and a Class Adapter in object-oriented design?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Object Adapter adapts primitive types only; Class Adapter adapts reference object types."
+      },
+      {
+        "id": "B",
+        "text": "Object Adapter relies on object composition to wrap the adaptee instance, whereas Class Adapter uses inheritance (subclassing the adaptee and implementing the target interface) to adapt the interface."
+      },
+      {
+        "id": "C",
+        "text": "Object Adapter compiles into native machine code; Class Adapter runs interpreted on the JVM."
+      },
+      {
+        "id": "D",
+        "text": "Object Adapter can only adapt third-party libraries; Class Adapter is restricted to internal domain classes."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Adapter Pattern (GoF Structural):\n  \"Convert the interface of a class into another interface clients expect.\"\n• Object Adapter (Composition):\n  The adapter holds a private reference to the adaptee instance (`class OrderAdapter implements Target { private final LegacyOrderSystem adaptee; ... }`). Highly flexible because one adapter can work with the adaptee and all of its subclasses.\n• Class Adapter (Inheritance):\n  The adapter subclasses the adaptee while implementing the target interface (`class OrderAdapter extends LegacyOrderSystem implements Target`). In languages with single inheritance like Java, a class adapter cannot adapt a class and any of its subclasses simultaneously.\n\nWhy other options are incorrect:\n• Both forms work with standard reference types and compile to standard JVM bytecode."
+  },
+  {
+    "id": 213,
+    "category": "Design Patterns",
+    "question": "Which scenario represents the most idiomatic application of the Strategy pattern in Java?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A caching service that uses deep recursion to serialize object hierarchies."
+      },
+      {
+        "id": "B",
+        "text": "Replacing complex conditional `if-else` or `switch` blocks that select among different algorithms (e.g., shipping cost calculations or discount pricing rules) with interchangeable implementations of a shared interface injected at runtime."
+      },
+      {
+        "id": "C",
+        "text": "Creating a global registry where singletons are registered during JVM startup."
+      },
+      {
+        "id": "D",
+        "text": "Wrapping a legacy SOAP web service behind a modern JSON REST controller."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Strategy Pattern (GoF Behavioral):\n  \"Define a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from clients that use it.\"\n• Idiomatic Java Usage:\n  - Replacing nested conditionals with polymorphic strategies (`PaymentStrategy.pay(amount)` with implementations `CreditCardPayment`, `PayPalPayment`, `CryptoPayment`).\n  - Standard library: `java.util.Comparator<T>` passed to `Collections.sort()` or `Stream.sorted()` is a pure Strategy pattern!\n\nWhy other options are incorrect:\n• Object hierarchy serialization is typically solved via Visitor.\n• Global singleton registry describes Service Locator or Singleton.\n• Wrapping a SOAP service behind REST is an Adapter or Facade."
+  },
+  {
+    "id": 214,
+    "category": "Design Patterns",
+    "question": "What is a common architectural risk when implementing the Observer pattern in long-running Java applications, and how is it prevented?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Deadlocks in the garbage collector caused by cyclic dependencies between subjects and observers."
+      },
+      {
+        "id": "B",
+        "text": "Memory leaks (the 'Lapsed Listener' problem), where subjects retain strong references to registered observers, preventing garbage collection; mitigated by explicitly unregistering listeners or using `WeakReference`."
+      },
+      {
+        "id": "C",
+        "text": "StackOverflowError triggered because observers are executed exclusively on the JVM native thread stack."
+      },
+      {
+        "id": "D",
+        "text": "ClassCastException caused by JVM type erasure when observers receive generic payload events."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• The Lapsed Listener Problem:\n  When an observer registers with a long-lived subject (e.g. a singleton event bus or application-scoped publisher), the subject retains a strong reference to the observer. If the observer's lifecycle finishes (e.g. a short-lived request context or UI view) but the caller forgets to deregister it, the garbage collector CANNOT reclaim the observer or its entire referenced object graph!\n• Solutions:\n  1. Explicitly deregister listeners when cleaning up (e.g., in `close()` or `@PreDestroy`).\n  2. Use weak reference listeners (`WeakReference<Observer>` or `WeakHashMap`) so the subject's reference does not prevent GC reclamation.\n\nWhy other options are incorrect:\n• Garbage collectors handle cyclic object references without deadlock.\n• Type erasure does not inherently cause ClassCastException if generic signatures match."
+  },
+  {
+    "id": 215,
+    "category": "Design Patterns",
+    "question": "Which TWO architectural capabilities are directly enabled by encapsulating requests as Command objects?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Queueing, scheduling, or logging requests for delayed or asynchronous execution across thread boundaries."
+      },
+      {
+        "id": "B",
+        "text": "Implementing multi-level Undo/Redo mechanisms by storing executed command histories with corresponding reverse operations."
+      },
+      {
+        "id": "C",
+        "text": "Automatically converting relational SQL queries into NoSQL document projections without an ORM."
+      },
+      {
+        "id": "D",
+        "text": "Guaranteeing zero-latency network transmission over public internet backbones."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Command Pattern (GoF Behavioral):\n  \"Encapsulate a request as an object, thereby letting you parameterize clients with different requests, queue or log requests, and support undoable operations.\"\n• Core Benefits:\n  - Decoupling Invoker and Receiver: The component triggering an action doesn't know what class handles it or how.\n  - Undo/Redo: By defining an `undo()` method alongside `execute()`, commands can reverse state mutations.\n  - Work Queues: Commands can be queued in thread pools (`Runnable` and `Callable` in `java.util.concurrent` are canonical examples of Command!).\n\nWhy other options are incorrect:\n• Command does not perform ORM translations or speed up physical network transmission."
+  },
+  {
+    "id": 216,
+    "category": "Design Patterns",
+    "question": "How does the Chain of Responsibility pattern handle incoming requests?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It broadcasts the request simultaneously to all registered handlers using multi-cast UDP packets."
+      },
+      {
+        "id": "B",
+        "text": "It passes the request along a chain of handler objects; each handler decides either to process the request, pass it to the next handler in the sequence, or both."
+      },
+      {
+        "id": "C",
+        "text": "It routes the request to a centralized database that triggers stored procedures."
+      },
+      {
+        "id": "D",
+        "text": "It compiles the request into an abstract syntax tree and evaluates it using formal grammar rules."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Chain of Responsibility Pattern (GoF Behavioral):\n  \"Avoid coupling the sender of a request to its receiver by giving more than one object a chance to handle the request. Chain the receiving objects and pass the request along the chain until an object handles it.\"\n• Production Implementations:\n  - Jakarta Servlet `FilterChain`: Each `Filter` can inspect the request, reject it (e.g. authentication failure), modify headers, and call `chain.doFilter(request, response)` to pass control downstream.\n  - Spring Security `SecurityFilterChain`: Sequential filters for CSRF validation, Bearer token extraction, authentication, and authorization.\n\nWhy other options are incorrect:\n• Broadcasting to all handlers simultaneously is Publish-Subscribe or Multi-cast.\n• Evaluating formal grammars describes the Interpreter pattern."
+  },
+  {
+    "id": 217,
+    "category": "Design Patterns",
+    "question": "What is the primary structural difference between the State pattern and the Strategy pattern?",
+    "options": [
+      {
+        "id": "A",
+        "text": "State is a structural pattern whereas Strategy is a creational pattern."
+      },
+      {
+        "id": "B",
+        "text": "While both share similar class diagrams, Strategy encapsulates interchangeable independent algorithms chosen externally by the client, whereas State encapsulates state-dependent behaviors and frequently transitions the object's context from one state to another automatically."
+      },
+      {
+        "id": "C",
+        "text": "Strategy can only have one concrete implementation at runtime, whereas State allows up to 256 active states."
+      },
+      {
+        "id": "D",
+        "text": "State requires multiple inheritance, whereas Strategy works exclusively with abstract classes."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• State vs Strategy Pattern Comparison:\n  - Similar Structure: Both patterns use composition: a context object delegates operations to an interface implementation.\n  - Intent Difference:\n    * Strategy: The client generally chooses which concrete strategy to inject into the context (e.g. `FastSort` vs `StableSort`). Strategies are typically unaware of each other.\n    * State: State implementations represent the internal lifecycle states of an entity (e.g. `OrderPendingState`, `OrderPaidState`, `OrderShippedState`). State transitions are managed either by the concrete state objects or by the context itself during method execution.\n\nWhy other options are incorrect:\n• Both State and Strategy are behavioral patterns (not creational or structural).\n• Neither is limited by artificial counts like 256 states."
+  },
+  {
+    "id": 218,
+    "category": "Design Patterns",
+    "question": "How does the Template Method pattern enforce the 'Hollywood Principle' ('Don't call us, we'll call you')?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Subclasses call parent class methods asynchronously via message queues."
+      },
+      {
+        "id": "B",
+        "text": "A base class defines the invariant skeleton of an algorithm in a `final` template method, calling abstract or hook methods that subclasses override to supply specific step behaviors without altering the algorithm structure."
+      },
+      {
+        "id": "C",
+        "text": "Client code dynamically registers lambda callbacks that intercept private method calls at runtime."
+      },
+      {
+        "id": "D",
+        "text": "Objects communicate exclusively through JSON webhooks rather than in-process method invocations."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Template Method Pattern (GoF Behavioral):\n  \"Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm's structure.\"\n• Hollywood Principle: The high-level superclass controls the execution flow and calls the low-level subclass operations when needed, rather than subclasses controlling superclass flow.\n• Best Practice: The template method is typically marked `final` in Java so subclasses cannot tamper with the invariant algorithm sequencing (e.g., `public final void processOrder() { validate(); chargePayment(); ship(); }`).\n\nWhy other options are incorrect:\n• Subclasses calling superclasses directly is standard inheritance, the opposite of the Hollywood Principle.\n• Dynamic lambda callbacks represent Strategy/Observer."
+  },
+  {
+    "id": 219,
+    "category": "Design Patterns",
+    "question": "What distinguishes fail-fast iterators from fail-safe (weakly consistent) iterators in Java Collections?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Fail-fast iterators immediately throw `ConcurrentModificationException` if the underlying collection is structurally modified during iteration (via a `modCount` check); fail-safe iterators traverse a snapshot or tolerate concurrent modifications without throwing."
+      },
+      {
+        "id": "B",
+        "text": "Fail-fast iterators run on background worker threads; fail-safe iterators execute synchronously on the main thread."
+      },
+      {
+        "id": "C",
+        "text": "Fail-fast iterators return elements in descending reverse order; fail-safe iterators return elements in ascending sorted order."
+      },
+      {
+        "id": "D",
+        "text": "Fail-fast iterators consume O(N) heap memory for every `next()` call; fail-safe iterators execute in strict O(1) space."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Fail-Fast Iterators (`ArrayList`, `HashMap`, `HashSet`):\n  Track an internal modification count (`modCount`). When the iterator is created, it records `expectedModCount = modCount`. If any structural modification occurs outside the iterator's own `remove()` method, subsequent `next()` or `hasNext()` checks detect `modCount != expectedModCount` and immediately throw `ConcurrentModificationException`.\n• Fail-Safe / Weakly Consistent Iterators (`CopyOnWriteArrayList`, `ConcurrentHashMap`):\n  Iterate over an immutable array snapshot or maintain lock-free traversals that reflect the state of the collection at or since iterator creation without ever throwing `ConcurrentModificationException`.\n\nWhy other options are incorrect:\n• Concurrency safety is unrelated to thread assignment or reverse sorting order."
+  },
+  {
+    "id": 220,
+    "category": "Design Patterns",
+    "question": "Which problem is addressed by introducing the Mediator pattern into a complex system of collaborating objects?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It replaces many-to-many tight couplings and dependencies among peer objects (colleagues) with one-to-many interactions through a centralized mediator object, keeping colleagues loosely coupled."
+      },
+      {
+        "id": "B",
+        "text": "It distributes database transactions across multiple relational database shards."
+      },
+      {
+        "id": "C",
+        "text": "It caches read-heavy queries in an in-memory Redis cluster."
+      },
+      {
+        "id": "D",
+        "text": "It encrypts sensitive payloads traveling across untrusted network perimeters."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Mediator Pattern (GoF Behavioral):\n  \"Define an object that encapsulates how a set of objects interact. Mediator promotes loose coupling by keeping objects from referring to each other explicitly, and it lets you vary their interaction independently.\"\n• Real-world Analogy: Air Traffic Control (ATC) tower. Airplanes (colleagues) do not communicate directly with every other airplane in the sky; all planes communicate exclusively with the tower (mediator), reducing an O(N^2) communication graph to O(N).\n• Example: GUI Dialog containing interdependent form controls (checkbox toggling text fields and submit buttons).\n\nWhy other options are incorrect:\n• Database sharding, caching, and network encryption are distributed systems/security concerns, not the Mediator pattern."
+  },
+  {
+    "id": 221,
+    "category": "Design Patterns",
+    "question": "Which THREE roles comprise the classic Gang of Four Memento pattern?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Originator (the object whose internal state needs saving and restoring)."
+      },
+      {
+        "id": "B",
+        "text": "Memento (the immutable object that stores the internal snapshot of the Originator's state)."
+      },
+      {
+        "id": "C",
+        "text": "Caretaker (the custodian responsible for keeping the Memento safe without examining or tampering with its contents)."
+      },
+      {
+        "id": "D",
+        "text": "Interceptor (the thread that validates cryptographic checksums on state transitions)."
+      },
+      {
+        "id": "E",
+        "text": "Dispatcher (the message broker that publishes state changes to remote microservices)."
+      }
+    ],
+    "correct": [
+      "A",
+      "B",
+      "C"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Memento Pattern (GoF Behavioral):\n  \"Without violating encapsulation, capture and externalize an object's internal state so that the object can be restored to this state later.\"\n• The Three Roles:\n  1. Originator: Creates a memento containing a snapshot of its current internal state and uses the memento to restore its previous state.\n  2. Memento: Passive value holder storing the originator's internal state. It exposes a wide interface to the Originator and a narrow interface to all other objects.\n  3. Caretaker: Requests a memento from the originator (e.g. before an operation) and stores it in an undo stack without reading or modifying its fields.\n\nWhy other options are incorrect:\n• Interceptor and Dispatcher are not participants in the GoF Memento pattern."
+  },
+  {
+    "id": 222,
+    "category": "Design Patterns",
+    "question": "How does the Visitor pattern achieve Double Dispatch in Java, and what is its main benefit?",
+    "options": [
+      {
+        "id": "A",
+        "text": "By executing two consecutive HTTP requests to ensure high availability across availability zones."
+      },
+      {
+        "id": "B",
+        "text": "By combining a call to the element (`element.accept(visitor)`) with a callback to the visitor (`visitor.visit(this)`), dispatching dynamically on both the element type and visitor operation, enabling new operations without modifying element classes."
+      },
+      {
+        "id": "C",
+        "text": "By dispatching events to both Kafka and RabbitMQ simultaneously to prevent data loss."
+      },
+      {
+        "id": "D",
+        "text": "By compiling Java code to both bytecode and native machine code ahead of time."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Double Dispatch Mechanism:\n  Java supports only Single Dispatch (polymorphism chooses the method implementation based solely on the runtime type of the receiver object, while parameter types are bound statically at compile time).\n• How Visitor works:\n  1. Client calls `element.accept(visitor)` (First dispatch: polymorphic on the `Element` subclass).\n  2. Inside `accept`, the concrete element invokes `visitor.visit(this)` (Second dispatch: `this` has an exact concrete compile-time type, invoking the specific overloaded `visit(ConcreteElement)` method!).\n• Benefit: New operations (e.g., ExportToXML, TypeCheck, CodeGen) can be added to an object structure (e.g., an AST) without modifying the element classes.\n\nWhy other options are incorrect:\n• HTTP retries, dual event dispatching, and AOT compilation are unrelated to Double Dispatch."
+  },
+  {
+    "id": 223,
+    "category": "Design Patterns",
+    "question": "When is the Gang of Four Interpreter pattern appropriate in software design?",
+    "options": [
+      {
+        "id": "A",
+        "text": "When a problem occurs repeatedly in a well-defined domain that can be expressed as sentences in a simple language or grammar, and an abstract syntax tree representation can evaluate those sentences."
+      },
+      {
+        "id": "B",
+        "text": "When database queries must be translated into raw TCP socket packets for high-frequency trading."
+      },
+      {
+        "id": "C",
+        "text": "When an application needs to stream audio chunks directly from CDN edge servers to mobile clients."
+      },
+      {
+        "id": "D",
+        "text": "When microservices need to discover each other's IP addresses dynamically via DNS records."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Interpreter Pattern (GoF Behavioral):\n  \"Given a language, define a representation for its grammar along with an interpreter that uses the representation to interpret sentences in the language.\"\n• Structure:\n  - AbstractExpression defines an `interpret(Context)` method.\n  - TerminalExpression handles atomic grammar symbols.\n  - NonterminalExpression evaluates composite grammar rules (e.g., `AndExpression`, `PlusExpression`).\n• Typical Applications: SQL query parsers, regular expression engines, arithmetic calculators, and business rule DSLs.\n\nWhy other options are incorrect:\n• TCP socket encoding, audio streaming, and service discovery do not use the Interpreter pattern."
+  },
+  {
+    "id": 224,
+    "category": "Testing & Design",
+    "question": "According to Robert C. Martin's definition, what constitutes a 'responsibility' under the Single Responsibility Principle (SRP)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A class should contain no more than one public method and zero private helper methods."
+      },
+      {
+        "id": "B",
+        "text": "A module or class should be responsible to one, and only one, actor or business stakeholder, meaning it should have only one reason to change."
+      },
+      {
+        "id": "C",
+        "text": "Every service class must communicate with exactly one database table."
+      },
+      {
+        "id": "D",
+        "text": "A class must run on a single dedicated operating system thread to ensure deterministic execution."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Single Responsibility Principle (SRP - the 'S' in SOLID):\n  \"A module should have one, and only one, reason to change.\" In *Clean Architecture*, Uncle Bob clarifies that a \"reason to change\" corresponds to an *actor* (a person, department, or business stakeholder who requests that change).\n• Violation Example: An `Employee` class containing `calculatePay()` (requested by CFO/Finance), `reportHours()` (requested by COO/HR), and `save()` (requested by CTO/Database Administrators). Coupling them means a change requested by Finance can inadvertently break HR reporting.\n\nWhy other options are incorrect:\n• SRP does not limit classes to a single method.\n• Database table mapping is ORM design, not SRP.\n• Operating system threads are concurrency constructs, not architectural responsibilities."
+  },
+  {
+    "id": 225,
+    "category": "Testing & Design",
+    "question": "Which technique exemplifies adherence to the Open/Closed Principle (OCP) in Java?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Adding new `case` statements to a large `switch` statement whenever a new payment method or report format is introduced."
+      },
+      {
+        "id": "B",
+        "text": "Designing classes to depend on abstract interfaces or strategy objects so that new behavior is introduced by creating new implementing classes without modifying existing, tested code."
+      },
+      {
+        "id": "C",
+        "text": "Declaring all domain classes `final` and implementing all logic within static utility methods."
+      },
+      {
+        "id": "D",
+        "text": "Using reflection to modify `private final` fields in external dependencies at runtime."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Open/Closed Principle (OCP - Bertrand Meyer, Robert C. Martin):\n  \"Software entities (classes, modules, functions) should be open for extension, but closed for modification.\"\n• How to Achieve OCP: Depend on abstractions (interfaces, abstract classes). When business requirements change (e.g., adding `ApplePayProcessor`), you write a new class implementing `PaymentProcessor` without modifying or risking regressions in existing `CreditCardProcessor` or checkout code.\n\nWhy other options are incorrect:\n• Editing existing `switch` statements directly violates OCP because it modifies verified production source code.\n• Static utilities and reflection hacks violate clean object-oriented architecture."
+  },
+  {
+    "id": 226,
+    "category": "Testing & Design",
+    "question": "Which TWO scenarios violate the Liskov Substitution Principle (LSP)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A `Square` subclass inherits from `Rectangle` and overrides `setWidth(w)` to also mutate `height`, violating callers' expectations that changing width leaves height invariant."
+      },
+      {
+        "id": "B",
+        "text": "A subclass throws an unexpected `UnsupportedOperationException` when overriding an inherited method that callers expect to perform work successfully according to the base contract."
+      },
+      {
+        "id": "C",
+        "text": "A subclass returns a more specific subtype (covariant return type) of the base method's declared return type."
+      },
+      {
+        "id": "D",
+        "text": "A subclass accepts broader argument types (contravariant parameters) than specified in the base contract."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Liskov Substitution Principle (LSP - Barbara Liskov, 1987):\n  \"Subtypes must be substitutable for their base types without altering program correctness or contracts.\"\n• Violations:\n  1. The Classic Rectangle-Square problem: Callers passing a `Rectangle` expect `rect.setWidth(5); rect.setHeight(10);` to yield `area == 50`. If a `Square` subclass mutates both sides, `area` becomes 100, violating invariants.\n  2. Refusing Base Contracts: Throwing `UnsupportedOperationException` (e.g. `java.util.Collections.unmodifiableList().add()`) violates behavioral subtyping because callers expecting a `List` have their contract broken.\n\nWhy other options are incorrect:\n• Covariant return types (returning a subtype) and contravariant parameter types are completely valid and preserve subtyping contracts."
+  },
+  {
+    "id": 227,
+    "category": "Testing & Design",
+    "question": "What is the core directive of the Dependency Inversion Principle (DIP) in SOLID design?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Low-level database utilities should instantiate high-level domain controllers directly via reflection."
+      },
+      {
+        "id": "B",
+        "text": "High-level modules should not depend on low-level modules; both should depend on abstractions. Furthermore, abstractions should not depend on details; details should depend on abstractions."
+      },
+      {
+        "id": "C",
+        "text": "Applications must never use interfaces, as interface lookup adds dynamic dispatch overhead in the JVM vtable."
+      },
+      {
+        "id": "D",
+        "text": "All dependencies must be injected exclusively through XML configuration files rather than annotations."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Dependency Inversion Principle (DIP - the 'D' in SOLID):\n  1. High-level modules (business rules, use cases) should not depend on low-level modules (SQL drivers, file I/O, email clients). Both should depend on abstractions.\n  2. Abstractions should not depend on details (concrete classes). Details should depend on abstractions.\n• Architectural Impact: Inverts traditional procedural dependency arrows. Instead of `OrderService -> MySqlOrderDao`, both `OrderService` and `MySqlOrderDao` depend on an interface `OrderRepository` defined in the domain layer.\n\nWhy other options are incorrect:\n• DIP uses abstractions, not reflection tricks.\n• Eliminating interfaces is contrary to DIP.\n• XML configuration is an outdated deployment detail, not an architectural principle."
+  },
+  {
+    "id": 228,
+    "category": "Testing & Design",
+    "question": "What is the fundamental distinction between an Entity and a Value Object in Domain-Driven Design (DDD)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Entities are stored in relational databases, whereas Value Objects are stored exclusively in in-memory caches."
+      },
+      {
+        "id": "B",
+        "text": "An Entity is defined by its thread of identity that endures across time and states, whereas a Value Object has no conceptual identity and is defined entirely by its attributes (immutable and compared by structural equality)."
+      },
+      {
+        "id": "C",
+        "text": "Entities are always immutable; Value Objects are mutable data structures with public setter methods."
+      },
+      {
+        "id": "D",
+        "text": "Entities cannot contain business methods; Value Objects contain all domain business logic."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Entity vs Value Object (Eric Evans, *Domain-Driven Design*):\n  - Entity: An object characterized by its unique identity (`id`) rather than its attributes. Two `User` entities with different IDs represent different people, even if they share the same name.\n  - Value Object: An immutable object with no distinct identity, defined entirely by the values of its attributes (e.g. `Money(10, \"USD\")`, `Address`, `DateRange`). If two Value Objects have identical attribute values, they are completely interchangeable (`equals()` checks all fields).\n\nWhy other options are incorrect:\n• Value Objects are immutable (Java `record` is the modern standard for Value Objects).\n• Both Entities and Value Objects can and should contain business methods in a rich domain model."
+  },
+  {
+    "id": 229,
+    "category": "Testing & Design",
+    "question": "Which TWO design rules must be respected when working with Aggregate Roots in Domain-Driven Design?",
+    "options": [
+      {
+        "id": "A",
+        "text": "External objects may only hold direct references to the Aggregate Root, never to internal entities within the aggregate boundary."
+      },
+      {
+        "id": "B",
+        "text": "Any change to objects within the aggregate boundary must satisfy all business invariants enforced by the Aggregate Root before the transaction commits."
+      },
+      {
+        "id": "C",
+        "text": "Transactions must span multiple Aggregates simultaneously using distributed two-phase commit (2PC) locks."
+      },
+      {
+        "id": "D",
+        "text": "Aggregate Roots must never emit domain events under any circumstances."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Aggregate & Aggregate Root Rules (Eric Evans, Vaughn Vernon):\n  1. Consistency Boundary: An Aggregate is a cluster of associated domain entities and value objects treated as a unit for data changes. The Aggregate Root is the gateway.\n  2. Encapsulation: External clients can only reference the Aggregate Root directly. Internal entities (e.g. `OrderItem` inside an `Order` aggregate) cannot be modified directly from the outside; all operations must pass through methods on the Aggregate Root.\n  3. Transaction Rule: One transaction should modify exactly ONE aggregate instance. Cross-aggregate consistency is achieved via eventual consistency and domain events.\n\nWhy other options are incorrect:\n• Multi-aggregate 2PC transactions cause severe locking contention and scalability bottlenecks.\n• Aggregate Roots frequently emit domain events to announce state changes."
+  },
+  {
+    "id": 230,
+    "category": "Testing & Design",
+    "question": "What is the primary difference in purpose and contract stability between Domain Events and Integration Events?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Domain Events are published to public third-party REST webhooks; Integration Events are local in-memory method parameters."
+      },
+      {
+        "id": "B",
+        "text": "Domain Events capture state changes within a single bounded context and reflect the ubiquitous language of internal aggregates; Integration Events are published across bounded context boundaries, require strict backward compatibility contracts, and avoid leaking internal domain models."
+      },
+      {
+        "id": "C",
+        "text": "Domain Events must be serialized into XML; Integration Events must use raw binary Protobuf format."
+      },
+      {
+        "id": "D",
+        "text": "Domain Events are executed synchronously on the database server; Integration Events are executed by the client web browser."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Domain Events vs Integration Events:\n  - Domain Event: Represents something that happened within the domain boundary (e.g., `OrderSubmittedEvent`). They are often processed in-memory within the same process/transaction to update local projections or trigger internal side effects.\n  - Integration Event: Designed for cross-service, asynchronous communication across different Bounded Contexts (e.g., via Kafka, RabbitMQ). They form an external public contract; changes require schema versioning (Avro/Protobuf) to prevent breaking external downstream consumers.\n\nWhy other options are incorrect:\n• Domain events are internal to a bounded context; integration events cross boundaries.\n• Serialization format is a technical choice, not the conceptual architectural boundary."
+  },
+  {
+    "id": 231,
+    "category": "Testing & Design",
+    "question": "In Domain-Driven Design and enterprise architecture, how does the Repository pattern differ conceptually from a traditional Data Access Object (DAO)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A DAO represents an in-memory collection of aggregates; a Repository maps directly to a single database table."
+      },
+      {
+        "id": "B",
+        "text": "A Repository provides a collection-oriented abstraction for retrieving and persisting complete Aggregate Roots, encapsulating domain queries; a DAO is typically a data-centric abstraction closely tied to database tables, CRUD operations, and SQL queries."
+      },
+      {
+        "id": "C",
+        "text": "Repositories can only be used with NoSQL databases; DAOs are exclusive to relational SQL databases."
+      },
+      {
+        "id": "D",
+        "text": "Repositories execute asynchronously; DAOs are strictly synchronous and thread-safe."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Repository Pattern (Martin Fowler, Eric Evans):\n  Simulates an in-memory collection of domain Aggregate Roots (`orderRepository.add(order)`, `orderRepository.findById(orderId)`). There is one Repository per Aggregate Root (never for child entities). It speaks the Ubiquitous Language.\n• Data Access Object (DAO - Core J2EE Pattern):\n  A lower-level abstraction focused on database tables and SQL/CRUD operations (`orderDao.insert()`, `orderItemDao.update()`). DAOs often mirror the relational schema 1-to-1 without domain encapsulation.\n\nWhy other options are incorrect:\n• DAOs map to database tables, whereas Repositories abstract collections of domain aggregates.\n• Both can be used with SQL, NoSQL, or in-memory stores."
+  },
+  {
+    "id": 232,
+    "category": "Testing & Design",
+    "question": "Why is establishing explicit Bounded Contexts critical in complex domain modeling?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It forces the entire enterprise to share a single unified relational database schema with zero redundant tables."
+      },
+      {
+        "id": "B",
+        "text": "It defines explicit conceptual boundaries within which a specific Ubiquitous Language and domain model apply consistently, preventing model pollution where the same term (e.g., 'Customer' or 'Order') has conflicting meanings across different business departments."
+      },
+      {
+        "id": "C",
+        "text": "It allows developers to eliminate all automated unit tests by isolating microservice failures."
+      },
+      {
+        "id": "D",
+        "text": "It ensures that all microservices are written in the exact same programming language and runtime framework."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Bounded Context (Eric Evans, *Domain-Driven Design*):\n  The boundary within which a particular domain model applies. In large enterprises, trying to build a single \"Unified Enterprise Data Model\" inevitably fails because terms mean different things to different groups:\n  - In Sales: A `Customer` is a prospect with leads and conversion probability.\n  - In Billing: A `Customer` is a legal entity with payment terms, VAT number, and invoices.\n  - In Shipping: A `Customer` is a delivery address and recipient name.\n• Bounded contexts let each subdomain build an optimal model for its specific needs without semantic collisions.\n\nWhy other options are incorrect:\n• DDD rejects a single monolithic enterprise database schema.\n• Bounded contexts do not eliminate testing or dictate programming languages."
+  },
+  {
+    "id": 233,
+    "category": "Testing & Design",
+    "question": "When integrating a new Domain-Driven microservice with a legacy monolithic system, what is the purpose of an Anti-Corruption Layer (ACL)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "To encrypt database tables at rest using AES-256 GCM encryption."
+      },
+      {
+        "id": "B",
+        "text": "To translate and adapt foreign models, schemas, and semantics from the external/legacy system into the clean, modern domain model of the new service, preventing legacy semantics from contaminating the domain."
+      },
+      {
+        "id": "C",
+        "text": "To block all HTTP requests that originate from non-corporate IP addresses."
+      },
+      {
+        "id": "D",
+        "text": "To automatically rewrite legacy COBOL and C++ programs into Java bytecode at runtime."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Anti-Corruption Layer (ACL - Eric Evans, DDD):\n  When a new service must interact with an external system or legacy database whose model is messy, convoluted, or incompatible, building direct dependencies causes the legacy concepts to bleed into and \"corrupt\" the new domain model.\n• Mechanism: The ACL acts as a bidirectional translation layer (using Adapters, Facades, and Translators). It translates incoming legacy structures into pristine domain objects and outgoing domain commands into legacy payloads, insulating the core domain.\n\nWhy other options are incorrect:\n• Disk encryption, IP firewalls, and bytecode decompilers are unrelated to the ACL architectural pattern."
+  },
+  {
+    "id": 234,
+    "category": "Testing & Design",
+    "question": "What is the primary architectural boundary between a Domain Service and an Application Service in DDD layered architecture?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Domain Services contain pure business logic and invariant rules that naturally span multiple domain entities; Application Services orchestrate use cases, manage transaction boundaries, security, and coordinate repositories/external adapters without containing core business logic."
+      },
+      {
+        "id": "B",
+        "text": "Domain Services handle HTTP REST serialization; Application Services execute SQL queries directly against the database."
+      },
+      {
+        "id": "C",
+        "text": "Domain Services are deployed to Kubernetes; Application Services run as local background cron daemons."
+      },
+      {
+        "id": "D",
+        "text": "Domain Services are stateless; Application Services maintain thread-local database connection pools."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Application Service vs Domain Service (Vaughn Vernon, *Implementing DDD*):\n  - Domain Service: Lives inside the Domain Layer. Contains business logic that does not naturally belong to a single Entity or Value Object (e.g. `FundsTransferService.transfer(fromAccount, toAccount, amount)` verifying banking overdraft invariants across both accounts). It has NO knowledge of HTTP, UI, or transactional annotations.\n  - Application Service: Lives in the Application Layer. Directs use-case workflow: authenticates caller, begins transaction (`@Transactional`), fetches aggregates from Repositories, invokes domain methods, and sends notification events.\n\nWhy other options are incorrect:\n• HTTP REST serialization belongs to the Presentation/Interface layer.\n• Database connection pools belong to Infrastructure."
+  },
+  {
+    "id": 235,
+    "category": "Testing & Design",
+    "question": "What is the primary benefit of applying the Specification pattern (e.g., Spring Data JPA Specifications) to domain modeling?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It enables database migrations without creating SQL scripts."
+      },
+      {
+        "id": "B",
+        "text": "It encapsulates reusable business rules and boolean evaluation criteria into separate, composable objects that can be combined using logical operators (`and`, `or`, `not`) for both in-memory validation and database query generation."
+      },
+      {
+        "id": "C",
+        "text": "It compiles Java classes directly into WebAssembly binaries for edge execution."
+      },
+      {
+        "id": "D",
+        "text": "It automatically generates OpenAPI documentation from Java controller method signatures."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Specification Pattern (Eric Evans, Martin Fowler):\n  \"A specification states a constraint on the state of another object, which may or may not be present.\"\n• Key Benefits:\n  1. Reusability: Instead of cluttering repository interfaces with combinatorial query methods (`findActivePremiumUsersOverAge()`), each rule (`IsActiveUser`, `IsPremiumMember`, `IsOverAge`) is an isolated Specification object.\n  2. Composition: Specifications can be chained flexibly via boolean logic: `spec1.and(spec2).or(spec3)`.\n  3. Dual Usage: In Spring Data JPA, `Specification<T>` generates dynamic Criteria API SQL predicates, but the exact same concept can validate in-memory objects against domain rules.\n\nWhy other options are incorrect:\n• Database migration tools (Flyway, Liquibase) handle SQL migrations.\n• WebAssembly and OpenAPI generation are unrelated."
+  },
+  {
+    "id": 236,
+    "category": "Testing & Design",
+    "question": "How does Martin Fowler's Unit of Work pattern maintain database consistency in enterprise applications?",
+    "options": [
+      {
+        "id": "A",
+        "text": "By running every database read in a separate background thread with read-uncommitted isolation."
+      },
+      {
+        "id": "B",
+        "text": "By maintaining a list of objects affected by a business transaction (new, modified, and deleted) and coordinating the writing out of changes, resolving concurrency issues, and executing an atomic batch commit at the end of the transaction."
+      },
+      {
+        "id": "C",
+        "text": "By writing changes directly to an external distributed Redis cache before writing to the database."
+      },
+      {
+        "id": "D",
+        "text": "By delegating all transaction rollbacks to the client browser via HTTP headers."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Unit of Work Pattern (Martin Fowler, *Patterns of Enterprise Application Architecture*):\n  \"Maintains a list of objects affected by a business transaction and coordinates the writing out of changes and the resolution of concurrency problems.\"\n• Production Example: Hibernate `Session` / JPA `EntityManager`.\n  As you manipulate Java entities during a transaction, the Persistence Context tracks newly created, dirty (modified), and removed entities in memory. When the transaction commits, Hibernate flushes the Unit of Work, ordering SQL `INSERT`, `UPDATE`, and `DELETE` statements efficiently and preventing duplicate database round-trips.\n\nWhy other options are incorrect:\n• Read-uncommitted concurrency breaks consistency.\n• Unit of Work is about coordinating database transaction writes, not Redis caching or browser HTTP headers."
+  },
+  {
+    "id": 237,
+    "category": "Testing & Design",
+    "question": "What is the primary architectural trade-off between Martin Fowler's Data Mapper pattern (e.g., Hibernate/JPA) and the Active Record pattern?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Active Record completely isolates domain logic from database schemas; Data Mapper tightly binds database queries into domain entities."
+      },
+      {
+        "id": "B",
+        "text": "Data Mapper isolates domain entities from the database schema and persistence infrastructure, keeping domain classes pure (POJOs); Active Record embeds database access methods (`save()`, `delete()`) directly on the entity, which is simpler for CRUD but tightly couples domain models to persistence."
+      },
+      {
+        "id": "C",
+        "text": "Active Record supports distributed transactions across multiple databases; Data Mapper only supports in-memory SQLite databases."
+      },
+      {
+        "id": "D",
+        "text": "Active Record executes in compile-time generated bytecode; Data Mapper requires interpreted script execution."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Data Mapper vs Active Record (Martin Fowler, PoEAA):\n  - Active Record (e.g. Ruby on Rails, Play framework): An object that wraps a row in a database table or view, encapsulates the database access, and adds domain logic. Every entity has methods like `user.save()`, `user.delete()`. Simple and fast to develop for CRUD applications, but violates SRP and hinders testing.\n  - Data Mapper (e.g. Hibernate, JPA): A layer of mappers that moves data between objects and a database while keeping them independent of each other and the mapper itself. The domain model remains pure POJOs without database dependencies, ideal for rich, complex business logic.\n\nWhy other options are incorrect:\n• Active Record couples entities to databases; Data Mapper isolates them.\n• Both patterns run on standard JVM enterprise runtimes."
+  },
+  {
+    "id": 238,
+    "category": "Testing & Design",
+    "question": "What is the fundamental architectural principle behind Command Query Responsibility Segregation (CQRS)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "All read and write operations must be routed through the exact same relational database stored procedure."
+      },
+      {
+        "id": "B",
+        "text": "Separating the data model and operations that mutate state (Commands) from the data model and operations that retrieve data (Queries), allowing each to be optimized, scaled, and secured independently according to their distinct access patterns."
+      },
+      {
+        "id": "C",
+        "text": "Restricting database writes to weekdays and scheduling database reads exclusively for weekends."
+      },
+      {
+        "id": "D",
+        "text": "Enforcing that all database tables have a single primary key and no foreign keys."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• CQRS (Greg Young, Martin Fowler):\n  In traditional architectures, the same domain model is used for both reads and writes. However, write models require strong consistency, encapsulation, and invariant validation, whereas read models require fast denormalized joins, projections, and paging.\n• The CQRS Architecture:\n  - Command Side: Handles state changes (`SubmitOrderCommand`), validates business rules, and updates the write database (or event store).\n  - Query Side: Reads from read-optimized projections or materialized views (e.g., Elasticsearch, Redis, denormalized read-replicas), avoiding expensive entity mapping and locks.\n\nWhy other options are incorrect:\n• Routing all reads and writes through one stored procedure is the opposite of CQRS.\n• Restricting operations by day of the week is completely arbitrary."
+  },
+  {
+    "id": 239,
+    "category": "Testing & Design",
+    "question": "Which TWO statements accurately characterize the Event Sourcing architectural pattern?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Instead of storing only the current state of an entity, all changes to application state are stored as an immutable, append-only sequence of domain events."
+      },
+      {
+        "id": "B",
+        "text": "Current application state can be reconstructed at any point in time by replaying past events from the beginning or from a periodic snapshot."
+      },
+      {
+        "id": "C",
+        "text": "Event Sourcing eliminates the need for transactional databases because domain events are ephemeral and discarded after 24 hours."
+      },
+      {
+        "id": "D",
+        "text": "In Event Sourcing, past events are frequently modified and deleted using SQL `UPDATE` and `DELETE` queries to save disk space."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Event Sourcing (Martin Fowler, Greg Young):\n  - Immutable Append-Only Log: Rather than running destructive SQL `UPDATE` statements to overwrite table rows, every business state transition is stored as an immutable event (`AccountCreated`, `MoneyDeposited`, `MoneyWithdrawn`).\n  - Temporal Querying & Audit: Because the full history is preserved, you have a 100% accurate audit trail and can recreate state at any historical timestamp (time travel debugging).\n  - Snapshots: To avoid replaying millions of events when loading an entity, systems periodically write state snapshots (e.g. every 100 events) and replay only events following the snapshot.\n\nWhy other options are incorrect:\n• Events are permanent, not ephemeral or discarded after 24 hours.\n• Events are strictly immutable; they are NEVER modified or deleted via UPDATE/DELETE queries."
+  },
+  {
+    "id": 240,
+    "category": "Testing & Design",
+    "question": "In Gregor Hohpe's Enterprise Integration Patterns (EIP), what is the role of a Content-Based Router versus a Splitter?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A Content-Based Router routes an incoming message to different destination channels based on the message content or headers; a Splitter breaks a single composite message into multiple individual messages for separate processing."
+      },
+      {
+        "id": "B",
+        "text": "A Content-Based Router converts JSON into XML; a Splitter encrypts message bodies with RSA private keys."
+      },
+      {
+        "id": "C",
+        "text": "A Content-Based Router drops duplicate messages; a Splitter combines multiple messages into a batch."
+      },
+      {
+        "id": "D",
+        "text": "A Content-Based Router executes asynchronous RPC calls; a Splitter terminates TCP socket connections."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Enterprise Integration Patterns (Gregor Hohpe & Bobby Woolf, Apache Camel / Spring Integration):\n  - Content-Based Router: Inspects the content of a message (payload fields or headers, e.g. `order.type == 'VIP'`) and routes it to the appropriate destination channel without modifying the message.\n  - Splitter: Takes a composite message containing multiple elements (e.g. an `Invoice` containing 5 line items) and breaks it down into individual messages so each element can be processed concurrently or independently.\n\nWhy other options are incorrect:\n• Data format transformation (JSON to XML) is the Message Translator pattern.\n• Combining multiple messages into a single message is the Aggregator pattern.\n• Filtering duplicate messages is the Idempotent Consumer / Message Deduplicator pattern."
   }
 ];
