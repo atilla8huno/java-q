@@ -6127,26 +6127,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "When an application needs to instantiate a single isolated object whose concrete class is determined by an environment variable at startup."
+        "text": "When one product varies by subclass, and that subclass's factory method creates only that product rather than a matched family."
       },
       {
         "id": "B",
-        "text": "When a system must be independent of how its products are created and must enforce that products from the same family (e.g., DarkThemeButton and DarkThemeScrollbar) are used together consistently."
+        "text": "When related products must be created together, such as a button and a scrollbar from one theme, without the client naming the concrete classes."
       },
       {
         "id": "C",
-        "text": "When an algorithm's execution steps must be executed in a strict invariant sequence with customizable sub-steps."
+        "text": "When the client picks one algorithm at runtime and the context delegates to that interchangeable implementation of a shared interface."
       },
       {
         "id": "D",
-        "text": "When a class needs to dynamically attach responsibilities to individual objects at runtime without subclassing."
+        "text": "When one complex object is assembled step by step, so the same construction process can produce different representations of that finished object."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Abstract Factory Pattern (GoF Creational):\n  Provides an interface for creating entire families of related or dependent objects without specifying their concrete classes.\n• Classic Use Case: Cross-platform UI widget toolkits (e.g. `MacWidgetFactory` creating `MacButton` and `MacCheckbox`, versus `WindowsWidgetFactory` creating `WindowsButton` and `WindowsCheckbox`). It prevents client code from accidentally mixing incompatible products from different product suites.\n\nWhy other options are incorrect:\n• Single object instantiation is suitable for Factory Method or Simple Factory.\n• Strict invariant algorithm steps with customizable sub-steps describes Template Method.\n• Dynamic runtime attachment of responsibilities describes Decorator."
+    "explanation": "Why this is correct:\n• Abstract Factory creates a family of related products without the client naming the concrete classes, so a dark-theme button is not paired with a light-theme scrollbar.\n• A single varying product is Factory Method. Picking an algorithm is Strategy. Step-by-step construction of one object is Builder.\n\nWhy other options are incorrect:\n• A describes Factory Method: one product, chosen by the subclass.\n• C describes Strategy: interchangeable algorithms behind one interface.\n• D describes Builder: the same construction steps produce different representations."
   },
   {
     "id": 204,
@@ -6155,19 +6155,19 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It enables the construction of immutable objects with many optional parameters without suffering from telescoping constructors."
+        "text": "It builds an immutable object that has many optional parameters without a telescoping constructor for every combination."
       },
       {
         "id": "B",
-        "text": "It allows comprehensive parameter validation and cross-field invariant enforcement before the target object is instantiated inside `build()`."
+        "text": "It can check required fields and cross-field invariants inside build() before the product is instantiated."
       },
       {
         "id": "C",
-        "text": "It completely eliminates heap allocation overhead by creating objects entirely on the thread stack."
+        "text": "It writes each setter straight into a shared product, so other threads can observe that object before build() returns."
       },
       {
         "id": "D",
-        "text": "It automatically generates database schemas and SQL inserts at compile time without bytecode inspection."
+        "text": "It returns one cached product for every caller, so a later build() call does not allocate a new object."
       }
     ],
     "correct": [
@@ -6175,7 +6175,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Telescoping Constructors Problem: When a class has 5+ parameters with various optional combinations, constructors quickly become unreadable and error-prone (e.g. accidentally swapping adjacent `int` or `String` arguments).\n• Immutability & Validation: The Builder pattern allows setting fields incrementally with fluent, readable methods (`builder.withTimeout(5000).withRetries(3)`). The target object constructor can be `private`, and the `build()` method validates that all required parameters are present and consistent before invoking the constructor, producing a fully immutable object.\n\nWhy other options are incorrect:\n• The Builder pattern allocates builder instances and the product on the JVM heap; it does not bypass heap memory.\n• Builder is a software design pattern, not an ORM or SQL generator."
+    "explanation": "Why this is correct:\n• A builder collects optional arguments without a constructor per combination, and build() can reject an inconsistent set of fields before the immutable product exists.\n• The builder object and the product are still ordinary heap objects. Each build() is expected to return a new product, not a shared cache.\n\nWhy other options are incorrect:\n• C describes a builder that publishes a half-built object. Callers should not see the product until build() finishes.\n• D confuses Builder with a cache or a singleton. build() constructs a product; it does not hand out one shared instance."
   },
   {
     "id": 205,
@@ -6184,26 +6184,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Object.clone()` performs a deep recursive copy of all member object graphs by default, creating severe memory thrashing."
+        "text": "Object.clone() deep-copies every nested object in the graph by default, so the clone cannot share a mutable child and the only cost is the extra allocation."
       },
       {
         "id": "B",
-        "text": "`Cloneable` is a marker interface that does not declare `clone()`, and `Object.clone()` performs a field-by-field shallow copy without calling class constructors, potentially bypassing invariant checks and leaking mutable references."
+        "text": "Cloneable does not declare clone(), and Object.clone() copies fields without calling constructors, so checks can be skipped and mutable children shared."
       },
       {
         "id": "C",
-        "text": "The Java Virtual Machine prohibits overriding `clone()` in public classes unless reflection permissions are explicitly granted in `module-info.java`."
+        "text": "A public clone() that calls super.clone() still runs the subclass constructor, so invariants set there are applied to the copy."
       },
       {
         "id": "D",
-        "text": "Classes implementing `Cloneable` cannot be loaded by custom ClassLoaders in modular Java applications."
+        "text": "Implementing Cloneable by itself publishes clone() to callers, so no public override on the class is required for them to call it."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Flaws in Java's `Cloneable` (Josh Bloch, *Effective Java*):\n  1. `Cloneable` is an anomalous marker interface that does not declare any methods; `clone()` is protected in `Object`.\n  2. `Object.clone()` performs a shallow field-by-field copy (copying reference addresses for nested objects, not cloning the referenced objects).\n  3. It allocates objects without invoking any class constructors, which can bypass initialization invariants and security checks.\n• Best Practice: Prefer Copy Constructors (e.g., `public User(User other)`) or Copy Factory Methods (`public static User newInstance(User other)`) over `Cloneable`.\n\nWhy other options are incorrect:\n• `Object.clone()` performs a shallow copy, NOT a deep copy.\n• Overriding `clone()` does not require JPMS module reflection grants."
+    "explanation": "Why this is correct:\n• Cloneable is a marker. Object.clone() is protected, copies fields by reference, and does not run constructors, so a copy can share mutable children and skip invariant checks.\n• Prefer a copy constructor or a copy factory.\n\nWhy other options are incorrect:\n• A has the copy direction backwards: Object.clone() is shallow unless you write the deep copy yourself.\n• C is wrong because super.clone() does not run the subclass constructor.\n• D is wrong because Cloneable does not declare clone(); a public override is what makes the method callable."
   },
   {
     "id": 206,
@@ -6212,26 +6212,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It attaches additional responsibilities to an object dynamically at runtime by wrapping it in an instance of the same interface, providing a flexible alternative to static subclassing."
+        "text": "It wraps an object in another of the same interface and adds behavior at runtime, without a new subclass for each combination."
       },
       {
         "id": "B",
-        "text": "It modifies the bytecode of target classes at classloading time using Java instrumentation agents."
+        "text": "It subclasses the target for each added behavior, so every combination of features is still a new class in the hierarchy."
       },
       {
         "id": "C",
-        "text": "It replaces the original object instance in memory by overwriting its vtable pointers during execution."
+        "text": "It changes the wrapped object's class at runtime, so the extra behavior replaces the original methods in place rather than wrapping them."
       },
       {
         "id": "D",
-        "text": "It converts incompatible interfaces into a uniform protocol expected by client callers."
+        "text": "It converts a legacy interface into the one the client already expects, and leaves the wrapped object's behavior unchanged."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Decorator Pattern (GoF Structural):\n  Attach additional responsibilities to an object dynamically. Decorators provide a flexible alternative to subclassing for extending functionality.\n• Composition over Inheritance: Instead of creating a combinatorial explosion of static subclasses (e.g. `BufferedGzipEncryptedFileInputStream`), decorators implement the same interface as the wrapped object and delegate calls while adding behavior before or after delegation.\n• Canonical Java Example: Java I/O Streams (`new BufferedReader(new InputStreamReader(new FileInputStream(\"file.txt\")))`) where `BufferedReader` decorates `Reader`.\n\nWhy other options are incorrect:\n• Modifying bytecode at classloading is bytecode weaving/instrumentation, not Decorator.\n• Converting incompatible interfaces is the Adapter pattern."
+    "explanation": "Why this is correct:\n• Decorator implements the same interface as the object it wraps and forwards calls, adding behavior around them. Combinations are composed at runtime instead of subclassed.\n• Java I/O streams are the usual example: a buffered reader wraps another reader.\n\nWhy other options are incorrect:\n• B is ordinary inheritance, which is the explosion Decorator avoids.\n• C is not how a decorator works; the original object stays as it is and is wrapped.\n• D is Adapter: same forwarding shape, but the point is to translate an interface, not to add behavior."
   },
   {
     "id": 207,
@@ -6240,26 +6240,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "To completely hide subsystem classes in private packages so clients cannot interact with them directly under any circumstances."
+        "text": "It hides every subsystem type, so client code cannot name those classes even when it needs a finer-grained call."
       },
       {
         "id": "B",
-        "text": "To provide a unified, higher-level interface to a set of interfaces in a subsystem, making the subsystem easier to use without preventing access to lower-level classes if needed."
+        "text": "It offers one higher-level interface over a subsystem, which simplifies the common path without forbidding the lower-level types."
       },
       {
         "id": "C",
-        "text": "To maintain a single point of thread synchronization across all subsystem worker threads."
+        "text": "It intercepts each subsystem call to add logging or a security check, while the subsystem's own interfaces stay unchanged."
       },
       {
         "id": "D",
-        "text": "To share common state across many fine-grained objects to reduce heap memory footprint."
+        "text": "It lets the client treat a single subsystem object and a group of those objects uniformly, through that same part-whole interface."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Facade Pattern (GoF Structural):\n  \"Provide a unified interface to a set of interfaces in a subsystem. Facade defines a higher-level interface that makes the subsystem easier to use.\"\n• Key Distinction: A Facade simplifies common operations for typical clients (e.g., `orderFulfillmentFacade.processOrder(orderId)` orchestrating inventory, payment, and shipping subsystems) while still permitting advanced clients direct access to lower-level classes if fine-grained control is required.\n\nWhy other options are incorrect:\n• Facades do not strictly encapsulate or forbid access to underlying subsystem classes.\n• Thread synchronization is handled by concurrency constructs (locks, monitors), not Facade.\n• Sharing fine-grained state to reduce memory is the Flyweight pattern."
+    "explanation": "Why this is correct:\n• A facade is a simpler front door for the common use of a subsystem. Clients that need a specific subsystem class can still use it.\n• The facade does not seal the subsystem, wrap every call, or turn the subsystem into a tree.\n\nWhy other options are incorrect:\n• A overstates the pattern. A facade simplifies; it does not make the rest of the subsystem unreachable.\n• C is a proxy or a decorator sitting on the call path.\n• D is Composite: leaf and group behind one interface."
   },
   {
     "id": 208,
@@ -6268,26 +6268,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Translating remote RPC invocations into local in-memory method calls."
+        "text": "It adapts one node type so a client written for a different node type can call it without changing either node."
       },
       {
         "id": "B",
-        "text": "Composing objects into tree structures to represent part-whole hierarchies, allowing clients to treat individual objects (leaf nodes) and compositions of objects (composite nodes) uniformly."
+        "text": "It lets the client treat a leaf and a group of children through one interface, so a part-whole tree does not special-case the two."
       },
       {
         "id": "C",
-        "text": "Coordinating asynchronous messaging between multiple publishers and subscribers via a broker."
+        "text": "It notifies every registered dependent when a node changes, without the node keeping a direct reference to each of those dependents."
       },
       {
         "id": "D",
-        "text": "Managing undo/redo operations across distributed database transactions."
+        "text": "It passes a request from a node up to its parent until some ancestor handles it, rather than the client picking a handler."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Composite Pattern (GoF Structural):\n  \"Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly.\"\n• Structure: A common Component interface is implemented by both `Leaf` objects (primitives) and `Composite` objects (containers holding child components). Operations like `render()` or `getSize()` recursively cascade down the tree without clients having to check `if (node instanceof Composite)`.\n• Real-world examples: File system directories containing files and subdirectories; UI layout containers (panels containing buttons and nested panels).\n\nWhy other options are incorrect:\n• Translating RPC invocations is the Remote Proxy / Stub pattern.\n• Asynchronous publish-subscribe messaging is the Observer or Message Broker pattern."
+    "explanation": "Why this is correct:\n• Composite shares one component interface between leaves and nodes that contain children, so the client walks a file tree or a UI tree without asking which kind of node it has.\n\nWhy other options are incorrect:\n• A is Adapter: a different interface, not a part-whole tree.\n• C is Observer: dependents are told about a change.\n• D is closer to Chain of Responsibility, or to event bubbling, than to treating a leaf and a group the same way."
   },
   {
     "id": 209,
@@ -6296,26 +6296,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "To decouple an abstraction from its implementation so that both can vary independently, preventing a Cartesian product combinatorial explosion of subclasses."
+        "text": "It lets the abstraction hierarchy and the implementation hierarchy vary separately, instead of one subclass for each combination."
       },
       {
         "id": "B",
-        "text": "To ensure that only a single instance of an abstraction exists across all JVM cluster nodes."
+        "text": "It shares one implementation instance across every abstraction, in the same way a flyweight shares intrinsic state."
       },
       {
         "id": "C",
-        "text": "To convert synchronous blocking method calls into non-blocking reactive streams."
+        "text": "It stacks extra behavior onto the abstraction at runtime, so each feature you add does not require another subclass in the hierarchy."
       },
       {
         "id": "D",
-        "text": "To provide a surrogate placeholder that intercepts calls for security access checks."
+        "text": "It stands in for the real implementation and controls access to it, while the client keeps calling the same interface."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Bridge Pattern (GoF Structural):\n  \"Decouple an abstraction from its implementation so that the two can vary independently.\"\n• The Cartesian Explosion Problem: If you have M abstractions (e.g., `Circle`, `Square`, `Triangle`) and N rendering implementations (e.g., `VectorRenderer`, `RasterRenderer`), inheritance requires M x N classes (`VectorCircle`, `RasterCircle`, etc.). With Bridge, you maintain two separate hierarchies linked by composition (the abstraction contains a reference to the implementor), requiring only M + N classes!\n\nWhy other options are incorrect:\n• Ensuring a single cluster-wide instance requires distributed locks/singletons.\n• Converting blocking calls to reactive streams describes Reactive Adapters.\n• Intercepting calls for security checks is the Proxy pattern."
+    "explanation": "Why this is correct:\n• Bridge splits abstraction from implementation and links them by composition. Shapes and renderers then grow as two hierarchies, not as one class per pair.\n\nWhy other options are incorrect:\n• B is Flyweight: one shared intrinsic state, which is not why you introduce a bridge.\n• C is Decorator: stacking behavior on one interface.\n• D is Proxy: a stand-in that controls access."
   },
   {
     "id": 210,
@@ -6324,26 +6324,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "By compressing object bytecode in Metaspace using LZ4 compression."
+        "text": "It shares one mutable flyweight and lets each client store its own context in that instance's fields."
       },
       {
         "id": "B",
-        "text": "By dividing object state into shared intrinsic state (stored internally within the flyweight and reused) and extrinsic state (passed in by the client or calculated contextually at runtime)."
+        "text": "It keeps shareable intrinsic state in the flyweight and passes context-specific extrinsic state in on each call."
       },
       {
         "id": "C",
-        "text": "By evicting older instances to disk using memory-mapped swap files."
+        "text": "It interns only the object's identity, so two flyweights with the same key still each keep a full copy of the intrinsic data."
       },
       {
         "id": "D",
-        "text": "By enforcing that all object fields are serialized into compact protocol buffers."
+        "text": "It moves the extrinsic context into a static cache inside the flyweight, so callers stop passing that context on each call."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Flyweight Pattern (GoF Structural):\n  \"Use sharing to support large numbers of fine-grained objects efficiently.\"\n• Intrinsic vs Extrinsic State:\n  - Intrinsic State: Invariant, context-independent data stored inside the flyweight object (e.g., font glyph shape, color palette). This is shared across thousands of usages.\n  - Extrinsic State: Context-dependent data (e.g., coordinates (x, y) where the glyph is drawn on screen) passed into flyweight methods by callers.\n• Canonical Java Example: `Integer.valueOf(int)` caches values from -128 to 127; Java String interning (`String.intern()`) reuses identical character sequences.\n\nWhy other options are incorrect:\n• Flyweight does not compress bytecode or evict objects to disk swap files."
+    "explanation": "Why this is correct:\n• A flyweight is shared because the repeated part of the state lives in it. The part that differs per use, such as a position, is passed in by the caller and is not stored in the shared object.\n\nWhy other options are incorrect:\n• A breaks sharing: if clients write their context into the flyweight, they overwrite each other.\n• C keeps a copy per key, so nothing is shared.\n• D hides extrinsic state inside the flyweight, which is the state that was supposed to stay outside it."
   },
   {
     "id": 211,
@@ -6352,19 +6352,19 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`java.lang.reflect.Proxy` can only proxy classes that implement one or more interfaces; it cannot proxy concrete classes without interfaces."
+        "text": "java.lang.reflect.Proxy can only implement interfaces, so it cannot subclass a concrete class that has none."
       },
       {
         "id": "B",
-        "text": "CGLIB/ByteBuddy subclasses the target class at runtime, allowing it to proxy concrete classes without interfaces, but it cannot proxy `final` classes or intercept `final` methods."
+        "text": "CGLIB and Byte Buddy subclass the target, so they can proxy a class with no interface, but not a final class or a final method."
       },
       {
         "id": "C",
-        "text": "`java.lang.reflect.Proxy` creates subclasses at bytecode level and can intercept `private` method invocations."
+        "text": "A JDK dynamic proxy subclasses the concrete target, so it can intercept calls on a class that implements no interface."
       },
       {
         "id": "D",
-        "text": "CGLIB proxies require all target methods to be annotated with `@Transactional` or proxy generation fails."
+        "text": "CGLIB can proxy a final class by generating a subclass, as long as the methods you intercept are not private."
       }
     ],
     "correct": [
@@ -6372,7 +6372,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• JDK Dynamic Proxies (`java.lang.reflect.Proxy`):\n  Implemented directly in the standard Java runtime. Requires the target to implement at least one Java `interface`. The proxy dynamically implements the specified interfaces and routes method calls to an `InvocationHandler`.\n• Class-Based Proxies (CGLIB / ByteBuddy):\n  Generates a synthetic subclass of the target class at runtime (used heavily in Spring AOP when `@EnableAspectJAutoProxy(proxyTargetClass = true)` is set). Because it relies on subclassing, it CANNOT proxy `final` classes or override `final` methods, and it requires a default no-arg constructor.\n\nWhy other options are incorrect:\n• JDK dynamic proxy cannot intercept private methods or proxy concrete classes.\n• CGLIB does not require Spring annotations to create proxies."
+    "explanation": "Why this is correct:\n• JDK proxies implement interfaces and dispatch through an InvocationHandler. They do not subclass a concrete class.\n• CGLIB and Byte Buddy generate a subclass, so they need a non-final class and non-final methods.\n\nWhy other options are incorrect:\n• C swaps the two mechanisms. The JDK proxy does not subclass the target.\n• D is the opposite constraint: a generated subclass cannot extend a final class or override a final method."
   },
   {
     "id": 212,
@@ -6381,26 +6381,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Object Adapter adapts primitive types only; Class Adapter adapts reference object types."
+        "text": "An object adapter subclasses the adaptee, while a class adapter holds the adaptee and forwards each call to it."
       },
       {
         "id": "B",
-        "text": "Object Adapter relies on object composition to wrap the adaptee instance, whereas Class Adapter uses inheritance (subclassing the adaptee and implementing the target interface) to adapt the interface."
+        "text": "An object adapter holds the adaptee and forwards calls; a class adapter subclasses the adaptee and implements the target interface."
       },
       {
         "id": "C",
-        "text": "Object Adapter compiles into native machine code; Class Adapter runs interpreted on the JVM."
+        "text": "An object adapter implements the adaptee and is subclassed by the client; a class adapter implements the target and is stored inside the adaptee."
       },
       {
         "id": "D",
-        "text": "Object Adapter can only adapt third-party libraries; Class Adapter is restricted to internal domain classes."
+        "text": "An object adapter requires the target and the adaptee to share a superclass; a class adapter is used when they share only a method name."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Adapter Pattern (GoF Structural):\n  \"Convert the interface of a class into another interface clients expect.\"\n• Object Adapter (Composition):\n  The adapter holds a private reference to the adaptee instance (`class OrderAdapter implements Target { private final LegacyOrderSystem adaptee; ... }`). Highly flexible because one adapter can work with the adaptee and all of its subclasses.\n• Class Adapter (Inheritance):\n  The adapter subclasses the adaptee while implementing the target interface (`class OrderAdapter extends LegacyOrderSystem implements Target`). In languages with single inheritance like Java, a class adapter cannot adapt a class and any of its subclasses simultaneously.\n\nWhy other options are incorrect:\n• Both forms work with standard reference types and compile to standard JVM bytecode."
+    "explanation": "Why this is correct:\n• Object adapter: composition. The adapter has a field of the adaptee type and translates calls.\n• Class adapter: inheritance. The adapter extends the adaptee and implements the target. Java's single class inheritance makes that form less flexible.\n\nWhy other options are incorrect:\n• A swaps composition and inheritance.\n• C puts the interfaces on the wrong types.\n• D invents a shared-superclass rule that the pattern does not have."
   },
   {
     "id": 213,
@@ -6409,26 +6409,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A caching service that uses deep recursion to serialize object hierarchies."
+        "text": "A base class fixes the pricing steps, and each subclass overrides only the discount step while the sequence stays in the base class."
       },
       {
         "id": "B",
-        "text": "Replacing complex conditional `if-else` or `switch` blocks that select among different algorithms (e.g., shipping cost calculations or discount pricing rules) with interchangeable implementations of a shared interface injected at runtime."
+        "text": "A switch on shipping or discount rules is replaced by implementations of one interface, chosen and injected at runtime."
       },
       {
         "id": "C",
-        "text": "Creating a global registry where singletons are registered during JVM startup."
+        "text": "The cart notifies every registered pricing listener when it changes, and the cart does not know the concrete listeners."
       },
       {
         "id": "D",
-        "text": "Wrapping a legacy SOAP web service behind a modern JSON REST controller."
+        "text": "A legacy shipping API is wrapped in the interface checkout already calls, without changing how the cost is calculated."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Strategy Pattern (GoF Behavioral):\n  \"Define a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from clients that use it.\"\n• Idiomatic Java Usage:\n  - Replacing nested conditionals with polymorphic strategies (`PaymentStrategy.pay(amount)` with implementations `CreditCardPayment`, `PayPalPayment`, `CryptoPayment`).\n  - Standard library: `java.util.Comparator<T>` passed to `Collections.sort()` or `Stream.sorted()` is a pure Strategy pattern!\n\nWhy other options are incorrect:\n• Object hierarchy serialization is typically solved via Visitor.\n• Global singleton registry describes Service Locator or Singleton.\n• Wrapping a SOAP service behind REST is an Adapter or Facade."
+    "explanation": "Why this is correct:\n• Strategy is a family of interchangeable algorithms behind one interface. The client, or a factory, supplies the implementation. Comparator passed to a sort is the standard-library case.\n\nWhy other options are incorrect:\n• A is Template Method: the skeleton stays in the base class.\n• C is Observer: listeners hear about a change.\n• D is Adapter: the calculation is unchanged and only the interface is translated."
   },
   {
     "id": 214,
@@ -6437,26 +6437,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Deadlocks in the garbage collector caused by cyclic dependencies between subjects and observers."
+        "text": "The subject and the observer deadlock, because each waits for the other's update() to return before it releases its lock."
       },
       {
         "id": "B",
-        "text": "Memory leaks (the 'Lapsed Listener' problem), where subjects retain strong references to registered observers, preventing garbage collection; mitigated by explicitly unregistering listeners or using `WeakReference`."
+        "text": "The subject keeps a strong reference to a listener that is no longer used; unregister it, or hold it with a WeakReference."
       },
       {
         "id": "C",
-        "text": "StackOverflowError triggered because observers are executed exclusively on the JVM native thread stack."
+        "text": "The subject copies its listener list when the first listener registers, so a listener added later never receives events."
       },
       {
         "id": "D",
-        "text": "ClassCastException caused by JVM type erasure when observers receive generic payload events."
+        "text": "Notify always fails with ConcurrentModificationException, because a listener is allowed to register again while the list is walked."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• The Lapsed Listener Problem:\n  When an observer registers with a long-lived subject (e.g. a singleton event bus or application-scoped publisher), the subject retains a strong reference to the observer. If the observer's lifecycle finishes (e.g. a short-lived request context or UI view) but the caller forgets to deregister it, the garbage collector CANNOT reclaim the observer or its entire referenced object graph!\n• Solutions:\n  1. Explicitly deregister listeners when cleaning up (e.g., in `close()` or `@PreDestroy`).\n  2. Use weak reference listeners (`WeakReference<Observer>` or `WeakHashMap`) so the subject's reference does not prevent GC reclamation.\n\nWhy other options are incorrect:\n• Garbage collectors handle cyclic object references without deadlock.\n• Type erasure does not inherently cause ClassCastException if generic signatures match."
+    "explanation": "Why this is correct:\n• A long-lived subject that stores listeners in a strong collection will keep those listeners, and anything they point at, alive after the caller is done with them. Remove the listener, or store it weakly.\n\nWhy other options are incorrect:\n• A is a locking bug you can write, but it is not the usual Observer leak, and the garbage collector does not deadlock on the reference.\n• C describes a stale snapshot taken too early. Registration normally updates the live list.\n• D can happen if you mutate the list during notify, but it is not inherent, and it is not fixed by a weak reference."
   },
   {
     "id": 215,
@@ -6465,19 +6465,19 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Queueing, scheduling, or logging requests for delayed or asynchronous execution across thread boundaries."
+        "text": "Requests can be queued, logged, or run later, including on another thread, because the request itself is an object."
       },
       {
         "id": "B",
-        "text": "Implementing multi-level Undo/Redo mechanisms by storing executed command histories with corresponding reverse operations."
+        "text": "Undo and redo can reverse work, because each command can store the inverse of what execute() did."
       },
       {
         "id": "C",
-        "text": "Automatically converting relational SQL queries into NoSQL document projections without an ORM."
+        "text": "The invoker calls the receiver itself, and the command object only records the call after the receiver has finished."
       },
       {
         "id": "D",
-        "text": "Guaranteeing zero-latency network transmission over public internet backbones."
+        "text": "One command instance is shared by every invoker, because a command must not close over the arguments of a single request."
       }
     ],
     "correct": [
@@ -6485,7 +6485,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Command Pattern (GoF Behavioral):\n  \"Encapsulate a request as an object, thereby letting you parameterize clients with different requests, queue or log requests, and support undoable operations.\"\n• Core Benefits:\n  - Decoupling Invoker and Receiver: The component triggering an action doesn't know what class handles it or how.\n  - Undo/Redo: By defining an `undo()` method alongside `execute()`, commands can reverse state mutations.\n  - Work Queues: Commands can be queued in thread pools (`Runnable` and `Callable` in `java.util.concurrent` are canonical examples of Command!).\n\nWhy other options are incorrect:\n• Command does not perform ORM translations or speed up physical network transmission."
+    "explanation": "Why this is correct:\n• A command object separates the request from the moment it runs. That is what lets you queue it, log it, or keep an undo stack of reverse operations. Runnable is the everyday Java form.\n\nWhy other options are incorrect:\n• C leaves the invoker coupled to the receiver, which is what the command was introduced to avoid.\n• D is the opposite of a typical command: the request's arguments belong on that command instance, so one shared instance cannot represent different requests."
   },
   {
     "id": 216,
@@ -6494,26 +6494,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It broadcasts the request simultaneously to all registered handlers using multi-cast UDP packets."
+        "text": "Every handler in the chain must process the request, and none of them is allowed to stop the chain early."
       },
       {
         "id": "B",
-        "text": "It passes the request along a chain of handler objects; each handler decides either to process the request, pass it to the next handler in the sequence, or both."
+        "text": "The request walks a sequence of handlers, and each one may handle it, forward it, or do both."
       },
       {
         "id": "C",
-        "text": "It routes the request to a centralized database that triggers stored procedures."
+        "text": "The client looks up one handler by request type and runs only that handler, with no forwarding to another."
       },
       {
         "id": "D",
-        "text": "It compiles the request into an abstract syntax tree and evaluates it using formal grammar rules."
+        "text": "The client already names the concrete handler, and the client itself loops over the remaining handlers."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Chain of Responsibility Pattern (GoF Behavioral):\n  \"Avoid coupling the sender of a request to its receiver by giving more than one object a chance to handle the request. Chain the receiving objects and pass the request along the chain until an object handles it.\"\n• Production Implementations:\n  - Jakarta Servlet `FilterChain`: Each `Filter` can inspect the request, reject it (e.g. authentication failure), modify headers, and call `chain.doFilter(request, response)` to pass control downstream.\n  - Spring Security `SecurityFilterChain`: Sequential filters for CSRF validation, Bearer token extraction, authentication, and authorization.\n\nWhy other options are incorrect:\n• Broadcasting to all handlers simultaneously is Publish-Subscribe or Multi-cast.\n• Evaluating formal grammars describes the Interpreter pattern."
+    "explanation": "Why this is correct:\n• Chain of Responsibility gives more than one object a chance at the request. A handler processes it, passes it on, or both. Servlet filters and Spring Security's filter chain work this way.\n\nWhy other options are incorrect:\n• A forces every handler to run, which removes the decision the pattern exists for.\n• C is a direct dispatch map: one chosen handler, no chain.\n• D puts the loop back in the client, so the sender is coupled to the receivers again."
   },
   {
     "id": 217,
@@ -6522,26 +6522,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "State is a structural pattern whereas Strategy is a creational pattern."
+        "text": "Strategy changes the context when the context's own data changes; State is chosen once by the client and then stays fixed."
       },
       {
         "id": "B",
-        "text": "While both share similar class diagrams, Strategy encapsulates interchangeable independent algorithms chosen externally by the client, whereas State encapsulates state-dependent behaviors and frequently transitions the object's context from one state to another automatically."
+        "text": "Both delegate through an interface, but the client picks a Strategy, while a State often moves the context on to the next state itself."
       },
       {
         "id": "C",
-        "text": "Strategy can only have one concrete implementation at runtime, whereas State allows up to 256 active states."
+        "text": "State objects are shared and hold no per-context data; Strategy objects are singletons created once when the process starts."
       },
       {
         "id": "D",
-        "text": "State requires multiple inheritance, whereas Strategy works exclusively with abstract classes."
+        "text": "State is implemented as a subclass of the context for each mode; Strategy instead wraps that context and adds behavior around the call."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• State vs Strategy Pattern Comparison:\n  - Similar Structure: Both patterns use composition: a context object delegates operations to an interface implementation.\n  - Intent Difference:\n    * Strategy: The client generally chooses which concrete strategy to inject into the context (e.g. `FastSort` vs `StableSort`). Strategies are typically unaware of each other.\n    * State: State implementations represent the internal lifecycle states of an entity (e.g. `OrderPendingState`, `OrderPaidState`, `OrderShippedState`). State transitions are managed either by the concrete state objects or by the context itself during method execution.\n\nWhy other options are incorrect:\n• Both State and Strategy are behavioral patterns (not creational or structural).\n• Neither is limited by artificial counts like 256 states."
+    "explanation": "Why this is correct:\n• The class diagrams look alike: a context delegates to an interface. The intent differs. A strategy is selected from outside and usually does not know its siblings. A state represents where the object is in its lifecycle and often triggers the transition.\n\nWhy other options are incorrect:\n• A swaps the two intents.\n• C adds sharing rules that neither pattern requires.\n• D describes subclassing the context, and wrapping it, which are inheritance and Decorator."
   },
   {
     "id": 218,
@@ -6550,26 +6550,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Subclasses call parent class methods asynchronously via message queues."
+        "text": "The subclass chooses the step order, and the base class only offers hooks that do not form a fixed sequence."
       },
       {
         "id": "B",
-        "text": "A base class defines the invariant skeleton of an algorithm in a `final` template method, calling abstract or hook methods that subclasses override to supply specific step behaviors without altering the algorithm structure."
+        "text": "The base class fixes the step order in a template method and calls hooks; subclasses replace steps, not the sequence."
       },
       {
         "id": "C",
-        "text": "Client code dynamically registers lambda callbacks that intercept private method calls at runtime."
+        "text": "The client injects each step as a strategy, so the base class never calls a method that a subclass implements."
       },
       {
         "id": "D",
-        "text": "Objects communicate exclusively through JSON webhooks rather than in-process method invocations."
+        "text": "Subclasses register for a callback when the algorithm finishes, instead of the base class calling hooks while it runs."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Template Method Pattern (GoF Behavioral):\n  \"Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm's structure.\"\n• Hollywood Principle: The high-level superclass controls the execution flow and calls the low-level subclass operations when needed, rather than subclasses controlling superclass flow.\n• Best Practice: The template method is typically marked `final` in Java so subclasses cannot tamper with the invariant algorithm sequencing (e.g., `public final void processOrder() { validate(); chargePayment(); ship(); }`).\n\nWhy other options are incorrect:\n• Subclasses calling superclasses directly is standard inheritance, the opposite of the Hollywood Principle.\n• Dynamic lambda callbacks represent Strategy/Observer."
+    "explanation": "Why this is correct:\n• Template Method puts the invariant sequence in the base class, usually in a final method, and calls overridable steps. The base class calls the subclass, which is the Hollywood Principle.\n\nWhy other options are incorrect:\n• A lets the subclass own the sequence, which is the opposite.\n• C is Strategy: the steps are injected objects, not hooks on a subclass.\n• D is Observer: a callback at the end, not calls into the steps."
   },
   {
     "id": 219,
@@ -6578,26 +6578,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Fail-fast iterators immediately throw `ConcurrentModificationException` if the underlying collection is structurally modified during iteration (via a `modCount` check); fail-safe iterators traverse a snapshot or tolerate concurrent modifications without throwing."
+        "text": "Fail-fast iterators throw ConcurrentModificationException when modCount changes outside the iterator; fail-safe ones snapshot or tolerate updates and do not throw."
       },
       {
         "id": "B",
-        "text": "Fail-fast iterators run on background worker threads; fail-safe iterators execute synchronously on the main thread."
+        "text": "Fail-fast iterators lock the collection until the traversal ends; fail-safe iterators never see a structural change made after they are created."
       },
       {
         "id": "C",
-        "text": "Fail-fast iterators return elements in descending reverse order; fail-safe iterators return elements in ascending sorted order."
+        "text": "Fail-fast iterators throw if you remove() through the iterator itself; fail-safe iterators throw only when another thread modifies the collection."
       },
       {
         "id": "D",
-        "text": "Fail-fast iterators consume O(N) heap memory for every `next()` call; fail-safe iterators execute in strict O(1) space."
+        "text": "Fail-fast behavior comes from copying the collection's elements when iterator() is called; fail-safe behavior comes from checking modCount every time next() is called."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Fail-Fast Iterators (`ArrayList`, `HashMap`, `HashSet`):\n  Track an internal modification count (`modCount`). When the iterator is created, it records `expectedModCount = modCount`. If any structural modification occurs outside the iterator's own `remove()` method, subsequent `next()` or `hasNext()` checks detect `modCount != expectedModCount` and immediately throw `ConcurrentModificationException`.\n• Fail-Safe / Weakly Consistent Iterators (`CopyOnWriteArrayList`, `ConcurrentHashMap`):\n  Iterate over an immutable array snapshot or maintain lock-free traversals that reflect the state of the collection at or since iterator creation without ever throwing `ConcurrentModificationException`.\n\nWhy other options are incorrect:\n• Concurrency safety is unrelated to thread assignment or reverse sorting order."
+    "explanation": "Why this is correct:\n• ArrayList and HashMap iterators remember modCount and throw ConcurrentModificationException if the collection changes except through that iterator's own remove().\n• CopyOnWriteArrayList iterates a snapshot. ConcurrentHashMap's iterators are weakly consistent. Neither throws ConcurrentModificationException for a concurrent update.\n\nWhy other options are incorrect:\n• B describes a lock, which fail-fast iterators do not take, and a snapshot that never observes updates, which weakly consistent iterators do not promise.\n• C reverses the iterator's own remove(): that path updates the expected count and is allowed.\n• D swaps the mechanisms. modCount is the fail-fast check; a copy is what a snapshot iterator uses."
   },
   {
     "id": 220,
@@ -6606,26 +6606,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It replaces many-to-many tight couplings and dependencies among peer objects (colleagues) with one-to-many interactions through a centralized mediator object, keeping colleagues loosely coupled."
+        "text": "It replaces direct links among colleagues with a mediator they call, so those colleagues do not reference one another."
       },
       {
         "id": "B",
-        "text": "It distributes database transactions across multiple relational database shards."
+        "text": "Each colleague keeps references to the others and forwards calls itself, while the mediator only records the interaction."
       },
       {
         "id": "C",
-        "text": "It caches read-heavy queries in an in-memory Redis cluster."
+        "text": "Every colleague registers with the others and is told about their changes, which keeps the mediator off the call path."
       },
       {
         "id": "D",
-        "text": "It encrypts sensitive payloads traveling across untrusted network perimeters."
+        "text": "A request moves from one colleague to the next until one of them handles it, and that chain of colleagues is the mediator."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Mediator Pattern (GoF Behavioral):\n  \"Define an object that encapsulates how a set of objects interact. Mediator promotes loose coupling by keeping objects from referring to each other explicitly, and it lets you vary their interaction independently.\"\n• Real-world Analogy: Air Traffic Control (ATC) tower. Airplanes (colleagues) do not communicate directly with every other airplane in the sky; all planes communicate exclusively with the tower (mediator), reducing an O(N^2) communication graph to O(N).\n• Example: GUI Dialog containing interdependent form controls (checkbox toggling text fields and submit buttons).\n\nWhy other options are incorrect:\n• Database sharding, caching, and network encryption are distributed systems/security concerns, not the Mediator pattern."
+    "explanation": "Why this is correct:\n• Mediator turns many-to-many calls among colleagues into calls through one object, so a dialog control or a participant does not have to know the others.\n\nWhy other options are incorrect:\n• B leaves the many-to-many links in place and reduces the mediator to a log.\n• C is Observer, and the colleagues still know each other.\n• D is Chain of Responsibility."
   },
   {
     "id": 221,
@@ -6634,23 +6634,23 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Originator (the object whose internal state needs saving and restoring)."
+        "text": "Originator, the object that writes a snapshot of its own state and later restores itself from that snapshot."
       },
       {
         "id": "B",
-        "text": "Memento (the immutable object that stores the internal snapshot of the Originator's state)."
+        "text": "Memento, the object that stores the snapshot and exposes the full state only back to the originator."
       },
       {
         "id": "C",
-        "text": "Caretaker (the custodian responsible for keeping the Memento safe without examining or tampering with its contents)."
+        "text": "Caretaker, the object that holds mementos and must not read or change what is stored inside them."
       },
       {
         "id": "D",
-        "text": "Interceptor (the thread that validates cryptographic checksums on state transitions)."
+        "text": "Director, the object that reads the memento's fields and runs the originator's construction steps from them."
       },
       {
         "id": "E",
-        "text": "Dispatcher (the message broker that publishes state changes to remote microservices)."
+        "text": "Observer, the object that is notified whenever a field stored inside the memento changes."
       }
     ],
     "correct": [
@@ -6659,7 +6659,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Memento Pattern (GoF Behavioral):\n  \"Without violating encapsulation, capture and externalize an object's internal state so that the object can be restored to this state later.\"\n• The Three Roles:\n  1. Originator: Creates a memento containing a snapshot of its current internal state and uses the memento to restore its previous state.\n  2. Memento: Passive value holder storing the originator's internal state. It exposes a wide interface to the Originator and a narrow interface to all other objects.\n  3. Caretaker: Requests a memento from the originator (e.g. before an operation) and stores it in an undo stack without reading or modifying its fields.\n\nWhy other options are incorrect:\n• Interceptor and Dispatcher are not participants in the GoF Memento pattern."
+    "explanation": "Why this is correct:\n• Memento keeps encapsulation while still allowing undo. The originator creates and restores the snapshot, the memento holds it, and the caretaker stores it without looking inside.\n\nWhy other options are incorrect:\n• D is the Director from Builder, which is allowed to see construction steps. A caretaker must not inspect the memento.\n• E is Observer. A memento is a passive snapshot, not a publisher of field changes."
   },
   {
     "id": 222,
@@ -6668,26 +6668,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "By executing two consecutive HTTP requests to ensure high availability across availability zones."
+        "text": "The client calls an overloaded visitor.visit(element), and Java selects that overload using the runtime type of the element argument."
       },
       {
         "id": "B",
-        "text": "By combining a call to the element (`element.accept(visitor)`) with a callback to the visitor (`visitor.visit(this)`), dispatching dynamically on both the element type and visitor operation, enabling new operations without modifying element classes."
+        "text": "The element accepts the visitor and calls back visitor.visit(this), so both the element type and the operation are selected."
       },
       {
         "id": "C",
-        "text": "By dispatching events to both Kafka and RabbitMQ simultaneously to prevent data loss."
+        "text": "Each new operation is added to the element interface, so every element class is edited when that operation is introduced."
       },
       {
         "id": "D",
-        "text": "By compiling Java code to both bytecode and native machine code ahead of time."
+        "text": "The visitor subclasses the element, so one virtual call on the visitor selects both the element type and the operation."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Double Dispatch Mechanism:\n  Java supports only Single Dispatch (polymorphism chooses the method implementation based solely on the runtime type of the receiver object, while parameter types are bound statically at compile time).\n• How Visitor works:\n  1. Client calls `element.accept(visitor)` (First dispatch: polymorphic on the `Element` subclass).\n  2. Inside `accept`, the concrete element invokes `visitor.visit(this)` (Second dispatch: `this` has an exact concrete compile-time type, invoking the specific overloaded `visit(ConcreteElement)` method!).\n• Benefit: New operations (e.g., ExportToXML, TypeCheck, CodeGen) can be added to an object structure (e.g., an AST) without modifying the element classes.\n\nWhy other options are incorrect:\n• HTTP retries, dual event dispatching, and AOT compilation are unrelated to Double Dispatch."
+    "explanation": "Why this is correct:\n• Java overloads are chosen from the compile-time type of the argument. Visitor gets a second dispatch by having the concrete element call visitor.visit(this), where this has the concrete type.\n• That is what lets you add an operation without editing the element classes.\n\nWhy other options are incorrect:\n• A is the mistake Visitor exists to avoid: the client-side overload is bound statically.\n• C is the modification Visitor avoids. New work belongs in a new visitor.\n• D is not the structure. The visitor does not extend the element."
   },
   {
     "id": 223,
@@ -6696,26 +6696,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "When a problem occurs repeatedly in a well-defined domain that can be expressed as sentences in a simple language or grammar, and an abstract syntax tree representation can evaluate those sentences."
+        "text": "The problem is a small language whose sentences follow a grammar, and an abstract syntax tree evaluates those sentences."
       },
       {
         "id": "B",
-        "text": "When database queries must be translated into raw TCP socket packets for high-frequency trading."
+        "text": "The request is passed along a chain of handlers until one of them interprets the message and chooses to stop the chain."
       },
       {
         "id": "C",
-        "text": "When an application needs to stream audio chunks directly from CDN edge servers to mobile clients."
+        "text": "A family of algorithms shares a single interface, and the client selects which of those algorithms interprets each input."
       },
       {
         "id": "D",
-        "text": "When microservices need to discover each other's IP addresses dynamically via DNS records."
+        "text": "The object structure stays fixed while new operations are added as visitors, rather than being added as grammar rules."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Interpreter Pattern (GoF Behavioral):\n  \"Given a language, define a representation for its grammar along with an interpreter that uses the representation to interpret sentences in the language.\"\n• Structure:\n  - AbstractExpression defines an `interpret(Context)` method.\n  - TerminalExpression handles atomic grammar symbols.\n  - NonterminalExpression evaluates composite grammar rules (e.g., `AndExpression`, `PlusExpression`).\n• Typical Applications: SQL query parsers, regular expression engines, arithmetic calculators, and business rule DSLs.\n\nWhy other options are incorrect:\n• TCP socket encoding, audio streaming, and service discovery do not use the Interpreter pattern."
+    "explanation": "Why this is correct:\n• Interpreter fits a small grammar you represent as an abstract syntax tree: terminal expressions, composite rules, and an interpret operation. Regular expressions, small rule languages, and arithmetic expressions are the usual cases.\n\nWhy other options are incorrect:\n• B is Chain of Responsibility.\n• C is Strategy: one chosen algorithm, not a grammar.\n• D is Visitor: stable structure, new operations. Interpreter is for a language you evaluate."
   },
   {
     "id": 224,
@@ -6724,26 +6724,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A class should contain no more than one public method and zero private helper methods."
+        "text": "A class has one responsibility when it exposes a single public method, even if several actors request changes to that method."
       },
       {
         "id": "B",
-        "text": "A module or class should be responsible to one, and only one, actor or business stakeholder, meaning it should have only one reason to change."
+        "text": "A responsibility is one actor's reason to change, so a class should serve one actor and not mix the changes those actors request."
       },
       {
         "id": "C",
-        "text": "Every service class must communicate with exactly one database table."
+        "text": "A class has one responsibility when its methods all use one database table, no matter which team requests the change."
       },
       {
         "id": "D",
-        "text": "A class must run on a single dedicated operating system thread to ensure deterministic execution."
+        "text": "A class has one responsibility when it both calculates a result and stores it, because those two steps are assumed to change together."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Single Responsibility Principle (SRP - the 'S' in SOLID):\n  \"A module should have one, and only one, reason to change.\" In *Clean Architecture*, Uncle Bob clarifies that a \"reason to change\" corresponds to an *actor* (a person, department, or business stakeholder who requests that change).\n• Violation Example: An `Employee` class containing `calculatePay()` (requested by CFO/Finance), `reportHours()` (requested by COO/HR), and `save()` (requested by CTO/Database Administrators). Coupling them means a change requested by Finance can inadvertently break HR reporting.\n\nWhy other options are incorrect:\n• SRP does not limit classes to a single method.\n• Database table mapping is ORM design, not SRP.\n• Operating system threads are concurrency constructs, not architectural responsibilities."
+    "explanation": "Why this is correct:\n• In Clean Architecture, a reason to change is an actor. An Employee type that calculates pay for finance, reports hours for HR, and saves rows for the database team has three reasons to change.\n\nWhy other options are incorrect:\n• A counts methods. SRP is about actors, and one method can still serve two of them.\n• C ties the rule to a table. Two actors can still force changes to one table's code.\n• D bundles calculation and persistence, which often change for different actors."
   },
   {
     "id": 225,
@@ -6752,26 +6752,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Adding new `case` statements to a large `switch` statement whenever a new payment method or report format is introduced."
+        "text": "New payment methods are added as further case branches in the existing switch, and the method's signature stays the same."
       },
       {
         "id": "B",
-        "text": "Designing classes to depend on abstract interfaces or strategy objects so that new behavior is introduced by creating new implementing classes without modifying existing, tested code."
+        "text": "New behavior is a new type behind an interface the existing code already calls, so the tested classes are not edited."
       },
       {
         "id": "C",
-        "text": "Declaring all domain classes `final` and implementing all logic within static utility methods."
+        "text": "The existing payment class is edited for each new method, but its public signatures stay stable so callers do not have to recompile."
       },
       {
         "id": "D",
-        "text": "Using reflection to modify `private final` fields in external dependencies at runtime."
+        "text": "Every variant lives in one class behind a flag that defaults to the old behavior, so no new type is introduced."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Open/Closed Principle (OCP - Bertrand Meyer, Robert C. Martin):\n  \"Software entities (classes, modules, functions) should be open for extension, but closed for modification.\"\n• How to Achieve OCP: Depend on abstractions (interfaces, abstract classes). When business requirements change (e.g., adding `ApplePayProcessor`), you write a new class implementing `PaymentProcessor` without modifying or risking regressions in existing `CreditCardProcessor` or checkout code.\n\nWhy other options are incorrect:\n• Editing existing `switch` statements directly violates OCP because it modifies verified production source code.\n• Static utilities and reflection hacks violate clean object-oriented architecture."
+    "explanation": "Why this is correct:\n• Open/Closed means you add behavior by extension. A new PaymentProcessor implementation plugs into code that already depends on the interface, and the existing processors stay untouched.\n\nWhy other options are incorrect:\n• A and C both modify the class that already works. A stable signature does not make that modification safe.\n• D keeps every variant in the one class, so each new flag is another edit."
   },
   {
     "id": 226,
@@ -6809,26 +6809,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Low-level database utilities should instantiate high-level domain controllers directly via reflection."
+        "text": "High-level modules depend on concrete low-level classes, and only those low-level classes depend on abstractions."
       },
       {
         "id": "B",
-        "text": "High-level modules should not depend on low-level modules; both should depend on abstractions. Furthermore, abstractions should not depend on details; details should depend on abstractions."
+        "text": "High-level and low-level modules both depend on abstractions, and those abstractions do not depend on concrete details."
       },
       {
         "id": "C",
-        "text": "Applications must never use interfaces, as interface lookup adds dynamic dispatch overhead in the JVM vtable."
+        "text": "The abstraction is defined next to the SQL implementation, and the use case depends on that persistence-owned interface."
       },
       {
         "id": "D",
-        "text": "All dependencies must be injected exclusively through XML configuration files rather than annotations."
+        "text": "Injecting concrete classes through a container is enough, even when the use case's constructor names those concrete types."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Dependency Inversion Principle (DIP - the 'D' in SOLID):\n  1. High-level modules (business rules, use cases) should not depend on low-level modules (SQL drivers, file I/O, email clients). Both should depend on abstractions.\n  2. Abstractions should not depend on details (concrete classes). Details should depend on abstractions.\n• Architectural Impact: Inverts traditional procedural dependency arrows. Instead of `OrderService -> MySqlOrderDao`, both `OrderService` and `MySqlOrderDao` depend on an interface `OrderRepository` defined in the domain layer.\n\nWhy other options are incorrect:\n• DIP uses abstractions, not reflection tricks.\n• Eliminating interfaces is contrary to DIP.\n• XML configuration is an outdated deployment detail, not an architectural principle."
+    "explanation": "Why this is correct:\n• Dependency Inversion points both sides at an abstraction the high-level policy owns. OrderService and a SQL repository both depend on OrderRepository, and the interface does not depend on the SQL details.\n\nWhy other options are incorrect:\n• A is the traditional dependency direction, which DIP reverses.\n• C puts the interface in the detail package, so the use case still depends on persistence.\n• D is wiring. Naming the concrete class in the constructor is still a dependency on a detail."
   },
   {
     "id": 228,
@@ -6837,26 +6837,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Entities are stored in relational databases, whereas Value Objects are stored exclusively in in-memory caches."
+        "text": "An entity is identified by its attributes, so two users with the same name are one entity; a value object is identified by a persistent id."
       },
       {
         "id": "B",
-        "text": "An Entity is defined by its thread of identity that endures across time and states, whereas a Value Object has no conceptual identity and is defined entirely by its attributes (immutable and compared by structural equality)."
+        "text": "An entity keeps a stable identity as its state changes; a value object has no identity and is equal when its attributes match."
       },
       {
         "id": "C",
-        "text": "Entities are always immutable; Value Objects are mutable data structures with public setter methods."
+        "text": "An entity is immutable and compared by reference; a value object is mutable and is compared by a database primary key."
       },
       {
         "id": "D",
-        "text": "Entities cannot contain business methods; Value Objects contain all domain business logic."
+        "text": "An entity holds only data; a value object holds the identity and the lifecycle of the aggregate that contains it."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Entity vs Value Object (Eric Evans, *Domain-Driven Design*):\n  - Entity: An object characterized by its unique identity (`id`) rather than its attributes. Two `User` entities with different IDs represent different people, even if they share the same name.\n  - Value Object: An immutable object with no distinct identity, defined entirely by the values of its attributes (e.g. `Money(10, \"USD\")`, `Address`, `DateRange`). If two Value Objects have identical attribute values, they are completely interchangeable (`equals()` checks all fields).\n\nWhy other options are incorrect:\n• Value Objects are immutable (Java `record` is the modern standard for Value Objects).\n• Both Entities and Value Objects can and should contain business methods in a rich domain model."
+    "explanation": "Why this is correct:\n• An entity is the same object over time because of its identity, even when its attributes change. A value object, such as money or an address, is defined only by its attributes, is immutable, and is compared structurally.\n\nWhy other options are incorrect:\n• A swaps identity and attribute equality.\n• C swaps immutability and the comparison rule.\n• D swaps which concept carries identity. The entity does, and both kinds of object can hold behavior."
   },
   {
     "id": 229,
@@ -6865,19 +6865,19 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "External objects may only hold direct references to the Aggregate Root, never to internal entities within the aggregate boundary."
+        "text": "Objects outside the aggregate reference the root only, not an entity that lives inside the boundary."
       },
       {
         "id": "B",
-        "text": "Any change to objects within the aggregate boundary must satisfy all business invariants enforced by the Aggregate Root before the transaction commits."
+        "text": "A change inside the boundary must leave the root's invariants true before the transaction commits."
       },
       {
         "id": "C",
-        "text": "Transactions must span multiple Aggregates simultaneously using distributed two-phase commit (2PC) locks."
+        "text": "One transaction should update every aggregate the use case touches, using a distributed commit so rules can span roots."
       },
       {
         "id": "D",
-        "text": "Aggregate Roots must never emit domain events under any circumstances."
+        "text": "Other aggregates may reference internal entities if they load those entities through the same repository as the root."
       }
     ],
     "correct": [
@@ -6885,7 +6885,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Aggregate & Aggregate Root Rules (Eric Evans, Vaughn Vernon):\n  1. Consistency Boundary: An Aggregate is a cluster of associated domain entities and value objects treated as a unit for data changes. The Aggregate Root is the gateway.\n  2. Encapsulation: External clients can only reference the Aggregate Root directly. Internal entities (e.g. `OrderItem` inside an `Order` aggregate) cannot be modified directly from the outside; all operations must pass through methods on the Aggregate Root.\n  3. Transaction Rule: One transaction should modify exactly ONE aggregate instance. Cross-aggregate consistency is achieved via eventual consistency and domain events.\n\nWhy other options are incorrect:\n• Multi-aggregate 2PC transactions cause severe locking contention and scalability bottlenecks.\n• Aggregate Roots frequently emit domain events to announce state changes."
+    "explanation": "Why this is correct:\n• The root is the only outside reference, and it is the gate for changes. One transaction modifies one aggregate; anything across aggregates is eventual and usually carried by a domain event.\n\nWhy other options are incorrect:\n• C is the locking pattern aggregates are meant to avoid. Cross-root invariants are not held with a distributed commit.\n• D leaks the inside of the boundary. An internal entity is reached through the root, not stored by someone else."
   },
   {
     "id": 230,
@@ -6894,26 +6894,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Domain Events are published to public third-party REST webhooks; Integration Events are local in-memory method parameters."
+        "text": "Domain events are the contract other contexts consume; integration events stay inside the aggregate and may use its internal types."
       },
       {
         "id": "B",
-        "text": "Domain Events capture state changes within a single bounded context and reflect the ubiquitous language of internal aggregates; Integration Events are published across bounded context boundaries, require strict backward compatibility contracts, and avoid leaking internal domain models."
+        "text": "Domain events record a change inside one bounded context; integration events cross contexts and must not leak the internal model."
       },
       {
         "id": "C",
-        "text": "Domain Events must be serialized into XML; Integration Events must use raw binary Protobuf format."
+        "text": "Domain events must stay compatible forever once published; integration events can change with the aggregate because only that context reads them."
       },
       {
         "id": "D",
-        "text": "Domain Events are executed synchronously on the database server; Integration Events are executed by the client web browser."
+        "text": "Domain events are replayed to rebuild state; integration events replace them so the aggregate does not keep a history of its own."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Domain Events vs Integration Events:\n  - Domain Event: Represents something that happened within the domain boundary (e.g., `OrderSubmittedEvent`). They are often processed in-memory within the same process/transaction to update local projections or trigger internal side effects.\n  - Integration Event: Designed for cross-service, asynchronous communication across different Bounded Contexts (e.g., via Kafka, RabbitMQ). They form an external public contract; changes require schema versioning (Avro/Protobuf) to prevent breaking external downstream consumers.\n\nWhy other options are incorrect:\n• Domain events are internal to a bounded context; integration events cross boundaries.\n• Serialization format is a technical choice, not the conceptual architectural boundary."
+    "explanation": "Why this is correct:\n• A domain event is an internal fact, in the language of that context. An integration event is the fact you publish outward. The outward contract has to stay compatible and must not expose internal types.\n\nWhy other options are incorrect:\n• A and C swap which event crosses the boundary and which one is the stable contract.\n• D mixes the idea with event sourcing. Publishing an integration event does not erase the domain event."
   },
   {
     "id": 231,
@@ -6922,26 +6922,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A DAO represents an in-memory collection of aggregates; a Repository maps directly to a single database table."
+        "text": "A repository is a table-level API of insert and update methods; a DAO is the collection of aggregate roots the domain loads and saves."
       },
       {
         "id": "B",
-        "text": "A Repository provides a collection-oriented abstraction for retrieving and persisting complete Aggregate Roots, encapsulating domain queries; a DAO is typically a data-centric abstraction closely tied to database tables, CRUD operations, and SQL queries."
+        "text": "A repository loads and saves whole aggregate roots as a collection; a DAO is organized around tables, SQL, and row-level CRUD."
       },
       {
         "id": "C",
-        "text": "Repositories can only be used with NoSQL databases; DAOs are exclusive to relational SQL databases."
+        "text": "A repository may return a child entity for the caller to update; a DAO is allowed to return only the aggregate root."
       },
       {
         "id": "D",
-        "text": "Repositories execute asynchronously; DAOs are strictly synchronous and thread-safe."
+        "text": "A repository exposes only findAll; the domain's query language belongs on the DAO instead of on the repository."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Repository Pattern (Martin Fowler, Eric Evans):\n  Simulates an in-memory collection of domain Aggregate Roots (`orderRepository.add(order)`, `orderRepository.findById(orderId)`). There is one Repository per Aggregate Root (never for child entities). It speaks the Ubiquitous Language.\n• Data Access Object (DAO - Core J2EE Pattern):\n  A lower-level abstraction focused on database tables and SQL/CRUD operations (`orderDao.insert()`, `orderItemDao.update()`). DAOs often mirror the relational schema 1-to-1 without domain encapsulation.\n\nWhy other options are incorrect:\n• DAOs map to database tables, whereas Repositories abstract collections of domain aggregates.\n• Both can be used with SQL, NoSQL, or in-memory stores."
+    "explanation": "Why this is correct:\n• A repository looks like a collection of aggregate roots and speaks the domain language. A DAO is the older data-centric type: one table, insert, update, and SQL.\n\nWhy other options are incorrect:\n• A swaps the two.\n• C lets a repository hand out an internal entity, which breaks the aggregate boundary. A DAO is not restricted to roots.\n• D puts the ubiquitous language on the DAO and reduces the repository to an unfiltered dump."
   },
   {
     "id": 232,
@@ -6950,26 +6950,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It forces the entire enterprise to share a single unified relational database schema with zero redundant tables."
+        "text": "Every team shares one model of Customer, so a field added for billing is required in sales and in shipping as well."
       },
       {
         "id": "B",
-        "text": "It defines explicit conceptual boundaries within which a specific Ubiquitous Language and domain model apply consistently, preventing model pollution where the same term (e.g., 'Customer' or 'Order') has conflicting meanings across different business departments."
+        "text": "It bounds where one ubiquitous language applies, so Customer can mean different things in sales, billing, and shipping."
       },
       {
         "id": "C",
-        "text": "It allows developers to eliminate all automated unit tests by isolating microservice failures."
+        "text": "It is only the process boundary, so two models may share one language as long as they are deployed as different services."
       },
       {
         "id": "D",
-        "text": "It ensures that all microservices are written in the exact same programming language and runtime framework."
+        "text": "It is a package inside one enterprise model that still uses the shared type for every noun the teams have in common."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Bounded Context (Eric Evans, *Domain-Driven Design*):\n  The boundary within which a particular domain model applies. In large enterprises, trying to build a single \"Unified Enterprise Data Model\" inevitably fails because terms mean different things to different groups:\n  - In Sales: A `Customer` is a prospect with leads and conversion probability.\n  - In Billing: A `Customer` is a legal entity with payment terms, VAT number, and invoices.\n  - In Shipping: A `Customer` is a delivery address and recipient name.\n• Bounded contexts let each subdomain build an optimal model for its specific needs without semantic collisions.\n\nWhy other options are incorrect:\n• DDD rejects a single monolithic enterprise database schema.\n• Bounded contexts do not eliminate testing or dictate programming languages."
+    "explanation": "Why this is correct:\n• A bounded context is the boundary of a model and its language. Sales, billing, and shipping can each mean something different by Customer without forcing one enterprise type.\n\nWhy other options are incorrect:\n• A is the single enterprise model that bounded contexts exist to avoid.\n• C confuses the context with a deployable process. Two processes can still share a muddled language, and one process can host one model.\n• D keeps one canonical type, so the boundary does not actually separate the meanings."
   },
   {
     "id": 233,
@@ -6978,26 +6978,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "To encrypt database tables at rest using AES-256 GCM encryption."
+        "text": "The new domain types extend the legacy types, so the legacy field names become part of the new ubiquitous language."
       },
       {
         "id": "B",
-        "text": "To translate and adapt foreign models, schemas, and semantics from the external/legacy system into the clean, modern domain model of the new service, preventing legacy semantics from contaminating the domain."
+        "text": "It translates the legacy model's types and meanings into the new domain model, so those legacy terms do not leak inward."
       },
       {
         "id": "C",
-        "text": "To block all HTTP requests that originate from non-corporate IP addresses."
+        "text": "A facade over the legacy API still returns the legacy objects, and the new model depends on those objects directly."
       },
       {
         "id": "D",
-        "text": "To automatically rewrite legacy COBOL and C++ programs into Java bytecode at runtime."
+        "text": "The two stores are kept aligned table for table, so the new context persists the same schema that the monolith already uses."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Anti-Corruption Layer (ACL - Eric Evans, DDD):\n  When a new service must interact with an external system or legacy database whose model is messy, convoluted, or incompatible, building direct dependencies causes the legacy concepts to bleed into and \"corrupt\" the new domain model.\n• Mechanism: The ACL acts as a bidirectional translation layer (using Adapters, Facades, and Translators). It translates incoming legacy structures into pristine domain objects and outgoing domain commands into legacy payloads, insulating the core domain.\n\nWhy other options are incorrect:\n• Disk encryption, IP firewalls, and bytecode decompilers are unrelated to the ACL architectural pattern."
+    "explanation": "Why this is correct:\n• An anti-corruption layer translates both ways. Legacy payloads become domain objects on the way in, and domain commands become legacy calls on the way out. The new model does not import the old one.\n\nWhy other options are incorrect:\n• A lets the legacy model become the parent of the new one, which is the corruption the layer prevents.\n• C stops at a facade and still exposes the foreign types.\n• D copies the foreign schema instead of translating it."
   },
   {
     "id": 234,
@@ -7006,26 +7006,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Domain Services contain pure business logic and invariant rules that naturally span multiple domain entities; Application Services orchestrate use cases, manage transaction boundaries, security, and coordinate repositories/external adapters without containing core business logic."
+        "text": "A domain service holds rules that span entities and does not know about transactions; an application service runs the use case around those calls."
       },
       {
         "id": "B",
-        "text": "Domain Services handle HTTP REST serialization; Application Services execute SQL queries directly against the database."
+        "text": "A domain service opens the transaction and loads the repositories; an application service is what holds the business rule that spans the entities."
       },
       {
         "id": "C",
-        "text": "Domain Services are deployed to Kubernetes; Application Services run as local background cron daemons."
+        "text": "A domain service is the class that handles the HTTP request; an application service is the entity method that changes a single aggregate."
       },
       {
         "id": "D",
-        "text": "Domain Services are stateless; Application Services maintain thread-local database connection pools."
+        "text": "A domain service may read the current user and the HTTP session; an application service must depend on neither."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Application Service vs Domain Service (Vaughn Vernon, *Implementing DDD*):\n  - Domain Service: Lives inside the Domain Layer. Contains business logic that does not naturally belong to a single Entity or Value Object (e.g. `FundsTransferService.transfer(fromAccount, toAccount, amount)` verifying banking overdraft invariants across both accounts). It has NO knowledge of HTTP, UI, or transactional annotations.\n  - Application Service: Lives in the Application Layer. Directs use-case workflow: authenticates caller, begins transaction (`@Transactional`), fetches aggregates from Repositories, invokes domain methods, and sends notification events.\n\nWhy other options are incorrect:\n• HTTP REST serialization belongs to the Presentation/Interface layer.\n• Database connection pools belong to Infrastructure."
+    "explanation": "Why this is correct:\n• A domain service is domain logic that does not fit on one entity, such as a transfer that checks both accounts. An application service loads aggregates, starts the transaction, calls that logic, and publishes results. It does not own the business rule.\n\nWhy other options are incorrect:\n• B swaps the two layers.\n• C puts HTTP on the domain service and reduces the application service to an entity method.\n• D allows the domain to see the session, which is an application concern."
   },
   {
     "id": 235,
@@ -7034,26 +7034,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It enables database migrations without creating SQL scripts."
+        "text": "Each query becomes its own repository method, so a rule is reused by adding methods rather than by combining objects."
       },
       {
         "id": "B",
-        "text": "It encapsulates reusable business rules and boolean evaluation criteria into separate, composable objects that can be combined using logical operators (`and`, `or`, `not`) for both in-memory validation and database query generation."
+        "text": "A business predicate becomes an object you can combine with and, or, and not, and use both in memory and in a query."
       },
       {
         "id": "C",
-        "text": "It compiles Java classes directly into WebAssembly binaries for edge execution."
+        "text": "The rule is checked once inside the aggregate constructor, so the same predicate is not also used to build a query."
       },
       {
         "id": "D",
-        "text": "It automatically generates OpenAPI documentation from Java controller method signatures."
+        "text": "The query is generated from the entity's field names, so the caller does not compose a predicate at all."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Specification Pattern (Eric Evans, Martin Fowler):\n  \"A specification states a constraint on the state of another object, which may or may not be present.\"\n• Key Benefits:\n  1. Reusability: Instead of cluttering repository interfaces with combinatorial query methods (`findActivePremiumUsersOverAge()`), each rule (`IsActiveUser`, `IsPremiumMember`, `IsOverAge`) is an isolated Specification object.\n  2. Composition: Specifications can be chained flexibly via boolean logic: `spec1.and(spec2).or(spec3)`.\n  3. Dual Usage: In Spring Data JPA, `Specification<T>` generates dynamic Criteria API SQL predicates, but the exact same concept can validate in-memory objects against domain rules.\n\nWhy other options are incorrect:\n• Database migration tools (Flyway, Liquibase) handle SQL migrations.\n• WebAssembly and OpenAPI generation are unrelated."
+    "explanation": "Why this is correct:\n• A specification is a predicate object. You combine specifications instead of adding a repository method per combination, and the same idea can validate an object or become a query predicate.\n\nWhy other options are incorrect:\n• A is the combinatorial repository interface that specifications replace.\n• C uses the rule only at construction time, so it is not a composable specification.\n• D generates a query from fields and skips the predicate object."
   },
   {
     "id": 236,
@@ -7062,26 +7062,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "By running every database read in a separate background thread with read-uncommitted isolation."
+        "text": "Each setter writes that entity to the database immediately, and commit only closes the transaction."
       },
       {
         "id": "B",
-        "text": "By maintaining a list of objects affected by a business transaction (new, modified, and deleted) and coordinating the writing out of changes, resolving concurrency issues, and executing an atomic batch commit at the end of the transaction."
+        "text": "It tracks new, dirty, and deleted objects and writes them together when the business transaction commits."
       },
       {
         "id": "C",
-        "text": "By writing changes directly to an external distributed Redis cache before writing to the database."
+        "text": "It remembers the original rows, but each flush writes only the last entity the application changed."
       },
       {
         "id": "D",
-        "text": "By delegating all transaction rollbacks to the client browser via HTTP headers."
+        "text": "The entity's own save() records the change, and the unit of work is only the JDBC connection that is open."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Unit of Work Pattern (Martin Fowler, *Patterns of Enterprise Application Architecture*):\n  \"Maintains a list of objects affected by a business transaction and coordinates the writing out of changes and the resolution of concurrency problems.\"\n• Production Example: Hibernate `Session` / JPA `EntityManager`.\n  As you manipulate Java entities during a transaction, the Persistence Context tracks newly created, dirty (modified), and removed entities in memory. When the transaction commits, Hibernate flushes the Unit of Work, ordering SQL `INSERT`, `UPDATE`, and `DELETE` statements efficiently and preventing duplicate database round-trips.\n\nWhy other options are incorrect:\n• Read-uncommitted concurrency breaks consistency.\n• Unit of Work is about coordinating database transaction writes, not Redis caching or browser HTTP headers."
+    "explanation": "Why this is correct:\n• A unit of work remembers what the transaction created, changed, and deleted, then flushes that set in one commit. A JPA persistence context is the usual Java implementation.\n\nWhy other options are incorrect:\n• A writes on every setter, so there is no coordinated flush.\n• C flushes a single entity and drops the rest of the tracked set.\n• D is Active Record plus a connection. The unit of work is the list of affected objects, not the connection itself."
   },
   {
     "id": 237,
@@ -7090,26 +7090,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Active Record completely isolates domain logic from database schemas; Data Mapper tightly binds database queries into domain entities."
+        "text": "Active Record keeps SQL out of the domain, and save() on the entity is the mapper; Data Mapper puts save() and delete() on the entity."
       },
       {
         "id": "B",
-        "text": "Data Mapper isolates domain entities from the database schema and persistence infrastructure, keeping domain classes pure (POJOs); Active Record embeds database access methods (`save()`, `delete()`) directly on the entity, which is simpler for CRUD but tightly couples domain models to persistence."
+        "text": "Data Mapper maps entities from the outside and keeps them free of persistence; Active Record puts save() and delete() on the entity."
       },
       {
         "id": "C",
-        "text": "Active Record supports distributed transactions across multiple databases; Data Mapper only supports in-memory SQLite databases."
+        "text": "Data Mapper fits a model that is a thin row wrapper; Active Record fits a domain that must not import a persistence API."
       },
       {
         "id": "D",
-        "text": "Active Record executes in compile-time generated bytecode; Data Mapper requires interpreted script execution."
+        "text": "Both keep SQL out of the domain, but only Active Record uses a separate mapper class, and Data Mapper does not."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Data Mapper vs Active Record (Martin Fowler, PoEAA):\n  - Active Record (e.g. Ruby on Rails, Play framework): An object that wraps a row in a database table or view, encapsulates the database access, and adds domain logic. Every entity has methods like `user.save()`, `user.delete()`. Simple and fast to develop for CRUD applications, but violates SRP and hinders testing.\n  - Data Mapper (e.g. Hibernate, JPA): A layer of mappers that moves data between objects and a database while keeping them independent of each other and the mapper itself. The domain model remains pure POJOs without database dependencies, ideal for rich, complex business logic.\n\nWhy other options are incorrect:\n• Active Record couples entities to databases; Data Mapper isolates them.\n• Both patterns run on standard JVM enterprise runtimes."
+    "explanation": "Why this is correct:\n• Active Record puts persistence on the row object, which is simple for CRUD and couples the domain to the database. Data Mapper, as in JPA, moves rows in and out of plain objects that do not know they are stored.\n\nWhy other options are incorrect:\n• A reverses which pattern isolates the domain.\n• C reverses the usual fit: the thin row wrapper is Active Record, and the persistence-free domain is Data Mapper.\n• D reverses which one has a separate mapper."
   },
   {
     "id": 238,
@@ -7118,26 +7118,26 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "All read and write operations must be routed through the exact same relational database stored procedure."
+        "text": "Commands and queries share one model and one store, and the split is only different methods on that same model."
       },
       {
         "id": "B",
-        "text": "Separating the data model and operations that mutate state (Commands) from the data model and operations that retrieve data (Queries), allowing each to be optimized, scaled, and secured independently according to their distinct access patterns."
+        "text": "Commands use a write model and queries use a separate read model, so each side can be shaped for its own access pattern."
       },
       {
         "id": "C",
-        "text": "Restricting database writes to weekdays and scheduling database reads exclusively for weekends."
+        "text": "Queries update a denormalized view and commands read that view, so the write side does not validate invariants."
       },
       {
         "id": "D",
-        "text": "Enforcing that all database tables have a single primary key and no foreign keys."
+        "text": "CQRS requires event sourcing underneath, so a command that writes one table while a query reads another table is not yet CQRS."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• CQRS (Greg Young, Martin Fowler):\n  In traditional architectures, the same domain model is used for both reads and writes. However, write models require strong consistency, encapsulation, and invariant validation, whereas read models require fast denormalized joins, projections, and paging.\n• The CQRS Architecture:\n  - Command Side: Handles state changes (`SubmitOrderCommand`), validates business rules, and updates the write database (or event store).\n  - Query Side: Reads from read-optimized projections or materialized views (e.g., Elasticsearch, Redis, denormalized read-replicas), avoiding expensive entity mapping and locks.\n\nWhy other options are incorrect:\n• Routing all reads and writes through one stored procedure is the opposite of CQRS.\n• Restricting operations by day of the week is completely arbitrary."
+    "explanation": "Why this is correct:\n• CQRS separates the model that changes state from the model that answers reads. The write side validates invariants. The read side can be denormalized, cached, or stored somewhere else.\n\nWhy other options are incorrect:\n• A is one model with two method names, which is not the split.\n• C swaps the directions: commands change state, queries read.\n• D adds a requirement CQRS does not have. Event sourcing is a separate choice."
   },
   {
     "id": 239,
@@ -7146,19 +7146,19 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Instead of storing only the current state of an entity, all changes to application state are stored as an immutable, append-only sequence of domain events."
+        "text": "State changes are stored as an append-only sequence of events, rather than only as the entity's current row."
       },
       {
         "id": "B",
-        "text": "Current application state can be reconstructed at any point in time by replaying past events from the beginning or from a periodic snapshot."
+        "text": "Current state is rebuilt by replaying those events from the start, or from a snapshot plus the events after it."
       },
       {
         "id": "C",
-        "text": "Event Sourcing eliminates the need for transactional databases because domain events are ephemeral and discarded after 24 hours."
+        "text": "Once a snapshot is stored, earlier events for that entity are dropped, because the snapshot replaces the history."
       },
       {
         "id": "D",
-        "text": "In Event Sourcing, past events are frequently modified and deleted using SQL `UPDATE` and `DELETE` queries to save disk space."
+        "text": "A wrong event is corrected by updating that event's payload, so replay does not need a later compensating event."
       }
     ],
     "correct": [
@@ -7166,7 +7166,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Event Sourcing (Martin Fowler, Greg Young):\n  - Immutable Append-Only Log: Rather than running destructive SQL `UPDATE` statements to overwrite table rows, every business state transition is stored as an immutable event (`AccountCreated`, `MoneyDeposited`, `MoneyWithdrawn`).\n  - Temporal Querying & Audit: Because the full history is preserved, you have a 100% accurate audit trail and can recreate state at any historical timestamp (time travel debugging).\n  - Snapshots: To avoid replaying millions of events when loading an entity, systems periodically write state snapshots (e.g. every 100 events) and replay only events following the snapshot.\n\nWhy other options are incorrect:\n• Events are permanent, not ephemeral or discarded after 24 hours.\n• Events are strictly immutable; they are NEVER modified or deleted via UPDATE/DELETE queries."
+    "explanation": "Why this is correct:\n• Event sourcing stores facts, not just the latest row. You rebuild state by replay. A snapshot is an optimization so you do not replay from the first event every time; the events remain the record.\n\nWhy other options are incorrect:\n• C treats the snapshot as a replacement for history. It is a cache of a prefix of the log.\n• D mutates the log. A mistake is a new compensating event, not an update of an old one."
   },
   {
     "id": 240,
@@ -7175,52 +7175,52 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A Content-Based Router routes an incoming message to different destination channels based on the message content or headers; a Splitter breaks a single composite message into multiple individual messages for separate processing."
+        "text": "A content-based router picks a destination from the message contents; a splitter breaks one composite message into a message per part."
       },
       {
         "id": "B",
-        "text": "A Content-Based Router converts JSON into XML; a Splitter encrypts message bodies with RSA private keys."
+        "text": "A content-based router breaks a composite payload into one message per element; a splitter chooses the channel from a header."
       },
       {
         "id": "C",
-        "text": "A Content-Based Router drops duplicate messages; a Splitter combines multiple messages into a batch."
+        "text": "A content-based router joins related messages back into one; a splitter drops duplicate messages so only the first copy is delivered."
       },
       {
         "id": "D",
-        "text": "A Content-Based Router executes asynchronous RPC calls; a Splitter terminates TCP socket connections."
+        "text": "A content-based router rewrites the payload into the receiver's schema; a splitter chooses a destination and leaves the message intact."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Enterprise Integration Patterns (Gregor Hohpe & Bobby Woolf, Apache Camel / Spring Integration):\n  - Content-Based Router: Inspects the content of a message (payload fields or headers, e.g. `order.type == 'VIP'`) and routes it to the appropriate destination channel without modifying the message.\n  - Splitter: Takes a composite message containing multiple elements (e.g. an `Invoice` containing 5 line items) and breaks it down into individual messages so each element can be processed concurrently or independently.\n\nWhy other options are incorrect:\n• Data format transformation (JSON to XML) is the Message Translator pattern.\n• Combining multiple messages into a single message is the Aggregator pattern.\n• Filtering duplicate messages is the Idempotent Consumer / Message Deduplicator pattern."
+    "explanation": "Why this is correct:\n• A content-based router inspects the message and chooses a channel. A splitter takes one message that contains several parts and emits one message per part. Neither rewrites the schema or joins messages.\n\nWhy other options are incorrect:\n• B swaps the router and the splitter.\n• C describes an aggregator and a deduplicator.\n• D describes a translator, and then gives the router’s job to the splitter."
   }
 ,
   {
     "id": 241,
-    "category": "Kubernetes",
-    "question": "Which THREE statements accurately characterize the distinct roles of Startup, Liveness, and Readiness probes when running JVM applications in Kubernetes?",
+    "category": "Docker & Kubernetes",
+    "question": "Which THREE statements describe what startup, liveness, and readiness probes do?",
     "options": [
       {
         "id": "A",
-        "text": "A failed Readiness probe immediately deletes the underlying container and triggers pod rescheduling to a different worker node."
+        "text": "A failed readiness probe restarts the container and reschedules the pod, because a pod that is not ready is treated as failed."
       },
       {
         "id": "B",
-        "text": "A Startup probe disables liveness and readiness checks until it succeeds, preventing Kubernetes from prematurely killing slow-starting JVM processes during warmup or schema migration."
+        "text": "A startup probe holds off liveness and readiness until it succeeds, so a slow JVM start is not killed as a failed process."
       },
       {
         "id": "C",
-        "text": "A failed Readiness probe removes the Pod from Service endpoints and load balancer pools without restarting the container, preventing user traffic from reaching an overloaded or initializing application."
+        "text": "A failed readiness probe removes the pod from Service endpoints and does not restart the container."
       },
       {
         "id": "D",
-        "text": "A failed Liveness probe causes the kubelet to restart the container in accordance with the pod's restartPolicy, recovering applications stuck in unrecoverable deadlocks or corrupted states."
+        "text": "A failed liveness probe causes the kubelet to restart the container, which is how a deadlocked process is recovered."
       },
       {
         "id": "E",
-        "text": "Liveness probes should query deep downstream dependencies like third-party payment gateways and primary databases so that the pod restarts whenever an external outage occurs."
+        "text": "A liveness probe should call the database or a payment gateway, so the pod restarts whenever that dependency is down."
       }
     ],
     "correct": [
@@ -7229,39 +7229,39 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Startup Probe: Designed specifically for slow-starting legacy or JVM applications. All other probes (liveness and readiness) are disabled until the startup probe succeeds (e.g. `failureThreshold: 30`, `periodSeconds: 10` gives a 300s initialization window). This eliminates the anti-pattern of setting an enormous `initialDelaySeconds` on the liveness probe.\n• Readiness Probe: Signals whether the pod is ready to accept incoming network traffic. When a readiness probe fails, kubelet removes the pod's IP from the Endpoints / EndpointSlice of all matching Services. The container is NOT killed or restarted.\n• Liveness Probe: Signals whether the container process is alive and healthy. When it fails past `failureThreshold`, kubelet terminates and restarts the container.\n\nWhy other options are incorrect:\n• Readiness probe failure never restarts containers or triggers rescheduling; it only halts traffic routing.\n• Liveness probes must NEVER check external downstream dependencies (databases, third-party APIs). If a shared database experiences a blip or latency spike, deep liveness probes across the entire microservice fleet will fail simultaneously, causing cascading restarts (a restart storm) across all pods!"
+    "explanation": "Why this is correct:\n• Startup delays the other probes until the process is actually up. Readiness only affects traffic: a failure pulls the pod out of the Service and leaves the container running. Liveness restarts the container when the process itself is stuck.\n\nWhy other options are incorrect:\n• A gives the readiness failure the liveness consequence. Unready means do not send traffic, not delete the pod.\n• E makes a shared dependency a reason to restart every pod. A blip then becomes a restart storm. Check dependencies from readiness, if at all, not from liveness."
   },
   {
     "id": 242,
-    "category": "Kubernetes",
-    "question": "Why is a `preStop` sleep hook (e.g., `sleep 15`) commonly combined with graceful shutdown to achieve true zero-downtime rolling updates in Kubernetes?",
+    "category": "Docker & Kubernetes",
+    "question": "Why can a pod that is being deleted still receive requests for a short time?",
     "options": [
       {
         "id": "A",
-        "text": "Because Linux kernels prohibit processes from handling `SIGTERM` signals unless the container has been idle for at least 10 seconds."
+        "text": "The kubelet sends SIGTERM only after the pod has been idle, so requests that already arrived are finished before shutdown starts."
       },
       {
         "id": "B",
-        "text": "Because endpoint de-registration and kube-proxy iptables/IPVS rule propagation across all worker nodes happen asynchronously; a brief delay allows in-flight routing changes to settle before the application stops accepting connections."
+        "text": "Endpoint removal and kube-proxy updates are asynchronous, so the process should keep accepting traffic until those routes have drained."
       },
       {
         "id": "C",
-        "text": "Because Kubernetes etcd database requires 15 seconds to flush Raft consensus logs before terminating any pod record."
+        "text": "A preStop hook replaces the application's own shutdown logic entirely, and that delay is what flushes the in-flight work inside the JVM."
       },
       {
         "id": "D",
-        "text": "Because Spring Boot's JVM requires 15 seconds to serialize active heap objects to the host filesystem before shutdown."
+        "text": "A readiness failure during a rollout restarts the pod, and the delay exists so the liveness probe does not fire first."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• The Asynchronous Teardown Race Condition:\n  When a Pod is marked for deletion (e.g. during a `kubectl rollout`), two concurrent asynchronous events occur in Kubernetes:\n  1. Endpoint Controller removes the Pod IP from the Service's `Endpoints` / `EndpointSlice`, which must propagate across the network to kube-proxy and Ingress/Load Balancer controllers on all cluster nodes.\n  2. Kubelet simultaneously sends a `SIGTERM` signal to the container process.\n• If the application receives `SIGTERM` and immediately closes its listening socket before kube-proxy and external load balancers remove its IP, incoming client requests will still be routed to the dying pod, resulting in HTTP 502 Bad Gateway or connection reset errors!\n• The Solution: A `preStop` lifecycle hook (such as `exec: command: [\"/bin/sh\", \"-c\", \"sleep 15\"]`) blocks `SIGTERM` from reaching the application process for 15 seconds, allowing endpoint de-registration to complete cluster-wide while the pod continues servicing requests.\n\nWhy other options are incorrect:\n• Linux processes can intercept `SIGTERM` instantly without delay.\n• Etcd and JVM heap serialization have nothing to do with `preStop` delay mechanics."
+    "explanation": "Why this is correct:\n• Deletion updates Endpoints and sends SIGTERM at the same time. Load balancers can still have the pod as a backend for a moment. If the process stops listening immediately, those in-flight routes fail. A short preStop sleep keeps the process serving until the endpoints catch up, and the application then shuts down on SIGTERM.\n\nWhy other options are incorrect:\n• A is not how SIGTERM works. The kubelet does not wait for the pod to go idle.\n• C makes the hook the application's shutdown. The hook only delays the signal; the process still handles SIGTERM.\n• D confuses a readiness failure, which stops traffic without a restart, with the delete path."
   },
   {
     "id": 243,
-    "category": "Kubernetes",
+    "category": "Docker & Kubernetes",
     "question": "Which TWO statements correctly describe the behavior of CPU and memory requests and limits in Kubernetes?",
     "options": [
       {
@@ -7290,80 +7290,80 @@ const QUESTIONS = [
   },
   {
     "id": 244,
-    "category": "Kubernetes",
-    "question": "Why can a containerized Java microservice be terminated with Exit Code 137 (`OOMKilled`) even when Java heap metrics show utilization well below `-Xmx`?",
+    "category": "Docker & Kubernetes",
+    "question": "Why can a Java container be OOMKilled while the heap is still below -Xmx?",
     "options": [
       {
         "id": "A",
-        "text": "Because Java Garbage Collectors require a dedicated secondary container to store serialized objects during compaction."
+        "text": "-Xmx is the container memory limit, so the kernel kills the process when heap use crosses it even if the process RSS is lower."
       },
       {
         "id": "B",
-        "text": "Because Kubernetes terminates any container whose thread count exceeds the default Linux pid_max value of 32."
+        "text": "Metaspace sits inside the -Xmx heap, so a heap graph that looks low still means that heap limit was crossed."
       },
       {
         "id": "C",
-        "text": "Because JVM total memory consumption includes off-heap memory (Metaspace, thread stacks, JVM code cache, native memory buffers, and GC structures) that can exceed the container's cgroup memory limit."
+        "text": "The container limit covers the whole process, including metaspace, thread stacks, and direct buffers, not only the Java heap."
       },
       {
         "id": "D",
-        "text": "Because the JVM automatically shuts down whenever Docker or containerd restarts its network bridge interface."
+        "text": "MaxRAMPercentage sizes the heap from the node's memory, so a smaller container limit is ignored until the node itself runs out."
       }
     ],
     "correct": [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• JVM Memory vs Container Memory:\n  The container cgroup limit applies to the ENTIRE resident set size (RSS) of the OS process, NOT just the Java heap:\n  `Total Process Memory = Heap (-Xmx) + Metaspace + (Thread Count * -Xss) + Direct Byte Buffers (NIO) + Code Cache + GC internal data + Native C/C++ libraries`.\n• If a developer sets container memory limit to 1Gi and sets `-Xmx800m`, the remaining ~224MiB may be quickly overwhelmed by 200 thread stacks (200 * 1MB = 200MB), Metaspace (100MB+), and Netty direct buffers. The Linux kernel kills the container with Exit Code 137 even though heap usage is only 400MB!\n• Best Practice: Use `-XX:+UseContainerSupport` (default in modern JDKs), configure `-XX:MaxRAMPercentage=70.0` to leave headroom for off-heap allocations, and monitor container RSS alongside JVM heap.\n\nWhy other options are incorrect:\n• Garbage collectors operate entirely within the JVM process memory; they do not use secondary containers.\n• Linux `pid_max` is typically 32,768 to 4,194,304, not 32."
+    "explanation": "Why this is correct:\n• The cgroup limit applies to the process, not to the Java heap. Metaspace, thread stacks, code cache, and direct buffers sit outside -Xmx. A heap at half of -Xmx can still push RSS over the limit, and the kernel then kills the process with exit 137.\n• Leave headroom above the heap, for example with MaxRAMPercentage well below 100, and watch container RSS next to the heap.\n\nWhy other options are incorrect:\n• A swaps -Xmx and the cgroup limit. -Xmx only caps the heap.\n• B puts Metaspace in the heap. It is outside -Xmx.\n• D has MaxRAMPercentage read the node. With container support it reads the container limit, and it does not ignore that limit."
   },
   {
     "id": 245,
-    "category": "Kubernetes",
-    "question": "In a Kubernetes Deployment with `replicas: 4`, `maxSurge: 25%`, and `maxUnavailable: 25%`, what are the maximum number of pods that can exist and the minimum number of available pods guaranteed during a rolling update?",
+    "category": "Docker & Kubernetes",
+    "question": "During a Deployment rolling update, what do maxSurge and maxUnavailable control?",
     "options": [
       {
         "id": "A",
-        "text": "Maximum 8 pods; minimum 2 available pods."
+        "text": "maxSurge is how many old pods may be unavailable at once, and maxUnavailable is how many extra pods may run above the replica count."
       },
       {
         "id": "B",
-        "text": "Maximum 4 pods; minimum 4 available pods."
+        "text": "Both settings keep the pod count at the replica count, so a rollout never runs an old pod and a new pod at the same time."
       },
       {
         "id": "C",
-        "text": "Maximum 6 pods; minimum 1 available pod."
+        "text": "maxSurge is the delay before a new pod receives traffic, and maxUnavailable is how long an old pod may take to exit."
       },
       {
         "id": "D",
-        "text": "Maximum 5 pods; minimum 3 available pods."
+        "text": "maxSurge is how many extra pods may run above the replica count, and maxUnavailable is how many pods may be down below it."
       }
     ],
     "correct": [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Calculating RollingUpdate Constraints:\n  - Base Replicas = 4\n  - `maxSurge = 25%` of 4 = 1 pod. Maximum total pods allowed during rollout = `replicas + maxSurge = 4 + 1 = 5 pods`.\n  - `maxUnavailable = 25%` of 4 = 1 pod. Minimum available pods required at all times = `replicas - maxUnavailable = 4 - 1 = 3 pods`.\n• Workflow: Kubernetes creates 1 new pod (reaching 5). Once that new pod passes readiness checks, an old pod is terminated (dropping back to 4). It can also terminate 1 old pod immediately (down to 3) while spinning up new pods.\n\nWhy other options are incorrect:\n• 25% of 4 is 1, meaning maxSurge is 1 and maxUnavailable is 1. Maximum is 5 and minimum available is 3."
+    "explanation": "Why this is correct:\n• maxSurge allows extra pods so new ones can start before old ones are removed. maxUnavailable allows the ready count to dip below the desired replicas. Together they bound how far above and below the replica count a rolling update may go.\n\nWhy other options are incorrect:\n• A swaps the two settings.\n• B describes a rollout that never overlaps, which is neither setting.\n• C turns both fields into timers. They count pods, not seconds."
   },
   {
     "id": 246,
-    "category": "Kubernetes",
-    "question": "Which TWO architectural characteristics make StatefulSets better suited than Deployments for distributed stateful systems like Kafka brokers or Cassandra nodes?",
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO reasons lead you to choose a StatefulSet instead of a Deployment for a broker or a database node?",
     "options": [
       {
         "id": "A",
-        "text": "StatefulSets run pods entirely in kernel space to bypass network socket overhead."
+        "text": "Each pod gets a stable name, but its volume is claimed again from scratch whenever that pod is rescheduled."
       },
       {
         "id": "B",
-        "text": "StatefulSets provide stable, unique network identifiers (e.g. `kafka-0`, `kafka-1`) and ordered deployment, scaling, and rolling updates."
+        "text": "Each pod gets a stable ordinal and DNS name, and pods are created and rolled in that ordinal order."
       },
       {
         "id": "C",
-        "text": "StatefulSets automatically replicate database rows between pods without requiring application-level replication logic."
+        "text": "Pods start in parallel and get a new identity whenever they are replaced; the stable name comes only from a Service."
       },
       {
         "id": "D",
-        "text": "Each replica in a StatefulSet receives its own dedicated PersistentVolume via `volumeClaimTemplates` that persists across pod rescheduling and restarts."
+        "text": "Each ordinal gets its own volume from volumeClaimTemplates, and that same claim is reused when the pod is rescheduled."
       }
     ],
     "correct": [
@@ -7371,88 +7371,88 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• StatefulSet Guarantees:\n  1. Stable Network Identity: Pods have deterministic hostnames (`$(statefulset-name)-$(ordinal)`, e.g., `kafka-0`, `kafka-1`). When paired with a Headless Service, each pod gets a stable DNS A-record (`kafka-0.kafka-svc.default.svc.cluster.local`) that does not change if the pod restarts or moves to another node.\n  2. Stable Storage: `volumeClaimTemplates` provisions a dedicated `PersistentVolumeClaim` (PVC) for each ordinal replica (e.g., `data-kafka-0`). If `kafka-0` crashes and is recreated on another node, Kubernetes reattaches the exact same persistent storage volume (`data-kafka-0`).\n  3. Ordered Lifecycle: Pods are created from 0 to N-1 sequentially and terminated in reverse order (N-1 down to 0).\n\nWhy other options are incorrect:\n• StatefulSets run standard user-space containers; they do not run in kernel space.\n• Kubernetes manages infrastructure (storage, networking, compute); it does not perform application-level data replication between database rows."
+    "explanation": "Why this is correct:\n• A StatefulSet pod keeps its ordinal, so kafka-0 is still kafka-0 after a restart, and the claim created for that ordinal is reattached. Creation and rolling replacement follow the ordinal order.\n• The application still replicates its own data. The StatefulSet only gives it a stable identity and a stable disk.\n\nWhy other options are incorrect:\n• A keeps the name and throws away the disk, which removes the reason the ordinal exists.\n• C describes a Deployment: interchangeable pods, no sticky ordinal, and a Service in front of the set."
   },
   {
     "id": 247,
-    "category": "Kubernetes",
-    "question": "What is the primary operational distinction between a Kubernetes DaemonSet and a Deployment?",
+    "category": "Docker & Kubernetes",
+    "question": "What is the operational difference between a DaemonSet and a Deployment?",
     "options": [
       {
         "id": "A",
-        "text": "DaemonSets run exclusively on control plane master nodes; Deployments run exclusively on worker nodes."
+        "text": "A DaemonSet keeps a fixed replica count and packs those pods onto as few nodes as it can; a Deployment runs one pod on every node."
       },
       {
         "id": "B",
-        "text": "A DaemonSet ensures that all (or some eligible) nodes run exactly one copy of a Pod, making it ideal for cluster-wide infrastructure agents like Fluentbit or node-exporter; a Deployment manages an arbitrary replica count distributed across available nodes."
+        "text": "A DaemonSet runs one pod on each eligible node; a Deployment runs a chosen replica count and may place more than one pod on a node."
       },
       {
         "id": "C",
-        "text": "DaemonSets automatically restart pods on failures; Deployments terminate permanently upon container crash."
+        "text": "A DaemonSet does not restart a crashed pod; the agent returns only when the node rejoins. A Deployment restarts its pods in place."
       },
       {
         "id": "D",
-        "text": "DaemonSets cannot mount host filesystems or read container logs."
+        "text": "A DaemonSet schedules pods only onto control-plane nodes; a Deployment schedules only onto nodes that lack the control-plane taint."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• DaemonSet vs Deployment:\n  - DaemonSet: Guarantees that every matching node in the cluster (or nodes selected by `nodeSelector`/taints) runs exactly one instance of the pod. As new nodes join the cluster, DaemonSet pods are automatically scheduled onto them; as nodes are removed, those pods are garbage-collected.\n  - Common Use Cases: Cluster logging agents (Fluentd, Promtail, Vector), node metrics collectors (Prometheus `node-exporter`), and network CNI plugins (Cilium, Calico).\n  - Deployment: Manages a declarative number of identical stateless application replicas, which the scheduler can place on any node (including multiple replicas on the same node).\n\nWhy other options are incorrect:\n• DaemonSets run across worker nodes, not just control plane nodes.\n• Both Deployments and DaemonSets restart failed containers based on pod restart policies.\n• DaemonSets frequently mount host paths (`hostPath`) specifically to read host logs (`/var/log`) and metrics (`/proc`)."
+    "explanation": "Why this is correct:\n• Use a DaemonSet for an agent you want on every node, such as a log collector or a node exporter. Use a Deployment when you want N copies of an app and you do not care which nodes they land on.\n\nWhy other options are incorrect:\n• A swaps the two scheduling goals.\n• C is wrong for both: a crashed container is restarted according to the pod's restart policy.\n• D restricts each type to a kind of node. A DaemonSet can select nodes, but that is not the distinction."
   },
   {
     "id": 248,
-    "category": "Kubernetes",
-    "question": "What is the key functional difference between a standard Kubernetes Service (`ClusterIP`) and a Headless Service (`clusterIP: None`)?",
+    "category": "Docker & Kubernetes",
+    "question": "How do ClusterIP, NodePort, and LoadBalancer Services differ?",
     "options": [
       {
         "id": "A",
-        "text": "A Headless Service encrypts all TCP traffic using mTLS without requiring sidecar proxies."
+        "text": "A ClusterIP Service is for clients outside the cluster, and a LoadBalancer Service exists only for clients already inside the cluster."
       },
       {
         "id": "B",
-        "text": "A standard ClusterIP Service is only accessible from outside the Kubernetes cluster via public internet routers."
+        "text": "A NodePort Service does not open a port on the node itself; clients can reach that Service only through the cluster virtual IP that it allocates."
       },
       {
         "id": "C",
-        "text": "A Headless Service does not allocate a virtual cluster IP or perform proxy load balancing; DNS queries for the service return the individual IP addresses of all ready backend pods directly."
+        "text": "ClusterIP is only inside the cluster, NodePort also opens a port on each node, and LoadBalancer asks the platform for an external load balancer."
       },
       {
         "id": "D",
-        "text": "A Headless Service disables DNS resolution within the cluster namespace."
+        "text": "A headless Service is what assigns a Deployment its virtual IP, while a ClusterIP Service returns each pod IP directly from DNS."
       }
     ],
     "correct": [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Headless Service (`clusterIP: None`):\n  - By setting `.spec.clusterIP: \"None\"`, Kubernetes does not allocate a virtual IP (VIP) for the service, and kube-proxy does NOT handle load balancing or create iptables/IPVS routing rules for it.\n  - DNS Behavior: When CoreDNS resolves a Headless Service name, it returns multiple `A`/`AAAA` records containing the direct IP addresses of all matching pods currently in the `Ready` state (or SRV records for named ports).\n  - Use Cases: Direct peer-to-peer discovery and client-side load balancing in distributed databases (e.g., MongoDB replica sets, Kafka broker discovery, Elasticsearch clusters).\n\nWhy other options are incorrect:\n• Standard ClusterIP is internal-only to the cluster.\n• Headless services do not provide mTLS encryption.\n• Headless services rely heavily on CoreDNS; they do not disable DNS."
+    "explanation": "Why this is correct:\n• ClusterIP allocates a virtual IP that only the cluster can route to. NodePort does that and also opens a high port on every node. LoadBalancer builds on NodePort and asks the cloud or the platform for an external address.\n• A headless Service is the other direction: no virtual IP, and DNS returns the pod addresses. It is not what gives a Deployment its cluster IP.\n\nWhy other options are incorrect:\n• A swaps which Service is internal and which one faces the outside.\n• B describes ClusterIP. NodePort's extra feature is the port on the node.\n• D swaps headless and ClusterIP. Headless DNS returns pod IPs; ClusterIP is the virtual IP."
   },
   {
     "id": 249,
-    "category": "Kubernetes",
-    "question": "In the Kubernetes Gateway API (the modern evolution of Ingress), which THREE distinct resources separate role-oriented concerns across infrastructure, cluster operations, and application development?",
+    "category": "Docker & Kubernetes",
+    "question": "Which THREE statements correctly describe a Docker image and a container?",
     "options": [
       {
         "id": "A",
-        "text": "`GatewayClass` (defined by infrastructure providers to describe controller implementations and templates)."
+        "text": "An image is a read-only stack of filesystem layers, and a container is a running instance started from that image."
       },
       {
         "id": "B",
-        "text": "`PodClass` (managed by container runtimes to configure cgroup CPU limits)."
+        "text": "A container is the artifact you push to a registry, and an image is created only when that container is started."
       },
       {
         "id": "C",
-        "text": "`Gateway` (managed by cluster operators to define point-of-entry listeners, ports, and TLS configurations)."
+        "text": "Several containers can be started from one image, and each gets its own writable layer on top of those shared image layers."
       },
       {
         "id": "D",
-        "text": "`HTTPRoute` / `GRPCRoute` (managed by application developers to define routing rules, path matches, and backend service destinations)."
+        "text": "Writing files in a running container does not change the image, unless you explicitly commit a new image from that container."
       },
       {
         "id": "E",
-        "text": "`ServiceMeshRoute` (managed by cloud hypervisors to assign hardware MAC addresses)."
+        "text": "An image includes the container's current memory and its open connections, so saving the image also saves that live process."
       }
     ],
     "correct": [
@@ -7461,56 +7461,56 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Gateway API Role-Oriented Design:\n  1. `GatewayClass` (Infrastructure Provider): Specifies the controller implementation (e.g. Envoy, Istio, NGINX) and cluster-level capabilities.\n  2. `Gateway` (Cluster Operator / Platform Admin): Declares an instance of an ingress/gateway point of entry, binding to a `GatewayClass`, defining listening IP/ports, TLS certificates, and allowed route namespaces.\n  3. Route resources (`HTTPRoute`, `GRPCRoute`, `TCPRoute`, `TLSRoute`) (Application Developer): Attached to a `Gateway`, defining path-based rules, header filters, traffic splitting (canary weights), and routing to target Services.\n\nWhy other options are incorrect:\n• `PodClass` and `ServiceMeshRoute` are not resources in the Kubernetes Gateway API specification."
+    "explanation": "Why this is correct:\n• You build an image and push that. docker run creates a container from it: a process plus a thin writable layer. Containers started from the same image share the read-only layers and do not see each other's writes. Those writes disappear with the container unless you commit them or store them in a volume.\n\nWhy other options are incorrect:\n• B swaps the artifact and the running instance. You push images, not containers.\n• E describes a VM snapshot. An image has no process, memory, or open sockets."
   },
   {
     "id": 250,
-    "category": "Kubernetes",
-    "question": "Which statement accurately describes how Kubernetes NetworkPolicies enforce network traffic segmentation between Pods?",
+    "category": "Docker & Kubernetes",
+    "question": "Why does the order of instructions in a Dockerfile change how long a rebuild takes?",
     "options": [
       {
         "id": "A",
-        "text": "NetworkPolicies are applied by the Linux kernel automatically without requiring any third-party Container Network Interface (CNI) plugin."
+        "text": "Docker reruns every instruction from the first line whenever any later line changes, so the order of the lines does not affect that layer cache."
       },
       {
         "id": "B",
-        "text": "By default, all pods in Kubernetes can communicate with each other; once a NetworkPolicy selects a pod, that pod becomes isolated and will drop any traffic not explicitly permitted by matching ingress or egress rules."
+        "text": "Each instruction is a layer, and Docker reuses cached layers until the first changed instruction, then reruns that step and every step after it."
       },
       {
         "id": "C",
-        "text": "NetworkPolicies can only restrict traffic based on external public IP addresses, never based on Kubernetes pod labels or namespaces."
+        "text": "Only the final CMD instruction is cached, so moving COPY above or below RUN does not change which steps are rebuilt."
       },
       {
         "id": "D",
-        "text": "NetworkPolicies operate exclusively at Layer 7 to inspect and parse HTTP JSON request bodies."
+        "text": "The cache key is only the image tag you chose to push, so an edited source file still hits the cache until you change that tag as well."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Kubernetes NetworkPolicy Mechanics:\n  - Default Behavior: Flat, open network model. By default, pods are non-isolated: any pod in any namespace can send traffic to and receive traffic from any other pod.\n  - Isolation upon Selection: As soon as a pod is matched by `.spec.podSelector` in a NetworkPolicy, it switches to \"isolated\" for the specified policy types (`Ingress`, `Egress`). All traffic not explicitly whitelisted by a rule is dropped.\n  - CNI Plugin Requirement: NetworkPolicy resources are specifications only; enforcing them requires a network CNI plugin that supports policy enforcement (e.g., Calico, Cilium, Weave Net). If using a CNI without policy support (like basic flannel), NetworkPolicies are silently ignored!\n\nWhy other options are incorrect:\n• NetworkPolicies require a capable CNI provider (Calico, Cilium).\n• NetworkPolicies extensively use `podSelector` and `namespaceSelector` for label-based rules.\n• NetworkPolicies operate at Layer 3 / Layer 4 (IP addresses and TCP/UDP ports), not L7 JSON payload inspection."
+    "explanation": "Why this is correct:\n• Docker caches each instruction as a layer. A cache hit requires the previous layer and the same instruction input. The first miss invalidates everything below it. That is why you copy dependency manifests and install them before you copy the rest of the source: a code change then does not rerun the install.\n\nWhy other options are incorrect:\n• A says a late change rebuilds the whole file. Only that line and the lines after it are rebuilt.\n• C limits the cache to CMD. Every instruction can be a cached layer.\n• D keys the cache on the tag. The tag is applied to the result; the cache key is the instruction and its inputs."
   },
   {
     "id": 251,
-    "category": "Kubernetes",
-    "question": "Which TWO statements accurately contrast consuming ConfigMaps/Secrets as Environment Variables versus as Mounted Volumes in a Pod?",
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements compare ConfigMaps and Secrets used as environment variables versus mounted files?",
     "options": [
       {
         "id": "A",
-        "text": "ConfigMaps mounted as volumes are updated automatically (via atomic symlink swaps to `..data`) when the ConfigMap is modified, whereas environment variables are static and never update without restarting the pod."
+        "text": "A mounted ConfigMap is refreshed when the ConfigMap changes; environment variables taken from it stay as they were at process start."
       },
       {
         "id": "B",
-        "text": "Environment variables update dynamically within running JVM processes without requiring any container restart or application refresh."
+        "text": "Environment variables from a ConfigMap are updated inside the running process when the ConfigMap changes, so a mount is only for files the app opens."
       },
       {
         "id": "C",
-        "text": "Kubernetes Secrets are stored in plaintext base64 encoding in the API manifest by default and require enabling Encryption at Rest in etcd for true cryptographic protection."
+        "text": "Secret values in the API object are base64-encoded, not encrypted; encryption at rest in etcd is what protects the stored bytes."
       },
       {
         "id": "D",
-        "text": "Secrets mounted as volumes are written directly to unencrypted persistent hard disk drives on the worker node."
+        "text": "Mounting a Secret encrypts it on the node, so enabling encryption in etcd does not change who can read that Secret from the API."
       }
     ],
     "correct": [
@@ -7518,144 +7518,144 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Environment Variables vs Volume Mounts:\n  - Environment Variables: Injected at container process creation (`env` / `envFrom`). They are completely static for the lifetime of the process. If the underlying ConfigMap changes, the process never sees the update unless the Pod is restarted.\n  - Volume Mounts (`volumes` / `volumeMounts`): Kubelet periodically syncs changes. When the ConfigMap/Secret changes, kubelet atomically updates the files using symlinks (`..data -> ..data_tmp`). Applications that watch the filesystem can reload configuration with zero downtime!\n• Secrets Security:\n  - Kubernetes Secret values are merely Base64-encoded in YAML/JSON manifests—Base64 is an encoding, NOT encryption! Anyone with RBAC access to read secrets can decode them with `base64 -d`.\n  - Real cluster security requires enabling Encryption at Rest for the API server / etcd (using KMS plugins like AWS KMS, Google Cloud KMS, or HashiCorp Vault).\n\nWhy other options are incorrect:\n• Environment variables cannot update dynamically within a running JVM process.\n• Secret volumes are backed by in-memory `tmpfs` storage on the node, not persistent hard disks."
+    "explanation": "Why this is correct:\n• Environment variables are fixed when the process starts. A volume mount is updated by the kubelet, and an application that re-reads the file can pick up the change.\n• Base64 in a Secret manifest is encoding. Anyone who can read the Secret can decode it. Encryption at rest is a separate etcd setting.\n\nWhy other options are incorrect:\n• B treats the process environment as live configuration. Changing the ConfigMap does not rewrite a running process's environment.\n• D credits the volume mount with encryption. The mount does not encrypt the API object, and it does not replace etcd encryption."
   },
   {
     "id": 252,
-    "category": "Kubernetes",
-    "question": "Why is Kubernetes Event-driven Autoscaling (KEDA) frequently utilized alongside the Horizontal Pod Autoscaler (HPA) for backend event consumers?",
+    "category": "Docker & Kubernetes",
+    "question": "How does a Horizontal Pod Autoscaler decide to add or remove pods?",
     "options": [
       {
         "id": "A",
-        "text": "Because HPA cannot run on cloud-managed Kubernetes distributions like EKS or GKE."
+        "text": "It reads CPU and memory from the image config and can scale the Deployment down to zero replicas when the process is idle."
       },
       {
         "id": "B",
-        "text": "Because KEDA replaces the Linux kernel CFS scheduler to prioritize batch threads."
+        "text": "It hands the replica count to an event scaler such as KEDA, and it then ignores a CPU target configured on the same object."
       },
       {
         "id": "C",
-        "text": "Because standard HPA only scales based on container resource metrics (CPU and Memory) via Metrics Server, whereas KEDA provides event-driven scalers capable of scaling pods based on external metrics like Kafka consumer group lag or RabbitMQ queue depth (even down to zero replicas)."
+        "text": "It changes the replica count so a metric, usually CPU from Metrics Server, moves toward the target average you set."
       },
       {
         "id": "D",
-        "text": "Because HPA requires applications to be written in Go, whereas KEDA supports Java."
+        "text": "It raises the container CPU limit while usage is high, and the replica count stays at the number written on the Deployment."
       }
     ],
     "correct": [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• HPA Limitations with Message Queues:\n  - Standard HPA queries the Kubernetes Metrics Server, which collects resource consumption (CPU and Memory).\n  - Event consumers (e.g. Kafka or SQS consumers) often consume very low CPU while waiting on network I/O or processing records slowly. Even when consumer lag spikes to millions of unread records, CPU utilization may remain low, meaning HPA will NOT scale out!\n• KEDA (Kubernetes Event-driven Autoscaling):\n  - Acts as a custom metrics adapter for HPA.\n  - Queries external systems (Kafka, RabbitMQ, AWS SQS, Azure Service Bus, Redis) directly for event counts or consumer lag.\n  - Can scale pods from 0 to 1 when events arrive (which standard HPA cannot do, as it cannot scale from 0 without custom metrics), and delegates active scaling (1 to N) back to standard HPA.\n\nWhy other options are incorrect:\n• HPA runs natively on all standard Kubernetes distributions (EKS, GKE, AKS, OpenShift).\n• KEDA is language-agnostic and does not replace the Linux CFS scheduler."
+    "explanation": "Why this is correct:\n• The Horizontal Pod Autoscaler watches a metric and sets the replica count. With Metrics Server that metric is typically CPU or memory utilization against the pod's request. It does not change the CPU limit, and the default resource HPA does not scale to zero.\n\nWhy other options are incorrect:\n• A reads the image and adds scale-to-zero. Neither is what this autoscaler does.\n• B replaces it with KEDA. KEDA can feed external metrics such as queue lag, but a CPU target is still an HPA concern, not something a CPU target turns off.\n• D scales the limit. The autoscaler scales replicas."
   },
   {
     "id": 253,
-    "category": "Kubernetes",
-    "question": "Which scheduling feature should you configure to ensure that replicas of a mission-critical backend service are evenly distributed across multiple Availability Zones without co-locating all pods on a single node?",
+    "category": "Docker & Kubernetes",
+    "question": "What is the difference between CMD and ENTRYPOINT in a Dockerfile?",
     "options": [
       {
         "id": "A",
-        "text": "`nodeSelector` targeting a single static node name."
+        "text": "ENTRYPOINT is the default arguments that docker run replaces, and CMD is the executable, which docker run cannot override."
       },
       {
         "id": "B",
-        "text": "`topologySpreadConstraints` with `topologyKey: topology.kubernetes.io/zone` combined with `podAntiAffinity` on the hostname."
+        "text": "ENTRYPOINT is the executable that runs, and CMD is the default arguments, which a docker run command can replace."
       },
       {
         "id": "C",
-        "text": "Setting `hostNetwork: true` on the pod specification."
+        "text": "CMD and ENTRYPOINT are both executables, and when both are set Docker starts them as two processes, one after the other."
       },
       {
         "id": "D",
-        "text": "Configuring a single PersistentVolume without a StorageClass."
+        "text": "CMD always wins over ENTRYPOINT, so setting both runs the CMD program and drops the ENTRYPOINT program."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• High Availability Scheduling in Kubernetes:\n  1. `topologySpreadConstraints`: Distributes pods evenly across failure domains (e.g., cloud Availability Zones) using standard labels like `topology.kubernetes.io/zone`. Setting `maxSkew: 1` and `whenUnsatisfiable: DoNotSchedule` guarantees an even spread.\n  2. `podAntiAffinity`: Prevents multiple instances of the same service from being scheduled onto the same physical worker node (`topologyKey: kubernetes.io/hostname`). If a single node crashes or undergoes kernel patching, only one replica is impacted.\n\nWhy other options are incorrect:\n• `nodeSelector` targeting one node concentrates all replicas onto a single point of failure.\n• `hostNetwork: true` exposes pod network ports directly to the node network, causing port conflicts between replicas."
+    "explanation": "Why this is correct:\n• In the usual exec form, ENTRYPOINT is the program and CMD is the default arguments appended to it. docker run myimage --help replaces the CMD arguments and still runs the ENTRYPOINT. Overriding the program itself takes --entrypoint.\n\nWhy other options are incorrect:\n• A swaps the two instructions.\n• C starts two processes. Docker combines them into one command.\n• D drops ENTRYPOINT. The default is to keep it and replace only CMD."
   },
   {
     "id": 254,
-    "category": "Kubernetes",
-    "question": "During planned worker node maintenance, how do Node Taints, Pod Tolerations, and PodDisruptionBudgets (PDBs) interact when executing `kubectl drain <node>`?",
+    "category": "Docker & Kubernetes",
+    "question": "What does kubectl drain do, and how can a PodDisruptionBudget affect it?",
     "options": [
       {
         "id": "A",
-        "text": "`kubectl drain` cordons the node and evicts pods using the Eviction API, which respects PodDisruptionBudgets (blocking eviction if minimum available replicas would be violated); pods without matching tolerations cannot be rescheduled back onto tainted nodes."
+        "text": "It cordons the node and evicts its pods, and the eviction stops for a pod when removing it would break that pod's PodDisruptionBudget."
       },
       {
         "id": "B",
-        "text": "`kubectl drain` forcibly terminates all pods on the cluster within 1 millisecond and ignores PDBs."
+        "text": "It cordons the node and deletes pods, and a PodDisruptionBudget only pauses until the grace period ends, then the eviction continues."
       },
       {
         "id": "C",
-        "text": "PDBs prevent nodes from ever being updated or rebooted by cluster administrators."
+        "text": "It cordons the node so nothing new is scheduled, but pods that are already running stay until you delete them yourself."
       },
       {
         "id": "D",
-        "text": "Tolerations allow pods to run without CPU or memory requests."
+        "text": "A PodDisruptionBudget blocks draining every pod that is running on the node, including pods that this particular budget does not select."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Safe Maintenance Workflow with `kubectl drain`:\n  1. Cordoning: The node is marked `SchedulingDisabled` (tainted with `node.kubernetes.io/unschedulable:NoSchedule`).\n  2. Safe Eviction: `kubectl drain` uses the Kubernetes Eviction API rather than raw pod deletion.\n  3. Respecting PDB (`PodDisruptionBudget`): The Eviction API checks active PDBs (e.g. `minAvailable: 2` or `maxUnavailable: 1`). If evicting a pod would violate its PDB, eviction is blocked until replacements are healthy elsewhere!\n  4. Rescheduling: The evicted pods are rescheduled onto other nodes. They will not land on tainted nodes unless they have matching `tolerations`.\n\nWhy other options are incorrect:\n• `kubectl drain` uses the Eviction API and respects PDBs.\n• PDBs protect service availability; they do not permanently block maintenance."
+    "explanation": "Why this is correct:\n• drain marks the node unschedulable and evicts the pods that can move. Eviction goes through the Eviction API, which refuses a pod when the PodDisruptionBudget would be violated. Pods the budget does not select are not held back by it. DaemonSet pods are left unless you ask to ignore them.\n\nWhy other options are incorrect:\n• B treats the budget as a timer. A violated budget keeps blocking; it does not expire with the grace period.\n• C is cordon alone. drain also evicts.\n• D applies one budget to the whole node. A budget only covers the pods it selects."
   },
   {
     "id": 255,
-    "category": "Kubernetes",
-    "question": "What is the difference between `ReadWriteOnce` (RWO), `ReadOnlyMany` (ROX), and `ReadWriteMany` (RWX) AccessModes for Persistent Volumes in Kubernetes?",
+    "category": "Docker & Kubernetes",
+    "question": "Why does a multi-stage Docker build usually produce a smaller image to run?",
     "options": [
       {
         "id": "A",
-        "text": "RWO allows a single container thread to write; RWX allows multiple JVM threads to write concurrently."
+        "text": "The runtime stage still keeps the compiler and the build tools, but Docker compresses those layers so they add almost nothing when the image is pulled."
       },
       {
         "id": "B",
-        "text": "RWO allows the volume to be mounted as read-write by a single node; ROX allows read-only mounting by many nodes; RWX allows read-write mounting simultaneously by many nodes."
+        "text": "The final stage starts from a slim base and copies in only the built artifact, so the compiler and build tools are not in the image you run."
       },
       {
         "id": "C",
-        "text": "RWO is for SSD drives; RWX is exclusively for tape backup drives."
+        "text": "Earlier stages are removed from the registry afterward, but the image you run still contains every package those stages installed."
       },
       {
         "id": "D",
-        "text": "RWO volumes can be written to once and become immutable forever."
+        "text": "The final stage inherits the build filesystem and then uninstalls the compiler, which is what removes those files from the image."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Persistent Volume Access Modes (Kubernetes Storage):\n  Access modes define how many NODES (not pods or threads) can mount the volume simultaneously:\n  - `ReadWriteOnce` (RWO): Can be mounted as read-write by a SINGLE node. Typical of block storage (AWS EBS, GCP Persistent Disk, Azure Managed Disks). Multiple pods running on the same node can share it, but pods on different nodes cannot!\n  - `ReadOnlyMany` (ROX): Can be mounted as read-only by MANY nodes simultaneously.\n  - `ReadWriteMany` (RWX): Can be mounted as read-write by MANY nodes simultaneously. Typical of network file systems (NFS, AWS EFS, CephFS).\n\nWhy other options are incorrect:\n• Access modes refer to node-level mounting, not thread concurrency.\n• RWO does not make storage write-once/immutable (WORM)."
+    "explanation": "Why this is correct:\n• A later stage does not inherit the earlier filesystem. It starts FROM its own base, and you COPY --from the artifact you need. The JDK, Maven, or module cache used to compile stay in the discarded build stage.\n\nWhy other options are incorrect:\n• A keeps the compiler and hopes compression hides it. Those files are still in the image.\n• C deletes the wrong thing. Unused stages are simply not part of the final image.\n• D uninstalls after the fact. Uninstalling in one stage often leaves the files in earlier layers anyway, and multi-stage builds do not need that step."
   },
   {
     "id": 256,
-    "category": "Kubernetes",
-    "question": "Which THREE security configurations align with the Kubernetes Pod Security Standards (Restricted profile) and zero-trust principles?",
+    "category": "Docker & Kubernetes",
+    "question": "Which THREE statements describe Docker volumes and bind mounts?",
     "options": [
       {
         "id": "A",
-        "text": "Setting `securityContext.runAsNonRoot: true` to prevent containers from executing processes with UID 0 (root)."
+        "text": "A volume is storage Docker manages, and it is the usual place for data that should outlive the container that wrote it."
       },
       {
         "id": "B",
-        "text": "Granting `privileged: true` to allow containers direct access to host devices and kernel capabilities."
+        "text": "A bind mount stores its data in the image layers, so that data is pushed to the registry together with the image."
       },
       {
         "id": "C",
-        "text": "Setting `securityContext.readOnlyRootFilesystem: true` to prevent attackers from writing malicious binaries or modifying container root binaries."
+        "text": "A bind mount maps a host file or directory into the container, and the container reads and writes that host path."
       },
       {
         "id": "D",
-        "text": "Disabling automated token injection via `automountServiceAccountToken: false` when a pod does not need to talk to the Kubernetes API server."
+        "text": "Deleting a container does not delete a named volume, while a bind mount is simply the host path you attached."
       },
       {
         "id": "E",
-        "text": "Running all pods with `hostPID: true` and `hostIPC: true` to bypass Linux kernel namespaces."
+        "text": "A volume is removed when the container stops, and a bind mount keeps a second copy of the host directory inside the image."
       }
     ],
     "correct": [
@@ -7664,6 +7664,6 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Pod Security Standards (Restricted Profile) & Hardening:\n  1. `runAsNonRoot: true` & `runAsUser`: Enforces that the container process runs with a non-zero UID. If an attacker achieves remote code execution (RCE), they do not gain root access inside the container.\n  2. `readOnlyRootFilesystem: true`: Enforces an immutable container filesystem. Attackers cannot download malware, modify system libraries, or overwrite scripts (temporary writeable scratch space can be mounted via in-memory `emptyDir` volumes).\n  3. `automountServiceAccountToken: false`: By default, Kubernetes mounts a JWT API token in every pod at `/var/run/secrets/kubernetes.io/serviceaccount/token`. Disabling it prevents attackers from using stolen pod credentials against the cluster API.\n\nWhy other options are incorrect:\n• `privileged: true`, `hostPID: true`, and `hostIPC: true` completely destroy container isolation, granting full root control over the host node."
+    "explanation": "Why this is correct:\n• A volume is Docker-managed storage, independent of the container's writable layer, and it survives container deletion until you remove the volume. A bind mount is a host path shown inside the container. Neither one writes data into the image, so neither is pushed when you push the image.\n\nWhy other options are incorrect:\n• B puts bind-mount data into image layers. Mounts are outside the image.\n• E reverses the lifetimes. Stopping a container does not remove a volume, and a bind mount does not copy the host directory into the image."
   }
 ];
