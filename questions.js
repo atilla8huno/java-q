@@ -1,7 +1,7 @@
 const QUESTIONS = [
   {
     "id": 1,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO conditions or runtime behaviors typically trigger a `StackOverflowError` in Java?",
     "options": [
       {
@@ -30,7 +30,7 @@ const QUESTIONS = [
   },
   {
     "id": 2,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements regarding Java packages and access control boundaries are correct?",
     "options": [
       {
@@ -64,7 +64,7 @@ const QUESTIONS = [
   },
   {
     "id": 3,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO design practices are essential to guarantee that a class is truly immutable in Java?",
     "options": [
       {
@@ -93,7 +93,7 @@ const QUESTIONS = [
   },
   {
     "id": 4,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements accurately contrast `StringBuffer` and `StringBuilder`?",
     "options": [
       {
@@ -122,7 +122,7 @@ const QUESTIONS = [
   },
   {
     "id": 5,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO reasons explain why `String` objects were designed to be immutable in Java?",
     "options": [
       {
@@ -151,7 +151,7 @@ const QUESTIONS = [
   },
   {
     "id": 6,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements accurately describe string literal storage and the behavior of `String.intern()`?",
     "options": [
       {
@@ -180,35 +180,35 @@ const QUESTIONS = [
   },
   {
     "id": 7,
-    "category": "Core Java",
-    "question": "If you override `equals()`, what else must you do according to the general contract?",
+    "category": "Kotlin",
+    "question": "How does Kotlin `val` differ from `var`?",
     "options": [
       {
         "id": "A",
-        "text": "Override `hashCode()` so that any two objects deemed equal by `equals()` produce the exact same integer hash code."
+        "text": "`val` forbids assigning a new reference after initialization, but the object that reference points at can still change when that object is mutable."
       },
       {
         "id": "B",
-        "text": "Implement `Cloneable` and override `clone()` to guarantee defensive deep copies when storing instances as map keys."
+        "text": "`val` deep-freezes the whole instance after construction, so none of its properties can change, and `var` is only a shorter spelling of that same restriction."
       },
       {
         "id": "C",
-        "text": "Implement `Comparable` and override `compareTo()` so that identity consistency is preserved in sorted collections."
+        "text": "`var` may be assigned once during initialization, and `val` may be assigned again later in the same function."
       },
       {
         "id": "D",
-        "text": "Override `toString()` to ensure the JVM generates distinct string representations for objects that are not equal."
+        "text": "`val` is legal only for local variables, and a class property has to be declared `var`."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• The `Object.equals()` and `Object.hashCode()` general contract mandates:\n  1. If `a.equals(b)` evaluates to `true`, then `a.hashCode()` MUST equal `b.hashCode()`.\n  2. If `a.hashCode() == b.hashCode()`, `a.equals(b)` is NOT required to be true (hash collision).\n  3. If you override `equals()`, you MUST override `hashCode()`. Failing to do so causes equal objects to yield different hash codes, breaking hash-based collections (`HashMap`, `HashSet`) when looking up or removing entries.\n\nWhy other options are incorrect:\n• `Comparable` and `compareTo()` are required only for sorted collections (`TreeSet`, `TreeMap`), not for general equality contracts.\n• `Cloneable` and `clone()` are optional and completely unrelated to the equality contract.\n• `toString()` provides human-readable representation and is never used by hash algorithms or equality checks."
+    "explanation": "Why this is correct:\n• `val` fixes the reference. It does not copy or freeze the instance, so a `val` list or a `val` mutable object can still be modified through that same reference.\n• `var` allows a later assignment of a different reference.\n\nWhy other options are incorrect:\n• B treats `val` as deep immutability. Only the binding is fixed.\n• C swaps the two keywords.\n• D limits `val` to locals. Properties use `val` and `var` as well."
   },
   {
     "id": 8,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO characteristics define a Functional Interface in Java?",
     "options": [
       {
@@ -237,7 +237,7 @@ const QUESTIONS = [
   },
   {
     "id": 9,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "What is autoboxing in Java?",
     "options": [
       {
@@ -265,7 +265,7 @@ const QUESTIONS = [
   },
   {
     "id": 10,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements correctly contrast the keywords `final`, `finally`, and `finalize` in Java?",
     "options": [
       {
@@ -299,7 +299,7 @@ const QUESTIONS = [
   },
   {
     "id": 11,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "What is the purpose of the `transient` keyword in Java?",
     "options": [
       {
@@ -327,7 +327,7 @@ const QUESTIONS = [
   },
   {
     "id": 12,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO memory guarantees does the `volatile` keyword provide for a shared variable?",
     "options": [
       {
@@ -356,7 +356,7 @@ const QUESTIONS = [
   },
   {
     "id": 13,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Can a field be declared both `volatile` and `final` simultaneously?",
     "options": [
       {
@@ -384,7 +384,7 @@ const QUESTIONS = [
   },
   {
     "id": 14,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements are true when an array reference is declared `volatile` (`volatile int[] arr = new int[5];`)?",
     "options": [
       {
@@ -413,7 +413,7 @@ const QUESTIONS = [
   },
   {
     "id": 15,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements accurately describe Java checked vs unchecked exceptions?",
     "options": [
       {
@@ -446,36 +446,8 @@ const QUESTIONS = [
     "explanation": "Why this is correct:\n• Checked Exceptions: Subclasses of `java.lang.Exception` (excluding `RuntimeException`). The compiler verifies that they are either caught via `try-catch` or declared in the enclosing method's `throws` clause (e.g., `IOException`, `SQLException`).\n• Unchecked Exceptions: Subclasses of `java.lang.RuntimeException` (e.g., `NullPointerException`, `IllegalArgumentException`). They represent programming bugs or unexpected runtime states and do not require handling or declaration.\n• `Error`: Subclasses of `java.lang.Error` (e.g., `OutOfMemoryError`, `StackOverflowError`) represent catastrophic conditions that applications should rarely attempt to catch.\n\nWhy other options are incorrect:\n• Lambda expressions cannot throw unhandled checked exceptions unless the target functional interface's abstract method explicitly declares them in its `throws` clause.\n• Methods throwing unchecked exceptions are NOT required to declare them in a `throws` clause."
   },
   {
-    "id": 16,
-    "category": "Core Java",
-    "question": "What happens when casting an `int` value of `130` to a `byte` in Java (`byte b = (byte) 130;`)?",
-    "options": [
-      {
-        "id": "A",
-        "text": "The value overflows and wraps around to `-126` via two's complement 8-bit truncation without throwing any exception."
-      },
-      {
-        "id": "B",
-        "text": "The code fails to compile because narrowing primitive conversions require explicit invocation of `Byte.valueOf()`."
-      },
-      {
-        "id": "C",
-        "text": "The value saturates at the maximum byte boundary, resulting in `b` holding the value `127`."
-      },
-      {
-        "id": "D",
-        "text": "The compiler throws an `ArithmeticException` because 130 exceeds the maximum signed byte capacity of 127."
-      }
-    ],
-    "correct": [
-      "A"
-    ],
-    "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Java uses two's complement 8-bit signed representation for `byte`, with a range of `-128` to `+127`.\n• In 32-bit binary, `130` is `00000000 00000000 00000000 10000010`.\n• Casting to `byte` discards the high 24 bits, leaving `10000010`.\n• Because the most significant bit (MSB) is `1`, the value is negative. To compute its two's complement value: invert bits (`01111101` = 125) and add 1 = 126, yielding `-126`.\n• Primitive narrowing overflow in Java never throws exceptions.\n\nWhy other options are incorrect:\n• No `ArithmeticException` is thrown: primitive conversions wrap around silently per JLS §5.1.3.\n• Primitive values do not saturate or clamp at maximum values in Java.\n• Explicit calls to `Byte.valueOf()` are not required; cast syntax `(byte)` is standard primitive narrowing."
-  },
-  {
     "id": 17,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO capabilities are provided by a bounded type parameter such as `<T extends Number>` in generic definitions?",
     "options": [
       {
@@ -504,7 +476,7 @@ const QUESTIONS = [
   },
   {
     "id": 18,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements correctly describe type erasure in Java generics?",
     "options": [
       {
@@ -533,7 +505,7 @@ const QUESTIONS = [
   },
   {
     "id": 19,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements accurately describe the ClassLoader mechanism and hierarchy in the Java Virtual Machine?",
     "options": [
       {
@@ -567,7 +539,7 @@ const QUESTIONS = [
   },
   {
     "id": 20,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "What is the difference between abstraction and encapsulation in object-oriented design?",
     "options": [
       {
@@ -595,7 +567,7 @@ const QUESTIONS = [
   },
   {
     "id": 21,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements correctly contrast method overloading and method overriding in Java?",
     "options": [
       {
@@ -629,7 +601,7 @@ const QUESTIONS = [
   },
   {
     "id": 22,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements accurately contrast a shallow copy and a deep copy of an object?",
     "options": [
       {
@@ -658,7 +630,7 @@ const QUESTIONS = [
   },
   {
     "id": 23,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "If class `Dog extends Animal`, which THREE statements accurately reflect Java reference assignment and casting rules?",
     "options": [
       {
@@ -692,35 +664,36 @@ const QUESTIONS = [
   },
   {
     "id": 24,
-    "category": "Core Java",
-    "question": "Which approach is considered standard practice for reading an entire text file into memory in modern Java (Java 11+)?",
+    "category": "HTTP & REST",
+    "question": "Which TWO statements correctly contrast `PUT` and `PATCH`?",
     "options": [
       {
         "id": "A",
-        "text": "Invoking `Runtime.getRuntime().readFile(path)` to stream file contents directly from the OS kernel buffer."
+        "text": "`PATCH` replaces the whole resource at the URI, and `PUT` changes only the fields that appear in the body."
       },
       {
         "id": "B",
-        "text": "Creating a raw `FileInputStream` and invoking `readObject()` to deserialize the raw character buffer."
+        "text": "`PUT` replaces the resource at the target URI with the representation you send, and sending that same representation again leaves the same state."
       },
       {
         "id": "C",
-        "text": "Using `Files.readString(path)` or `Files.lines(path)` with try-with-resources for automatic file descriptor closure."
+        "text": "`PATCH` applies a partial change, and it is not idempotent unless that particular patch document is written so that repeating it is safe."
       },
       {
         "id": "D",
-        "text": "Using `FileReader.readAll()` followed by calling `System.gc()` to ensure OS file lock release."
+        "text": "`PUT` is safe and cacheable in the same way as `GET`, and `PATCH` is the method that creates a brand-new resource and returns `201 Created`."
       }
     ],
     "correct": [
+      "B",
       "C"
     ],
-    "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Java NIO.2 (`java.nio.file`) was introduced in Java 7 to overcome severe limitations of classic `java.io.File`.\n• `java.nio.file.Path` and `Files` support advanced file attributes (POSIX permissions, file owner, symbolic links).\n• `Files.readAllLines()` and `Files.lines()` provide stream-based reading of text files.\n• Classic `java.io.File` lacked robust error reporting: many methods (like `delete()` or `mkdir()`) returned a boolean `false` on failure without explaining whether permission was denied or the file was missing.\n\nWhy other options are incorrect:\n• Classic `File` has NOT been deprecated or removed; it remains available for backward compatibility.\n• `Path` does not load entire files into CPU cache registers; it is an abstraction representing a filesystem path."
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `PUT` sends a full representation and replaces the target. Repeating the same PUT leaves the resource in that same state, so PUT is idempotent.\n• `PATCH` sends a partial change. Repeating a patch is safe only when the patch itself is written to be idempotent, which is not true of every patch format.\n\nWhy other options are incorrect:\n• A swaps the two methods.\n• D calls PUT safe. PUT changes server state. Creation is not what distinguishes PATCH."
   },
   {
     "id": 25,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements accurately characterize Java Reflection capabilities and trade-offs?",
     "options": [
       {
@@ -749,24 +722,24 @@ const QUESTIONS = [
   },
   {
     "id": 26,
-    "category": "Core Java",
-    "question": "Which TWO statements correctly contrast instance methods and `static` methods in Java?",
+    "category": "Kotlin",
+    "question": "Which TWO statements correctly describe Kotlin extension functions?",
     "options": [
       {
         "id": "A",
-        "text": "Static methods can be overridden polymorphically by subclasses that declare methods with identical signatures."
+        "text": "An extension on a base type is chosen from the runtime instance, so a subclass overrides it the same way it overrides an ordinary open method."
       },
       {
         "id": "B",
-        "text": "Instance methods cannot be declared `synchronized` or throw checked exceptions across inheritance hierarchies."
+        "text": "An extension can be called only on a non-null receiver, and the compiler rejects `?.` when the function being called is an extension."
       },
       {
         "id": "C",
-        "text": "Instance methods belong to an object, receive an implicit `this` reference, and participate in dynamic polymorphic dispatch."
+        "text": "An extension is resolved from the receiver's declared type at compile time, not by overriding a member of the runtime instance."
       },
       {
         "id": "D",
-        "text": "Static methods belong to the class, cannot access `this` or instance fields directly, and are bound at compile time."
+        "text": "A call on a nullable receiver needs a safe call such as `?.`, unless that extension is itself declared on the nullable type."
       }
     ],
     "correct": [
@@ -774,11 +747,11 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• `static` methods belong to the class itself, not to any individual instance. They can be invoked without creating an object (`Math.sqrt(4.0)`).\n• Because static methods have no implicit `this` reference, they cannot access instance fields or call instance methods directly.\n• Static methods are bound at compile time based on the reference type (method hiding), whereas instance methods are dispatched dynamically at runtime based on the actual object type.\n\nWhy other options are incorrect:\n• Static methods CANNOT access instance fields directly without an explicit instance reference, because there is no `this` context.\n• Declaring a method static does not allocate its return value in Metaspace; returned objects are created on the heap."
+    "explanation": "Why this is correct:\n• Extension functions are static resolution. The compiler picks the function from the static type of the receiver, so a subclass does not override an extension by declaring another one.\n• Nullability is unchanged by the fact that the function is an extension. A nullable receiver still needs `?.`, or an extension declared on the nullable type.\n\nWhy other options are incorrect:\n• A describes virtual dispatch. Extensions are not members and are not overridden.\n• B forbids the safe-call form. `receiver?.extension()` is the normal way to call one on a nullable value."
   },
   {
     "id": 27,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which TWO statements accurately describe the internal implementation of `HashSet`?",
     "options": [
       {
@@ -807,7 +780,7 @@ const QUESTIONS = [
   },
   {
     "id": 28,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which THREE statements accurately contrast `ArrayList` and legacy `Vector`?",
     "options": [
       {
@@ -841,7 +814,7 @@ const QUESTIONS = [
   },
   {
     "id": 29,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which THREE statements accurately contrast `ArrayList` and `LinkedList`?",
     "options": [
       {
@@ -875,7 +848,7 @@ const QUESTIONS = [
   },
   {
     "id": 30,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which THREE statements about `TreeSet` are accurate?",
     "options": [
       {
@@ -909,7 +882,7 @@ const QUESTIONS = [
   },
   {
     "id": 31,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which core interfaces constitute the primary hierarchy of the `java.util` Collection and Map frameworks?",
     "options": [
       {
@@ -937,7 +910,7 @@ const QUESTIONS = [
   },
   {
     "id": 32,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which TWO statements correctly contrast a `Set` and a `List` in Java?",
     "options": [
       {
@@ -966,7 +939,7 @@ const QUESTIONS = [
   },
   {
     "id": 33,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "What is the root interface of the Java Collection hierarchy that enables the enhanced for-each loop syntax?",
     "options": [
       {
@@ -994,7 +967,7 @@ const QUESTIONS = [
   },
   {
     "id": 34,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which THREE statements regarding unmodifiable collections and factory methods in Java 9+ are correct?",
     "options": [
       {
@@ -1028,7 +1001,7 @@ const QUESTIONS = [
   },
   {
     "id": 35,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which TWO statements correctly contrast `Comparable` and `Comparator`?",
     "options": [
       {
@@ -1057,35 +1030,35 @@ const QUESTIONS = [
   },
   {
     "id": 36,
-    "category": "Collections",
-    "question": "What is the return type and behavior of `Collections.shuffle(List<?> list)`?",
+    "category": "Build Tools",
+    "question": "How do Maven's `compile` and `test-compile` phases differ?",
     "options": [
       {
         "id": "A",
-        "text": "It returns a `boolean` indicating whether the permutation succeeded without encountering thread concurrency locks."
+        "text": "`test-compile` runs before `compile`, so test sources are compiled before any production class exists."
       },
       {
         "id": "B",
-        "text": "It returns `void` because it permutes elements in-place directly within the provided mutable list argument."
+        "text": "`compile` compiles `src/main`, and the later `test-compile` phase compiles `src/test` against those main classes."
       },
       {
         "id": "C",
-        "text": "It returns a new `List<?>` containing a randomly shuffled copy of the elements without mutating the original list."
+        "text": "`compile` compiles both `src/main` and `src/test`, and `test-compile` only executes the tests that were just compiled."
       },
       {
         "id": "D",
-        "text": "It returns a `Stream<?>` that yields randomly ordered elements lazily upon invoking a terminal collector."
+        "text": "`test-compile` compiles `src/test` into the main artifact, so those classes are shipped when `package` runs."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `Collections.shuffle(List<?> list)` randomly permutes the elements of the specified list in place.\n• It uses the Fisher-Yates shuffle algorithm, running in O(n) linear time for lists implementing `RandomAccess` (like `ArrayList`).\n• An overloaded version accepts a custom `java.util.Random` instance (`Collections.shuffle(list, rnd)`), which is useful for reproducible testing.\n\nWhy other options are incorrect:\n• `Collections.shuffle()` modifies the list IN PLACE; it does not return a new list instance (return type is `void`).\n• It works on any `List`, not only arrays of primitive integers."
+    "explanation": "Why this is correct:\n• `compile` turns `src/main/java` into `target/classes`. `test-compile` comes later and turns `src/test/java` into `target/test-classes`, with the main classes and test-scoped dependencies on the classpath.\n• Test classes are not part of the artifact `package` produces.\n\nWhy other options are incorrect:\n• A reverses the order. Production classes have to exist before tests can compile against them.\n• C gives `compile` the test sources and turns `test-compile` into test execution. Execution is the `test` phase.\n• D would put test code into the production jar. Test output stays in `target/test-classes`."
   },
   {
     "id": 37,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which THREE statements correctly contrast `Collections.unmodifiableList(list)` and `List.copyOf(list)`?",
     "options": [
       {
@@ -1119,35 +1092,35 @@ const QUESTIONS = [
   },
   {
     "id": 38,
-    "category": "Collections",
-    "question": "What is the structural and behavioral difference between `HashSet` and `LinkedHashSet`?",
+    "category": "HTTP & REST",
+    "question": "Which statement matches the usual meaning of these HTTP status codes?",
     "options": [
       {
         "id": "A",
-        "text": "`LinkedHashSet` uses intrinsic monitor locking on all methods for thread safety; `HashSet` is unsynchronized."
+        "text": "`204` means a POST created a resource, `201` means success with an empty body, `403` means the caller is not yet authenticated, and `401` means the caller is authenticated but not allowed."
       },
       {
         "id": "B",
-        "text": "`LinkedHashSet` forbids `null` elements to maintain list integrity; `HashSet` permits multiple `null` elements."
+        "text": "`200` is the status for every created resource, `201` means the caller was not authenticated, and `409` means the resource was removed."
       },
       {
         "id": "C",
-        "text": "`LinkedHashSet` maintains a doubly linked list running through all entries to preserve insertion order; `HashSet` provides no ordering."
+        "text": "`201` means a POST created a resource, `204` means success with no response body, `401` means the caller is not authenticated, and `403` means the caller is authenticated but not allowed."
       },
       {
         "id": "D",
-        "text": "`LinkedHashSet` sorts elements in natural ascending order; `HashSet` preserves the exact sequence of element insertions."
+        "text": "`401` means the request conflicts with current state, `409` means the caller must authenticate, and `204` means a new resource was created."
       }
     ],
     "correct": [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `LinkedHashSet` maintains a doubly-linked list running through all of its entries, preserving predictable iteration order matching the insertion order of elements.\n• Like `HashSet`, it guarantees element uniqueness and provides O(1) performance for basic operations (`add`, `contains`, `remove`), with only slight overhead for maintaining link pointers.\n\nWhy other options are incorrect:\n• `LinkedHashSet` preserves insertion order, NOT natural sorted order (natural sorting is provided by `TreeSet`).\n• It is not a synchronized collection; concurrent access requires external synchronization or `Collections.synchronizedSet()`."
+    "explanation": "Why this is correct:\n• `201 Created` is the status when a POST (or similar) creates a resource. `204 No Content` is success with an empty body. `401 Unauthorized` means the caller is not authenticated. `403 Forbidden` means the caller is known but not allowed. `409 Conflict` is the usual status when the request clashes with current state.\n\nWhy other options are incorrect:\n• A swaps 201 with 204 and 401 with 403.\n• B uses 201 for a missing login and 409 for a deletion.\n• D uses 401 for a conflict and 204 for creation."
   },
   {
     "id": 39,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which THREE architectural guidelines correctly inform the selection of `HashSet`, `LinkedHashSet`, or `TreeSet`?",
     "options": [
       {
@@ -1181,7 +1154,7 @@ const QUESTIONS = [
   },
   {
     "id": 40,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which statements accurately contrast `HashMap` and legacy `Hashtable`?",
     "options": [
       {
@@ -1209,7 +1182,7 @@ const QUESTIONS = [
   },
   {
     "id": 41,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which THREE statements correctly contrast `ConcurrentHashMap`, `Collections.synchronizedMap`, and `Hashtable`?",
     "options": [
       {
@@ -1243,7 +1216,7 @@ const QUESTIONS = [
   },
   {
     "id": 42,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which TWO statements describe how concurrency and synchronization are implemented in `ConcurrentHashMap` (Java 8+)?",
     "options": [
       {
@@ -1272,7 +1245,7 @@ const QUESTIONS = [
   },
   {
     "id": 43,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "What are the average and worst-case time complexities of `HashMap.get(key)` in Java 8+?",
     "options": [
       {
@@ -1300,7 +1273,7 @@ const QUESTIONS = [
   },
   {
     "id": 44,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "What are the characteristics and primary implementations of the `Deque` interface in Java?",
     "options": [
       {
@@ -1328,35 +1301,35 @@ const QUESTIONS = [
   },
   {
     "id": 45,
-    "category": "Collections",
-    "question": "What is fail-fast behavior in Java collection iterators, and what exception does it trigger?",
+    "category": "Build Tools",
+    "question": "What do the `package`, `install`, and `deploy` phases produce?",
     "options": [
       {
         "id": "A",
-        "text": "Iterators immediately discard elements that do not match a predicate filter, throwing `NoSuchElementException` on next."
+        "text": "`package` uploads the artifact to the remote repository, and `install` only compiles sources into `target/classes`."
       },
       {
         "id": "B",
-        "text": "Iterators acquire an exclusive monitor lock on the collection and terminate the JVM if an unhandled exception occurs."
+        "text": "`deploy` writes the jar into `target`, and `install` is only another name for the `package` phase rather than a copy into the local repository."
       },
       {
         "id": "C",
-        "text": "Iterators detect structural modification during traversal using internal modification counters and throw `ConcurrentModificationException`."
+        "text": "`package` writes the artifact into `target`, `install` copies it to the local repository, and `deploy` uploads it to a remote repository."
       },
       {
         "id": "D",
-        "text": "Iterators block the calling thread until all concurrent modifying threads complete their database transactions."
+        "text": "`install` publishes the artifact to the remote repository, and `deploy` only updates the local `.m2` repository."
       }
     ],
     "correct": [
       "C"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Fail-Fast Iterators (e.g. `ArrayList`, `HashMap`): Detect structural modifications during iteration via a private `modCount` counter. If `modCount` changes while iterating (other than via the iterator's own `remove()` method), the iterator immediately throws `ConcurrentModificationException`.\n• Fail-Safe / Weakly Consistent Iterators (e.g. `CopyOnWriteArrayList`, `ConcurrentHashMap`): Operate on an immutable snapshot or traverse the live collection without throwing `ConcurrentModificationException` if modifications occur during iteration.\n\nWhy other options are incorrect:\n• Fail-fast iterators do NOT acquire database row locks.\n• Fail-safe iterators do NOT roll back transactions; they simply avoid throwing exceptions upon structural mutation."
+    "explanation": "Why this is correct:\n• `package` builds the jar, war, or other archive under `target`. `install` then copies that archive into the local repository, usually `~/.m2/repository`, so other builds on this machine can depend on it. `deploy` uploads it to the remote repository configured for the project.\n\nWhy other options are incorrect:\n• A swaps packaging with publishing, and reduces `install` to compilation.\n• B swaps `deploy` with `package` and treats `install` as an alias.\n• D swaps the local repository and the remote repository."
   },
   {
     "id": 46,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which THREE statements accurately contrast Java native arrays and `ArrayList`?",
     "options": [
       {
@@ -1390,7 +1363,7 @@ const QUESTIONS = [
   },
   {
     "id": 47,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "What is the role of `Map` in Java, and why is it distinct from `Collection`?",
     "options": [
       {
@@ -1635,7 +1608,7 @@ const QUESTIONS = [
   },
   {
     "id": 55,
-    "category": "Streams & Functional",
+    "category": "Collections & Streams",
     "question": "What defines a Java Stream (`java.util.stream.Stream`) as introduced in Java 8?",
     "options": [
       {
@@ -1663,7 +1636,7 @@ const QUESTIONS = [
   },
   {
     "id": 56,
-    "category": "Streams & Functional",
+    "category": "Collections & Streams",
     "question": "Which TWO statements accurately contrast `Stream.map()` and `Stream.flatMap()`?",
     "options": [
       {
@@ -1692,7 +1665,7 @@ const QUESTIONS = [
   },
   {
     "id": 57,
-    "category": "Streams & Functional",
+    "category": "Collections & Streams",
     "question": "Which TWO statements describe the appropriate use and caveats of `parallelStream()`?",
     "options": [
       {
@@ -1721,7 +1694,7 @@ const QUESTIONS = [
   },
   {
     "id": 58,
-    "category": "Streams & Functional",
+    "category": "Collections & Streams",
     "question": "Which THREE architectural benefits arise from adopting immutability and functional programming patterns in Java?",
     "options": [
       {
@@ -1755,24 +1728,24 @@ const QUESTIONS = [
   },
   {
     "id": 59,
-    "category": "JVM & GC",
-    "question": "Which TWO statements correctly describe the JVM Heap memory space?",
+    "category": "Build Tools",
+    "question": "Which TWO statements describe what `mvn package` includes, and what it skips, in the default lifecycle?",
     "options": [
       {
         "id": "A",
-        "text": "Local primitive variables declared inside method bodies are allocated directly on the young generation heap."
+        "text": "`mvn package` runs only the `package` phase, so `compile` and `test` are skipped unless those phases are named as well."
       },
       {
         "id": "B",
-        "text": "Heap memory size is configured using the `-Xss` command-line flag during Java Virtual Machine startup."
+        "text": "`mvn package` continues through `install` and `deploy`, because a build is not finished until a repository receives the artifact."
       },
       {
         "id": "C",
-        "text": "It is the runtime data area shared by all application threads where all class instances and arrays are allocated."
+        "text": "`mvn package` runs every default-lifecycle phase up through `package`, including `validate`, `compile`, `test`, and `package`."
       },
       {
         "id": "D",
-        "text": "Memory allocated on the heap is reclaimed automatically by the garbage collector according to object reachability."
+        "text": "`mvn package` stops at `package`, so it does not run `install` or `deploy` and does not publish the artifact to a repository."
       }
     ],
     "correct": [
@@ -1780,28 +1753,28 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Shared JVM-Wide: The Java Heap is created upon JVM startup and is shared across all executing threads. It is the runtime data area from which memory for all class instances and arrays is allocated.\n• Garbage Collection: Memory management in the Heap is automated by the Garbage Collector. Objects are allocated on the heap (often in the Young Generation / Eden space) and reclaimed when no longer reachable from GC roots.\n\nWhy other options are incorrect:\n• Heap memory is NOT private to a single thread; it is shared across all threads.\n• The default size is not fixed at 64KB, and it does not store local primitive variables (local variables live on the thread call stack)."
+    "explanation": "Why this is correct:\n• Invoking a phase runs that phase and every earlier phase of the same lifecycle. `package` therefore compiles, tests, and packages.\n• `install` and `deploy` come after `package`, so they do not run. The artifact stays in `target` until a later phase publishes it.\n\nWhy other options are incorrect:\n• A treats a phase as a single isolated step. Maven does not skip the phases before the one you name.\n• B extends the build past the phase you named. Publishing is `install` or `deploy`, not part of `package`."
   },
   {
     "id": 60,
-    "category": "JVM & GC",
-    "question": "Which TWO statements accurately describe the Java Stack memory region?",
+    "category": "Build Tools",
+    "question": "Which TWO statements correctly separate Gradle configuration from task execution?",
     "options": [
       {
         "id": "A",
-        "text": "When a method returns, its allocated stack frame is retained until cleared by the generational garbage collector."
+        "text": "`build.gradle` code runs only for the task written next to it, and naming a different task leaves that script unexecuted."
       },
       {
         "id": "B",
-        "text": "Stack memory is shared across all concurrent threads to facilitate high-speed inter-thread communication."
+        "text": "A `doLast` action runs while Gradle configures the task graph, and that action is what decides which tasks are required."
       },
       {
         "id": "C",
-        "text": "Stack frames store local primitive variables, partial results, and reference handles pointing to heap objects."
+        "text": "Build script statements run during configuration, before task actions, and they run even for tasks that will not execute."
       },
       {
         "id": "D",
-        "text": "Each Java thread possesses its own private stack that allocates a new frame for every method invocation."
+        "text": "A `doLast` action runs during execution, and only for a selected task that Gradle does not treat as up to date."
       }
     ],
     "correct": [
@@ -1809,11 +1782,11 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Thread-Private: Each Java thread possesses its own private call stack created when the thread starts. Stack memory is completely isolated from other threads.\n• Fast LIFO Allocation: Stack frames are allocated and deallocated automatically as methods are called and return (Last-In, First-Out). Stack frames store method-local primitive variables, object reference pointers, and partial results.\n• Size Configuration: Thread stack size is controlled via the `-Xss` JVM flag (e.g., `-Xss1m`).\n\nWhy other options are incorrect:\n• The stack is NOT shared globally across all threads.\n• Heap objects are NOT allocated on the thread stack; only the reference pointer to the heap object resides on the stack frame."
+    "explanation": "Why this is correct:\n• The build script is configuration. Gradle runs it while building the task graph, before any task action, including tasks this command will not execute.\n• `doLast` is a task action. It runs in the execution phase, and only for a selected task whose inputs and outputs are not already up to date.\n\nWhy other options are incorrect:\n• A ties script code to the task written beside it. Configuration runs for the build, not only for the task you named.\n• B moves `doLast` into configuration. An action does not choose the task graph; it runs after Gradle has already chosen what to execute."
   },
   {
     "id": 61,
-    "category": "JVM & GC",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements accurately contrast Java Heap memory and Java Stack memory?",
     "options": [
       {
@@ -1847,7 +1820,7 @@ const QUESTIONS = [
   },
   {
     "id": 62,
-    "category": "JVM & GC",
+    "category": "Core Java & JVM",
     "question": "Which TWO conditions govern when an object on the Java heap becomes eligible for garbage collection?",
     "options": [
       {
@@ -1876,7 +1849,7 @@ const QUESTIONS = [
   },
   {
     "id": 63,
-    "category": "JVM & GC",
+    "category": "Core Java & JVM",
     "question": "Can an application explicitly force the JVM Garbage Collector to run?",
     "options": [
       {
@@ -1904,35 +1877,35 @@ const QUESTIONS = [
   },
   {
     "id": 64,
-    "category": "JVM & GC",
-    "question": "What is `Object.finalize()` and why was it deprecated in Java 9?",
+    "category": "Kotlin",
+    "question": "What do a Kotlin `object` declaration and a `companion object` represent?",
     "options": [
       {
         "id": "A",
-        "text": "A native method designed to synchronize heap object state with disk storage before an operating system process terminates."
+        "text": "An `object` declaration allocates a fresh instance on every single use, and a `companion object` compiles to a Java `static` method on the enclosing class."
       },
       {
         "id": "B",
-        "text": "A mandatory compiler cleanup hook executed automatically at the conclusion of every try-with-resources statement block."
+        "text": "A `companion object` is inherited and overridden by each subclass, and an `object` declaration cannot represent a single shared instance."
       },
       {
         "id": "C",
-        "text": "A thread lifecycle callback invoked whenever a background worker thread transitions from RUNNABLE to TERMINATED."
+        "text": "Both forms become package-level functions with no storage, so neither one can hold properties of its own."
       },
       {
         "id": "D",
-        "text": "An unreliable, performance-degrading GC callback prone to deadlocks and object resurrection; use try-with-resources instead."
+        "text": "An `object` declaration is one shared instance, and a `companion object` holds members you call on the class name rather than as a Java `static` method."
       }
     ],
     "correct": [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `finalize()` was a method defined on `java.lang.Object` intended to allow objects to perform cleanup before memory reclamation by the GC.\n• Problems that led to deprecation in Java 9:\n  1. Unpredictable timing: No guarantee when, or even if, `finalize()` will run.\n  2. Severe performance penalties: Finalizable objects require at least two GC cycles to be collected and slow down allocation.\n  3. Zombie resurrection: An object could make itself reachable again inside `finalize()`.\n  4. Deadlocks and resource leaks: Exceptions thrown during finalization are ignored.\n• Modern Replacement: Use `AutoCloseable` with `try-with-resources` or `java.lang.ref.Cleaner`.\n\nWhy other options are incorrect:\n• `finalize()` was never removed to make room for virtual threads.\n• It is not an alternative to `@Transactional`."
+    "explanation": "Why this is correct:\n• An `object` declaration is a singleton: one instance for that declaration. A `companion object` is the singleton associated with a class, and its members are called as `ClassName.member`.\n• Neither form is a Java `static` method. A companion can be given `@JvmStatic` when Java callers need a real static method.\n\nWhy other options are incorrect:\n• A creates a new instance per use and treats the companion as a static method.\n• B makes the companion overridable and denies the singleton.\n• C removes the instance. Both forms are objects and can hold state."
   },
   {
     "id": 65,
-    "category": "JVM & GC",
+    "category": "Core Java & JVM",
     "question": "Which THREE garbage collectors are standard, production-ready options in modern HotSpot JVM distributions (Java 17+)?",
     "options": [
       {
@@ -1966,36 +1939,41 @@ const QUESTIONS = [
   },
   {
     "id": 66,
-    "category": "JVM & GC",
-    "question": "Which TWO landmark architectural memory and GC milestones occurred in Java 7 and Java 8?",
+    "category": "System Design",
+    "question": "Which THREE statements describe asynchronous read replicas and a client that must read its own write?",
     "options": [
       {
         "id": "A",
-        "text": "Java 7 completely replaced the Java heap with off-heap direct byte buffers for all object allocations."
+        "text": "The replica applies the commit before the primary acknowledges the client, so any following read on a replica sees that write."
       },
       {
         "id": "B",
-        "text": "Java 8 introduced the ZGC collector as the mandatory default collector across all 64-bit platforms."
+        "text": "An asynchronous replica can lag, so a read right after a write on the primary may miss that write."
       },
       {
         "id": "C",
-        "text": "Java 7 made the Garbage-First (G1) collector production-ready for general enterprise deployment."
+        "text": "A client that must see its own write reads the primary, or waits until the replica has caught up, instead of always reading a replica."
       },
       {
         "id": "D",
-        "text": "Java 8 completely removed the Permanent Generation (PermGen), replacing it with native Metaspace."
+        "text": "Lag affects schema changes only, and ordinary row updates are visible on every replica before the primary responds to the client."
+      },
+      {
+        "id": "E",
+        "text": "Replicas exist to take read traffic off the primary, and that offload is what opens the window where a read can be stale."
       }
     ],
     "correct": [
+      "B",
       "C",
-      "D"
+      "E"
     ],
-    "requiredCount": 2,
-    "explanation": "Why this is correct:\n• PermGen Removal (Java 8): Permanent Generation (PermGen) was completely removed and replaced by Metaspace. Metaspace stores class metadata in native off-heap memory, dynamically expanding up to available system RAM unless bounded via `-XX:MaxMetaspaceSize`.\n• G1 GC Default (Java 9): G1 GC replaced the legacy Parallel GC as the default garbage collector in Java 9, delivering predictable pause times for modern enterprise workloads.\n\nWhy other options are incorrect:\n• Compact Strings (byte arrays with LATIN1/UTF16 encoding) was introduced in Java 9, not Java 8.\n• ZGC was introduced as experimental in Java 11 and production-ready in Java 15, not Java 8."
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Asynchronous replication acknowledges the client from the primary before replicas have applied the change, so a replica read can miss that write.\n• Read-your-writes means the client reads the primary, or uses a replica only after it is known to be caught up.\n• The reason to accept that window is the read traffic the replicas absorb.\n\nWhy other options are incorrect:\n• A describes synchronous replication, where the replica must apply the change first.\n• D limits lag to schema changes. Row data lags too."
   },
   {
     "id": 67,
-    "category": "JVM & GC",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements accurately describe reference strengths in `java.lang.ref`?",
     "options": [
       {
@@ -2029,7 +2007,7 @@ const QUESTIONS = [
   },
   {
     "id": 68,
-    "category": "JVM & GC",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements explain the internal mechanics and lifecycle of `java.util.WeakHashMap`?",
     "options": [
       {
@@ -2297,7 +2275,7 @@ const QUESTIONS = [
   },
   {
     "id": 77,
-    "category": "REST & Web",
+    "category": "HTTP & REST",
     "question": "Which THREE architectural constraints are core tenets of REST (Representational State Transfer)?",
     "options": [
       {
@@ -2331,7 +2309,7 @@ const QUESTIONS = [
   },
   {
     "id": 78,
-    "category": "REST & Web",
+    "category": "HTTP & REST",
     "question": "Which TWO statements accurately describe component responsibilities in the Model-View-Controller (MVC) architectural pattern?",
     "options": [
       {
@@ -2360,7 +2338,7 @@ const QUESTIONS = [
   },
   {
     "id": 79,
-    "category": "REST & Web",
+    "category": "HTTP & REST",
     "question": "Which THREE statements accurately reflect the standard semantic use of HTTP/1.1 methods?",
     "options": [
       {
@@ -2394,7 +2372,7 @@ const QUESTIONS = [
   },
   {
     "id": 80,
-    "category": "REST & Web",
+    "category": "HTTP & REST",
     "question": "Which TWO HTTP methods are designated as 'safe' according to RFC 7231 (they do not alter server resource state)?",
     "options": [
       {
@@ -2423,7 +2401,7 @@ const QUESTIONS = [
   },
   {
     "id": 81,
-    "category": "REST & Web",
+    "category": "HTTP & REST",
     "question": "Which THREE HTTP methods are defined as 'idempotent' (making multiple identical requests produces the same server state as one request)?",
     "options": [
       {
@@ -2457,7 +2435,7 @@ const QUESTIONS = [
   },
   {
     "id": 82,
-    "category": "REST & Web",
+    "category": "HTTP & REST",
     "question": "Which TWO mechanisms are standard practices for transmitting parameters in an HTTP GET request?",
     "options": [
       {
@@ -2486,7 +2464,7 @@ const QUESTIONS = [
   },
   {
     "id": 83,
-    "category": "REST & Web",
+    "category": "HTTP & REST",
     "question": "Which annotations are core components of the Jakarta RESTful Web Services (JAX-RS) specification?",
     "options": [
       {
@@ -2514,7 +2492,7 @@ const QUESTIONS = [
   },
   {
     "id": 84,
-    "category": "REST & Web",
+    "category": "HTTP & REST",
     "question": "What is the OAuth 2.0 framework and what fundamental security problem does it address?",
     "options": [
       {
@@ -2542,7 +2520,7 @@ const QUESTIONS = [
   },
   {
     "id": 85,
-    "category": "Database",
+    "category": "Databases",
     "question": "Which THREE properties are guaranteed by the ACID model in relational database transactions?",
     "options": [
       {
@@ -2576,7 +2554,7 @@ const QUESTIONS = [
   },
   {
     "id": 86,
-    "category": "Database",
+    "category": "Databases",
     "question": "Which TWO statements correctly describe transaction isolation anomalies in ANSI SQL?",
     "options": [
       {
@@ -2605,7 +2583,7 @@ const QUESTIONS = [
   },
   {
     "id": 87,
-    "category": "Database",
+    "category": "Databases",
     "question": "What is a database deadlock and how does a relational database management system resolve it?",
     "options": [
       {
@@ -2633,7 +2611,7 @@ const QUESTIONS = [
   },
   {
     "id": 88,
-    "category": "Database",
+    "category": "Databases",
     "question": "What is the primary function and performance trade-off of adding a database index (e.g. B-Tree index)?",
     "options": [
       {
@@ -2661,7 +2639,7 @@ const QUESTIONS = [
   },
   {
     "id": 89,
-    "category": "Database",
+    "category": "Databases",
     "question": "Which THREE statements accurately reflect SQL query clauses and join behaviors?",
     "options": [
       {
@@ -2723,7 +2701,7 @@ const QUESTIONS = [
   },
   {
     "id": 91,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "Which THREE statements accurately define standard unit test double roles?",
     "options": [
       {
@@ -2757,7 +2735,7 @@ const QUESTIONS = [
   },
   {
     "id": 92,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "What are the three iterative phases of Test-Driven Development (TDD)?",
     "options": [
       {
@@ -2785,7 +2763,7 @@ const QUESTIONS = [
   },
   {
     "id": 93,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "How do you assert that a method call throws an expected exception in JUnit 5?",
     "options": [
       {
@@ -2812,85 +2790,29 @@ const QUESTIONS = [
     "explanation": "Why this is correct:\n• In JUnit 5, `Assertions.assertThrows(Class<T> expectedType, Executable executable)` is the standard way to assert exceptions.\n• It verifies that executing the lambda throws an exception of the specified type (or subtype) and returns the thrown exception instance for further assertions (e.g. checking message text).\n• Example:\n```java\nIllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.withdraw(-50));\nassertEquals(\"Amount must be positive\", ex.getMessage());\n```\n\nWhy other options are incorrect:\n• `@Test(expected = ...)` is JUnit 4 syntax and does not exist in JUnit 5 (`org.junit.jupiter.api.Test`).\n• `catchThrowable()` is an AssertJ assertion, not native JUnit 5."
   },
   {
-    "id": 94,
-    "category": "Testing & Design",
-    "question": "When designing a class for unit testability that depends on external services (e.g. database, HTTP API), what is best practice?",
-    "options": [
-      {
-        "id": "A",
-        "text": "Declare all external collaborators as global static variables to allow test cases to overwrite them reflection-free."
-      },
-      {
-        "id": "B",
-        "text": "Instantiate concrete dependency implementations directly inside the class constructor using `new`."
-      },
-      {
-        "id": "C",
-        "text": "Inject collaborator interfaces via constructor injection so test doubles (mocks/stubs) can be passed during testing."
-      },
-      {
-        "id": "D",
-        "text": "Configure the unit test to connect directly to the shared production database to ensure realistic test data."
-      }
-    ],
-    "correct": [
-      "C"
-    ],
-    "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Inversion of Control & Loose Coupling: Relying on concrete implementations instantiated via `new` tightly couples a class to external infrastructure (databases, payment gateways, message queues), making unit testing in isolation impossible.\n• Best Practice: Depend on abstractions (interfaces) and inject dependencies through constructors. During unit tests, you can inject mocks or stubs instead of real infrastructure components without spinning up servers or databases.\n\nWhy other options are incorrect:\n• Making methods `final` and `static` hinders unit testability because static methods cannot be easily substituted with test doubles without specialized bytecode manipulation tools like PowerMock.\n• Reading configuration directly from hardcoded static properties reduces configurability and testability."
-  },
-  {
-    "id": 95,
-    "category": "Testing & Design",
-    "question": "What is the difference between `@BeforeEach` and `@BeforeAll` in JUnit 5?",
-    "options": [
-      {
-        "id": "A",
-        "text": "`@BeforeAll` runs before every test method; `@BeforeEach` runs once when the JVM process is initialized."
-      },
-      {
-        "id": "B",
-        "text": "`@BeforeEach` executes asynchronously on worker threads; `@BeforeAll` blocks the main application process."
-      },
-      {
-        "id": "C",
-        "text": "`@BeforeEach` is evaluated at compile time; `@BeforeAll` is evaluated dynamically during maven package packaging."
-      },
-      {
-        "id": "D",
-        "text": "`@BeforeEach` runs before every individual test method; `@BeforeAll` runs once before all tests in the class and must be `static`."
-      }
-    ],
-    "correct": [
-      "D"
-    ],
-    "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `@BeforeEach`: Executes before EACH individual `@Test` method in the test class. Used to set up fresh state or instantiate new test targets for test isolation.\n• `@BeforeAll`: Executes once before ALL test methods in the test class. By default, it must be annotated on a `static` method (unless `@TestInstance(Lifecycle.PER_CLASS)` is configured). Used for expensive one-time setup (starting test containers, shared embedded databases).\n\nWhy other options are incorrect:\n• `@BeforeAll` does not run after tests; that is `@AfterAll`.\n• `@BeforeEach` does not run once per suite; it runs before every single test method."
-  },
-  {
     "id": 96,
-    "category": "Testing & Design",
-    "question": "Which THREE concepts constitute fundamental pillars of Object-Oriented Programming (OOP)?",
+    "category": "Kotlin",
+    "question": "Which THREE statements correctly place Kotlin's scope functions?",
     "options": [
       {
         "id": "A",
-        "text": "Polymorphism: enabling objects of different classes to respond to the same method invocation with custom behaviors."
+        "text": "`let` and `run` return whatever the lambda itself returns, not the receiver the call started with."
       },
       {
         "id": "B",
-        "text": "Normalization: eliminating data redundancy across relational database schemas through primary key constraints."
+        "text": "`apply` and `also` return the lambda's result, while `let` and `run` return the original receiver."
       },
       {
         "id": "C",
-        "text": "Immutability: forcing all class members to be declared `final` and preventing garbage collector reclamation."
+        "text": "Every scope function names the receiver `this`, and the name `it` exists only when the receiver is nullable."
       },
       {
         "id": "D",
-        "text": "Abstraction: hiding implementation complexity and exposing clear, high-level contracts via interfaces or abstract classes."
+        "text": "`apply` and `also` return the receiver itself rather than the value produced by the lambda."
       },
       {
         "id": "E",
-        "text": "Encapsulation: bundling data and methods while restricting direct external modification of internal object state."
+        "text": "`let` and `also` name the receiver `it`, while `run` and `apply` name the receiver `this`."
       }
     ],
     "correct": [
@@ -2899,39 +2821,39 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• The 4 Fundamental Pillars of Object-Oriented Programming (OOP):\n  1. Encapsulation: Bundling data and behavior, restricting direct access to internal state.\n  2. Abstraction: Hiding implementation complexity behind clear, simple interfaces.\n  3. Inheritance: Reusing and extending state and behavior from existing classes.\n  4. Polymorphism: Allowing entities to take many forms (method overriding and overloading).\n\nWhy other options are incorrect:\n• Normalization is a database relational design concept, not an OOP pillar.\n• Compilation and Threading are platform/system mechanics, not OOP pillars."
+    "explanation": "Why this is correct:\n• `let` and `run` return the lambda result. `apply` and `also` return the receiver, which is why `apply` is used to configure an object and keep that object.\n• `let` and `also` pass the receiver as the lambda argument `it`. `run` and `apply` make it the lambda's `this`.\n\nWhy other options are incorrect:\n• B swaps the return values.\n• C gives every function the same receiver name. `it` versus `this` is the split between the two pairs."
   },
   {
     "id": 97,
-    "category": "Testing & Design",
-    "question": "What does Software Development Life Cycle (SDLC) describe in software engineering?",
+    "category": "System Design",
+    "question": "Why does consistent hashing move fewer keys when a node is added?",
     "options": [
       {
         "id": "A",
-        "text": "The structured process of planning, creating, testing, deploying, and maintaining software applications."
+        "text": "Each key lands on a ring, and a new node takes only the keys between itself and the previous node, rather than remapping every key."
       },
       {
         "id": "B",
-        "text": "The compile-time sequence of transforming Java source code into native machine bytecode instructions."
+        "text": "The bucket is `hash % nodeCount`, so adding one node changes the modulus and moves nearly every stored key onto some different node."
       },
       {
         "id": "C",
-        "text": "The memory allocation lifecycle of an object from young generation allocation to garbage collection."
+        "text": "Every key is stored on every node, so adding a node copies the entire dataset and then leaves the old copies in place."
       },
       {
         "id": "D",
-        "text": "The runtime network handshake protocol established between microservices and API gateways."
+        "text": "Existing keys never move, and a new node serves only the keys that are written after it joins the ring."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Software Development Life Cycle (SDLC): The structured framework defining the stages involved in building, deploying, and maintaining software applications.\n• Standard Phases: Requirements Gathering & Analysis -> System Design -> Implementation (Coding) -> Testing -> Deployment -> Maintenance.\n• Methodologies implementing SDLC include Waterfall, Agile, Scrum, and Kanban.\n\nWhy other options are incorrect:\n• SDLC is not an operating system memory paging algorithm.\n• It is not a hardware manufacturing cycle for semiconductor chips."
+    "explanation": "Why this is correct:\n• Consistent hashing places nodes and keys on a ring. A key is owned by the next node clockwise. Adding a node takes only the arc between that node and its predecessor.\n• `hash % n` is the scheme that moves most keys, because the modulus itself changed.\n\nWhy other options are incorrect:\n• B is modulo placement, which is what consistent hashing avoids.\n• C replicates every key onto every node.\n• D never moves existing keys, so the new node would not take load off the old ones."
   },
   {
     "id": 98,
-    "category": "Architecture",
+    "category": "System Design",
     "question": "What is 'back-pressure' in reactive asynchronous systems?",
     "options": [
       {
@@ -2959,7 +2881,7 @@ const QUESTIONS = [
   },
   {
     "id": 99,
-    "category": "Architecture",
+    "category": "System Design",
     "question": "Which THREE architectural motivations justify decomposing a monolith into microservices?",
     "options": [
       {
@@ -2993,7 +2915,7 @@ const QUESTIONS = [
   },
   {
     "id": 100,
-    "category": "Architecture",
+    "category": "Databases",
     "question": "Which THREE strategies are standard approaches for scaling relational database tiers under heavy workloads?",
     "options": [
       {
@@ -3027,7 +2949,7 @@ const QUESTIONS = [
   },
   {
     "id": 101,
-    "category": "Architecture",
+    "category": "Databases",
     "question": "Which TWO diagnostic techniques are recommended starting points when troubleshooting slow database queries?",
     "options": [
       {
@@ -3056,7 +2978,7 @@ const QUESTIONS = [
   },
   {
     "id": 102,
-    "category": "Architecture",
+    "category": "System Design",
     "question": "Which TWO design principles enable scaling a stateless application tier horizontally across multiple server instances?",
     "options": [
       {
@@ -3085,7 +3007,7 @@ const QUESTIONS = [
   },
   {
     "id": 103,
-    "category": "Architecture",
+    "category": "Build Tools",
     "question": "Which THREE Maven dependency scopes accurately match their standard classpath and packaging behaviors?",
     "options": [
       {
@@ -3119,7 +3041,7 @@ const QUESTIONS = [
   },
   {
     "id": 104,
-    "category": "Architecture",
+    "category": "Build Tools",
     "question": "Which TWO statements correctly contrast direct and transitive dependencies in Maven projects?",
     "options": [
       {
@@ -3148,7 +3070,7 @@ const QUESTIONS = [
   },
   {
     "id": 105,
-    "category": "Architecture",
+    "category": "System Design",
     "question": "Which TWO mechanisms are standard components of distributed tracing implementations across microservice architectures?",
     "options": [
       {
@@ -3177,28 +3099,28 @@ const QUESTIONS = [
   },
   {
     "id": 106,
-    "category": "Architecture",
-    "question": "Which THREE agile ceremonies are defined as core recurring events in the official Scrum Framework?",
+    "category": "System Design",
+    "question": "Which THREE statements correctly apply the CAP theorem once a network partition exists?",
     "options": [
       {
         "id": "A",
-        "text": "Release Code Freeze: a mandatory two-week milestone where all developer code commits are strictly prohibited."
+        "text": "During a partition the system can stay strongly consistent and still answer every request, by checking both sides before it responds."
       },
       {
         "id": "B",
-        "text": "Sprint Retrospective: an event at sprint conclusion for the team to inspect processes and plan quality improvements."
+        "text": "A partition forces a choice between answering with data that may be stale and refusing requests that cannot be checked with a quorum."
       },
       {
         "id": "C",
-        "text": "Sprint Planning: a collaborative event where the Scrum team scopes and plans the work to be completed in the sprint."
+        "text": "Consistency, availability, and partition tolerance are not all available together while the network is split."
       },
       {
         "id": "D",
-        "text": "Architecture Review Board: a monthly committee meeting where external managers approve UML class inheritance designs."
+        "text": "Partition tolerance is optional on a multi-node system, and the usual fix is to turn partition tolerance off."
       },
       {
         "id": "E",
-        "text": "Daily Scrum: a 15-minute daily synchronization event for developers to inspect progress toward the Sprint Goal."
+        "text": "One database on one machine is not a counterexample, because the theorem is about what happens when a partition can separate nodes."
       }
     ],
     "correct": [
@@ -3207,11 +3129,11 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Official Scrum Events (The Scrum Guide by Ken Schwaber & Jeff Sutherland):\n  1. Sprint Planning: The team inspects the Product Backlog and defines what can be delivered in the Sprint and how that work will be achieved (creating the Sprint Backlog).\n  2. Daily Scrum (Standup): 15-minute daily event for developers to inspect progress toward the Sprint Goal and adapt the Sprint Backlog.\n  3. Sprint Review: Held at the end of the Sprint to inspect the Increment and adapt the Product Backlog with stakeholders.\n  4. Sprint Retrospective: The team inspects how the Sprint went regarding individuals, interactions, processes, and tools, creating an improvement plan.\n\nWhy other options are incorrect:\n• Backlog Refinement (Grooming) is an ongoing collaborative activity, but is not officially classified as a formal Scrum ceremony/event.\n• Architectural Governance Board is a corporate enterprise meeting, not an official Scrum event."
+    "explanation": "Why this is correct:\n• While nodes cannot talk, a system either serves a response that might disagree with the other side, or it refuses the request until it can check a quorum.\n• That is the consistency-versus-availability choice. Partition tolerance is the situation you are already in, not a feature you switch off.\n• A single node has no other node to be partitioned from, so it does not show a way around the choice.\n\nWhy other options are incorrect:\n• A keeps both consistency and availability across a partition, which is the combination CAP says you do not have.\n• D treats partition tolerance as optional. On a real network, partitions happen."
   },
   {
     "id": 107,
-    "category": "Modern Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE features are automatically generated by the Java compiler for a `record` class (Java 16+)?",
     "options": [
       {
@@ -3245,7 +3167,7 @@ const QUESTIONS = [
   },
   {
     "id": 108,
-    "category": "Modern Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements correctly describe the purpose and benefits of Sealed Classes and Interfaces (Java 17+)?",
     "options": [
       {
@@ -3274,7 +3196,7 @@ const QUESTIONS = [
   },
   {
     "id": 109,
-    "category": "Modern Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO advantages are introduced by Pattern Matching for `instanceof` (Java 16+)?",
     "options": [
       {
@@ -3303,7 +3225,7 @@ const QUESTIONS = [
   },
   {
     "id": 110,
-    "category": "Modern Java",
+    "category": "Concurrency",
     "question": "Which TWO statements correctly contrast Virtual Threads (Project Loom / Java 21) with traditional platform threads?",
     "options": [
       {
@@ -3332,7 +3254,7 @@ const QUESTIONS = [
   },
   {
     "id": 111,
-    "category": "Modern Java",
+    "category": "Collections & Streams",
     "question": "Which TWO design practices reflect idiomatic, intended usage of `java.util.Optional` in Java?",
     "options": [
       {
@@ -3361,28 +3283,28 @@ const QUESTIONS = [
   },
   {
     "id": 112,
-    "category": "Modern Java",
-    "question": "Which THREE characteristics accurately define collections created via `List.of()`, `Set.of()`, and `Map.of()` (Java 9+)?",
+    "category": "Build Tools",
+    "question": "Which THREE statements about Maven's `clean` lifecycle are accurate?",
     "options": [
       {
         "id": "A",
-        "text": "They create shallow mutable wrappers that permit modifying underlying elements via index `set()` operations."
+        "text": "`clean` is the first phase of the default lifecycle, so `mvn compile` deletes `target` before compiling."
       },
       {
         "id": "B",
-        "text": "They synchronize all internal method calls using intrinsic monitor locks to provide synchronized thread safety."
+        "text": "`mvn clean` deletes `target` and then runs `deploy`, because clean means a full rebuild and publish."
       },
       {
         "id": "C",
-        "text": "`Set.of()` and `Map.of()` reject duplicate elements or keys at creation time, throwing `IllegalArgumentException`."
+        "text": "`clean` is its own lifecycle, not a phase of the default lifecycle that runs from `validate` through `deploy`."
       },
       {
         "id": "D",
-        "text": "They strictly prohibit `null` elements or keys, immediately throwing `NullPointerException` if any `null` is supplied."
+        "text": "`mvn clean package` runs the clean lifecycle first and then the default lifecycle through `package`."
       },
       {
         "id": "E",
-        "text": "They are structurally immutable; invoking modifying methods (`add`, `remove`, `set`) throws `UnsupportedOperationException`."
+        "text": "`mvn package` alone does not delete `target`, because that command never enters the clean lifecycle."
       }
     ],
     "correct": [
@@ -3391,11 +3313,11 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Unmodifiable: Collections produced by `List.of()`, `Set.of()`, and `Map.of()` are structurally immutable. Calling mutation methods (`add()`, `remove()`, `set()`, `clear()`) throws `UnsupportedOperationException`.\n• Null Prohibition: Passing `null` elements (or keys/values in maps) throws an immediate `NullPointerException`.\n• Compact Memory Footprint: Unlike `ArrayList` (which wraps an array with extra capacity), `List.of()` uses optimized internal classes with zero extra capacity overhead.\n\nWhy other options are incorrect:\n• They do NOT allow `null` values; `null` is rejected at creation.\n• They do NOT return mutable array copies; mutations are strictly disallowed."
+    "explanation": "Why this is correct:\n• Maven has separate lifecycles. The clean lifecycle is `pre-clean`, `clean`, `post-clean`. The default lifecycle is the one that compiles, tests, packages, and can install or deploy.\n• Naming both, as in `mvn clean package`, runs one lifecycle and then the other. `mvn package` never cleans.\n\nWhy other options are incorrect:\n• A puts `clean` inside the default lifecycle, which would wipe `target` on every compile.\n• B turns `clean` into a publish. It only removes previous build output."
   },
   {
     "id": 113,
-    "category": "Modern Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements describe the rules and scope governing the `var` keyword in Java (Java 10+)?",
     "options": [
       {
@@ -3424,7 +3346,7 @@ const QUESTIONS = [
   },
   {
     "id": 114,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements correctly contrast the `==` reference operator and the `equals()` method in Java?",
     "options": [
       {
@@ -3453,7 +3375,7 @@ const QUESTIONS = [
   },
   {
     "id": 115,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements explain why `hashCode()` and `equals()` must be implemented consistently in hash collections?",
     "options": [
       {
@@ -3516,7 +3438,7 @@ const QUESTIONS = [
   },
   {
     "id": 117,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements accurately describe the requirements and behavior of Try-With-Resources statements?",
     "options": [
       {
@@ -3550,7 +3472,7 @@ const QUESTIONS = [
   },
   {
     "id": 118,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "What is `java.util.EnumSet` and why is it preferred over `HashSet` for enum types?",
     "options": [
       {
@@ -3578,52 +3500,52 @@ const QUESTIONS = [
   },
   {
     "id": 119,
-    "category": "JVM & GC",
-    "question": "What is the key functional difference between a Weak Reference and a Strong Reference in Java?",
+    "category": "Build Tools",
+    "question": "What does `mvn test` complete, and what does it leave unbuilt?",
     "options": [
       {
         "id": "A",
-        "text": "Strong references can only reference primitive types; weak references can only reference collection implementations."
+        "text": "It runs tests from classes that were compiled on a previous build, and it does not compile `src/main` or `src/test` on its own."
       },
       {
         "id": "B",
-        "text": "Strong references are cleared on every minor GC cycle; weak references remain alive until full JVM system shutdown."
+        "text": "It builds the jar or war first and then runs the unit tests against that packaged archive."
       },
       {
         "id": "C",
-        "text": "Weak references are stored exclusively in Metaspace; strong references are allocated exclusively within CPU L2 cache."
+        "text": "It runs the unit tests and the integration tests, then installs the artifact into the local repository."
       },
       {
         "id": "D",
-        "text": "Strong references prevent garbage collection; weak references do not prevent collection once only weakly reachable."
+        "text": "It compiles main and test code and runs the unit tests, then stops before `package`, so it produces no jar or war."
       }
     ],
     "correct": [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Strong Reference (`Object o = new Object()`): The default reference in Java. An object with an active chain of strong references from GC roots is immune to garbage collection. The JVM will throw `OutOfMemoryError` before collecting it.\n• Weak Reference (`WeakReference<T>`): Does not prevent GC. When the garbage collector runs, if an object is only weakly reachable (no strong or soft references remain), it is immediately cleared and scheduled for finalization/reclamation, regardless of available memory.\n\nWhy other options are incorrect:\n• Weak references do NOT survive GC until memory exhaustion; that describes Soft References (`SoftReference`).\n• Weak references are not stored in Metaspace; they reside on the heap like other objects."
+    "explanation": "Why this is correct:\n• `test` is before `package`. Reaching it still runs `compile` and `test-compile`, then the unit tests, usually Surefire. It does not package, install, or deploy.\n• Integration tests are bound later, around `integration-test` and `verify`, not to `test`.\n\nWhy other options are incorrect:\n• A skips compilation. A phase runs every phase before it, including both compile phases.\n• B waits for a jar. Unit tests run on `target/classes` and `target/test-classes` before packaging.\n• C adds integration tests and `install`, which are later phases."
   },
   {
     "id": 120,
-    "category": "REST & Web",
-    "question": "Which TWO HTTP methods are classified as both 'safe' and 'idempotent' according to HTTP/1.1 specifications?",
+    "category": "Build Tools",
+    "question": "Which TWO statements describe how plugin goals use lifecycle phases?",
     "options": [
       {
         "id": "A",
-        "text": "`GET`, which retrieves a representation without modifying origin server resource state."
+        "text": "A phase has no work of its own; bound goals do the work, such as Surefire's test goal on the `test` phase."
       },
       {
         "id": "B",
-        "text": "`POST`, which is safe because clients can submit arbitrary JSON payloads without modifying schemas."
+        "text": "Each phase is itself a plugin, and the Surefire plugin replaces the `test` phase rather than binding a goal to it."
       },
       {
         "id": "C",
-        "text": "`HEAD`, which retrieves header metadata identically to `GET` without altering server state."
+        "text": "Jar packaging binds a jar goal to `package`, so `mvn package` produces the archive through that binding."
       },
       {
         "id": "D",
-        "text": "`DELETE`, which is safe because deleting a resource leaves the server in a clean operating state."
+        "text": "A goal runs only when its name is typed, so binding Surefire to `test` does not make `mvn test` run that goal."
       }
     ],
     "correct": [
@@ -3631,7 +3553,7 @@ const QUESTIONS = [
       "C"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Safe Methods (RFC 7231): Read-only operations that do not alter the resource state on the origin server (`GET`, `HEAD`, `OPTIONS`, `TRACE`).\n• Idempotent Methods (RFC 7231): Operations where the intended effect on the server of multiple identical requests is the same as for a single request (`GET`, `HEAD`, `PUT`, `DELETE`).\n• Intersection: `GET` and `HEAD` are both safe AND idempotent.\n\nWhy other options are incorrect:\n• `POST` is NEITHER safe nor idempotent.\n• `PUT` and `DELETE` are idempotent, but they are NOT safe because they modify/delete resources on the server."
+    "explanation": "Why this is correct:\n• Phases are ordered slots. Plugins contribute goals bound to those slots. Surefire's `test` goal is bound to the `test` phase, and for `jar` packaging the jar goal is bound to `package`.\n• You do not invoke a separate jar lifecycle. `mvn package` runs the bound goal.\n\nWhy other options are incorrect:\n• B turns the phase into the plugin. The phase stays; the plugin goal is what gets bound to it.\n• D is direct invocation, such as `surefire:test`. A binding is exactly what makes the lifecycle command run that goal."
   },
   {
     "id": 121,
@@ -3664,7 +3586,7 @@ const QUESTIONS = [
   },
   {
     "id": 122,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "Which statement accurately captures the Interface Segregation Principle (ISP) from SOLID design?",
     "options": [
       {
@@ -3692,35 +3614,35 @@ const QUESTIONS = [
   },
   {
     "id": 123,
-    "category": "Core Java",
-    "question": "Which statement regarding hash collisions in Java `hashCode()` and `equals()` is mathematically and technically true?",
+    "category": "Kotlin",
+    "question": "What does `suspend` change about a blocking call written inside that function?",
     "options": [
       {
         "id": "A",
-        "text": "If two objects produce the same hash code, they are guaranteed to return `true` from `equals()`."
+        "text": "`suspend` by itself runs the body on `Dispatchers.IO`, so a blocking JDBC call inside it cannot occupy the thread that started the coroutine."
       },
       {
         "id": "B",
-        "text": "Equal objects must have the same hash code; distinct objects can have the same hash code (a hash collision)."
+        "text": "`suspend` does not move a blocking call onto another thread; that call still needs `withContext` on a dispatcher such as `Dispatchers.IO`."
       },
       {
         "id": "C",
-        "text": "Distinct objects must always produce distinct hash codes; equal objects can have different hash codes."
+        "text": "`suspend` starts a platform thread for the body and lets the caller continue without waiting for that thread to finish."
       },
       {
         "id": "D",
-        "text": "Hash collisions in `HashMap` cause the JVM to immediately throw a `ConcurrentModificationException`."
+        "text": "`suspend` turns the function into a callback registered on the caller and then cancels the coroutine that invoked it."
       }
     ],
     "correct": [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• The Pigeonhole Principle: In Java, `hashCode()` returns a 32-bit signed integer (`int`), which can represent at most 2^{32} (about 4.3 billion) distinct values.\n• Because the number of possible object states (e.g. all possible `String` combinations) is infinite, distinct objects WILL inevitably map to identical hash codes (hash collision).\n• The contract dictates:\n  - Equal objects MUST have equal hash codes.\n  - Unequal objects CAN share the same hash code.\n• Hash collisions are expected and handled in hash tables via separate chaining (linked list / red-black tree) or open addressing.\n\nWhy other options are incorrect:\n• Collisions do NOT throw an exception or invalidate the collection.\n• Hash algorithms cannot guarantee zero collisions across all input domains within 32 bits."
+    "explanation": "Why this is correct:\n• `suspend` allows the function to pause at suspension points. A blocking call such as JDBC or `Thread.sleep` does not suspend; it holds whatever thread is running the coroutine.\n• `withContext(Dispatchers.IO)` moves that blocking work onto a dispatcher meant for it.\n\nWhy other options are incorrect:\n• A assigns a dispatcher that `suspend` does not choose.\n• C starts a thread and detaches the caller. A suspend call still runs inside the caller's coroutine until it reaches a real suspension point.\n• D replaces the function with a callback and cancels the caller."
   },
   {
     "id": 124,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "What is the correct way to randomize the order of elements in a `List` in Java?",
     "options": [
       {
@@ -3748,7 +3670,7 @@ const QUESTIONS = [
   },
   {
     "id": 125,
-    "category": "Architecture",
+    "category": "System Design",
     "question": "Which THREE foundational telemetry data types constitute the Three Pillars of Observability in distributed systems?",
     "options": [
       {
@@ -3782,7 +3704,7 @@ const QUESTIONS = [
   },
   {
     "id": 126,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Given the following method overload resolution scenario, which method is invoked by `test(10)`?\n\n```java\npublic class OverloadTest {\n    static void test(long x) { System.out.print(\"primitive \"); }\n    static void test(Integer x) { System.out.print(\"boxed \"); }\n    static void test(int... x) { System.out.print(\"varargs \"); }\n    \n    public static void main(String[] args) {\n        test(10);\n    }\n}\n```",
     "options": [
       {
@@ -3810,7 +3732,7 @@ const QUESTIONS = [
   },
   {
     "id": 127,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO assertions accurately explain the output of evaluating string equality below?\n\n```java\nString s1 = \"Java\";\nString s2 = \"Ja\" + \"va\";\nString part = \"va\";\nString s3 = \"Ja\" + part;\n```",
     "options": [
       {
@@ -3839,7 +3761,7 @@ const QUESTIONS = [
   },
   {
     "id": 128,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements accurately describe how polymorphism, method hiding, and field access operate in Java inheritance?",
     "options": [
       {
@@ -3873,7 +3795,7 @@ const QUESTIONS = [
   },
   {
     "id": 129,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "What value is returned by `calculate()` in the following code snippet?\n\n```java\npublic class FlowTest {\n    public static int calculate() {\n        try {\n            int x = 10 / 2;\n            return x;\n        } catch (Exception e) {\n            return 0;\n        } finally {\n            return 99;\n        }\n    }\n}\n```",
     "options": [
       {
@@ -3901,28 +3823,28 @@ const QUESTIONS = [
   },
   {
     "id": 130,
-    "category": "Core Java",
-    "question": "Which THREE statements accurately describe the resource lifecycle and exception handling in Try-With-Resources?",
+    "category": "Build Tools",
+    "question": "Which THREE statements describe a Maven multi-module reactor build?",
     "options": [
       {
         "id": "A",
-        "text": "Resources declared in the try-with-resources statement header must be marked explicitly with the `final` keyword."
+        "text": "Modules are built strictly in the order listed under `modules`, even when a later entry depends on one listed before it."
       },
       {
         "id": "B",
-        "text": "Resources declared in the try header are closed in reverse order of their declaration (LIFO order)."
+        "text": "The reactor builds a module after the reactor projects it depends on, rather than only in POM listing order."
       },
       {
         "id": "C",
-        "text": "Resource `close()` methods are invoked automatically whether the try block completes normally or throws an exception."
+        "text": "`mvn package -pl module-b -am` builds module-b and also the reactor projects that module-b depends on."
       },
       {
         "id": "D",
-        "text": "Exceptions thrown during resource closure completely overwrite and discard the primary exception from the try block."
+        "text": "`-pl` excludes the module you name, and `-am` turns the reactor off so only the parent POM is built."
       },
       {
         "id": "E",
-        "text": "Exceptions thrown during resource closure are attached as suppressed exceptions accessible via `Throwable.getSuppressed()`."
+        "text": "A module can use a sibling produced earlier in the same invocation, without a separate `mvn install` first."
       }
     ],
     "correct": [
@@ -3931,11 +3853,11 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Reverse Close Order: Resources declared in `try (R1 r1 = ...; R2 r2 = ...)` are closed in the reverse order of their initialization: `r2.close()` runs first, followed by `r1.close()`.\n• Suppressed Exceptions: If the `try` block throws an exception E_1 and a resource's `close()` method subsequently throws an exception E_2, E_1 is propagated to the caller, and E_2 is appended to E_1 as a suppressed exception via `E1.addSuppressed(E2)`.\n• Inspection: Suppressed exceptions can be retrieved using `Throwable.getSuppressed()`.\n\nWhy other options are incorrect:\n• Resources are not closed in forward order.\n• Close exceptions do not discard the primary exception thrown by the try block."
+    "explanation": "Why this is correct:\n• One Maven invocation builds the reactor. Order follows inter-module dependencies, and a project built earlier in that invocation is visible to dependents without already being in the local repository.\n• `-pl` selects projects. `-am` (`--also-make`) adds the projects those selections depend on.\n\nWhy other options are incorrect:\n• A ignores dependencies. Listing order does not win when one module needs another.\n• D reverses both flags. `-pl` selects, and `-am` adds dependencies rather than disabling the reactor."
   },
   {
     "id": 131,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE rules apply when declaring a multi-catch block in Java (`catch (IOException | SQLException e)`)?",
     "options": [
       {
@@ -3969,7 +3891,7 @@ const QUESTIONS = [
   },
   {
     "id": 132,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements describe how Java resolves the Diamond Problem when a class implements two interfaces declaring identical default methods?",
     "options": [
       {
@@ -3998,7 +3920,7 @@ const QUESTIONS = [
   },
   {
     "id": 133,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "What is the recommended approach for instantiating `BigDecimal` from a floating-point value to prevent precision loss?",
     "options": [
       {
@@ -4026,7 +3948,7 @@ const QUESTIONS = [
   },
   {
     "id": 134,
-    "category": "Core Java",
+    "category": "Core Java & JVM",
     "question": "Which TWO statements accurately describe the indentation and delimiter rules of Java Text Blocks (Java 15+)?",
     "options": [
       {
@@ -4055,7 +3977,7 @@ const QUESTIONS = [
   },
   {
     "id": 135,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Why does the assignment `List<Object> list = new ArrayList<String>();` fail compilation in Java?",
     "options": [
       {
@@ -4083,7 +4005,7 @@ const QUESTIONS = [
   },
   {
     "id": 136,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "Which THREE statements accurately reflect the PECS rule (Producer Extends, Consumer Super) in Java generics?",
     "options": [
       {
@@ -4117,7 +4039,7 @@ const QUESTIONS = [
   },
   {
     "id": 137,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "What is the output of executing the following `Map` operations involving keys mapped to `null`?\n\n```java\nMap<String, Integer> map = new HashMap<>();\nmap.put(\"A\", null);\n\nmap.putIfAbsent(\"A\", 10);\nmap.computeIfAbsent(\"A\", k -> 20);\nmap.computeIfAbsent(\"B\", k -> 30);\n\nSystem.out.println(map.get(\"A\") + \" \" + map.get(\"B\"));\n```",
     "options": [
       {
@@ -4145,7 +4067,7 @@ const QUESTIONS = [
   },
   {
     "id": 138,
-    "category": "Collections",
+    "category": "Collections & Streams",
     "question": "What occurs when mutating an object stored inside an unmodifiable collection created via `List.of(sb)`?\n\n```java\nStringBuilder sb = new StringBuilder(\"Hello\");\nList<StringBuilder> list = List.of(sb);\nsb.append(\" World\");\nSystem.out.println(list.get(0));\n```",
     "options": [
       {
@@ -4173,7 +4095,7 @@ const QUESTIONS = [
   },
   {
     "id": 139,
-    "category": "Streams & Functional",
+    "category": "Collections & Streams",
     "question": "What is printed to the console when the following stream pipeline is executed?\n\n```java\nList<String> list = List.of(\"alpha\", \"bravo\", \"charlie\");\nlist.stream().filter(s -> {\n    System.out.print(s + \" \");\n    return s.length() > 5;\n});\n```",
     "options": [
       {
@@ -4201,7 +4123,7 @@ const QUESTIONS = [
   },
   {
     "id": 140,
-    "category": "Streams & Functional",
+    "category": "Collections & Streams",
     "question": "What happens when `Collectors.toMap()` encounters duplicate keys in a stream without an explicit merge function?\n\n```java\nList<String> list = List.of(\"apple\", \"banana\", \"apricot\");\nMap<Character, String> map = list.stream()\n    .collect(Collectors.toMap(s -> s.charAt(0), s -> s));\n```",
     "options": [
       {
@@ -4229,7 +4151,7 @@ const QUESTIONS = [
   },
   {
     "id": 141,
-    "category": "Streams & Functional",
+    "category": "Collections & Streams",
     "question": "What is the critical difference between `Optional.orElse()` and `Optional.orElseGet()` regarding argument evaluation?\n\n```java\nOptional<String> opt = Optional.of(\"Existing\");\nString r1 = opt.orElse(computeDefault());\nString r2 = opt.orElseGet(() -> computeDefault());\n```",
     "options": [
       {
@@ -4257,7 +4179,7 @@ const QUESTIONS = [
   },
   {
     "id": 142,
-    "category": "Modern Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements regarding Java `record` classes (standardized in Java 16) are correct?",
     "options": [
       {
@@ -4291,7 +4213,7 @@ const QUESTIONS = [
   },
   {
     "id": 143,
-    "category": "Modern Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE rules govern Sealed Classes and Interfaces as introduced in Java 17?",
     "options": [
       {
@@ -4325,28 +4247,28 @@ const QUESTIONS = [
   },
   {
     "id": 144,
-    "category": "Modern Java",
-    "question": "Which THREE statements accurately characterize Virtual Threads (Java 21) and carrier thread pinning?",
+    "category": "Build Tools",
+    "question": "Which THREE statements correctly place `test` and `verify` in the default lifecycle?",
     "options": [
       {
         "id": "A",
-        "text": "Calling `Thread.sleep()` or performing socket I/O permanently pins virtual threads to kernel CPU cores."
+        "text": "`verify` replaces `test`, so a `verify` build skips the unit tests and runs only the integration tests."
       },
       {
         "id": "B",
-        "text": "When a virtual thread blocks on non-pinning I/O, the JVM unmounts it from the carrier thread to execute other tasks."
+        "text": "`test` runs the unit tests, usually through Surefire, and that phase comes before `package`."
       },
       {
         "id": "C",
-        "text": "Virtual threads are lightweight JVM-scheduled threads running on top of a pool of OS carrier threads."
+        "text": "`verify` comes after `package` and is the usual place for integration tests, such as Failsafe, on the built artifact."
       },
       {
         "id": "D",
-        "text": "Virtual threads completely eliminate the necessity for thread safety and memory visibility synchronization in Java."
+        "text": "`test` runs after `package` and executes the unit tests from inside the jar that was just built."
       },
       {
         "id": "E",
-        "text": "Blocking inside a `synchronized` block/method or native JNI call pins the virtual thread to its OS carrier thread."
+        "text": "`mvn verify` still runs the earlier phases, so unit tests run before packaging and before integration tests."
       }
     ],
     "correct": [
@@ -4355,11 +4277,11 @@ const QUESTIONS = [
       "E"
     ],
     "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Virtual Threads (Java 21 / JEP 444):\n  1. Virtual threads are managed by the JVM runtime and multiplexed over a small pool of carrier platform threads.\n  2. Blocking I/O operations (network, file, `Thread.sleep`) unmount the virtual thread from the carrier thread, freeing the carrier thread to execute other virtual threads.\n  3. Pinning: A virtual thread is **pinned** to its carrier thread if it blocks inside a `synchronized` block or method, or while executing a native method (JNI). When pinned, the carrier thread cannot be released, reducing scalability. (Fix: replace `synchronized` with `ReentrantLock`).\n\nWhy other options are incorrect:\n• Virtual threads do NOT execute CPU-intensive tasks faster than platform threads.\n• Virtual threads do not eliminate thread synchronization or thread safety requirements."
+    "explanation": "Why this is correct:\n• `test` is the unit-test phase and is before `package`. `verify` is after `package` and after the integration-test phase. Failsafe typically runs its tests in `integration-test` and checks the results in `verify`.\n• `mvn verify` walks forward through the earlier phases, so Surefire still runs.\n\nWhy other options are incorrect:\n• A drops the unit tests. Later phases include earlier ones; they do not replace them.\n• D moves unit tests after packaging. They run on the compiled classes, before the archive exists."
   },
   {
     "id": 145,
-    "category": "Modern Java",
+    "category": "Core Java & JVM",
     "question": "Which THREE features are standardized in Pattern Matching for `switch` (Java 21 / JEP 441)?",
     "options": [
       {
@@ -4393,7 +4315,7 @@ const QUESTIONS = [
   },
   {
     "id": 146,
-    "category": "Modern Java",
+    "category": "Collections & Streams",
     "question": "Which THREE capabilities are introduced by Sequenced Collections (Java 21 / JEP 431)?",
     "options": [
       {
@@ -4580,7 +4502,7 @@ const QUESTIONS = [
   },
   {
     "id": 152,
-    "category": "JVM & GC",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements accurately describe JVM Safepoints and Stop-The-World (STW) pauses?",
     "options": [
       {
@@ -4642,7 +4564,7 @@ const QUESTIONS = [
   },
   {
     "id": 154,
-    "category": "Staff Java & Kotlin",
+    "category": "Concurrency",
     "question": "Which TWO statements correctly contrast `CompletableFuture.handle()` and `CompletableFuture.exceptionally()` for asynchronous exception handling?",
     "options": [
       {
@@ -4671,7 +4593,7 @@ const QUESTIONS = [
   },
   {
     "id": 155,
-    "category": "Staff Java & Kotlin",
+    "category": "Concurrency",
     "question": "When does a Java Virtual Thread (Java 21 / Project Loom) become 'pinned' to its underlying carrier platform thread?",
     "options": [
       {
@@ -4699,7 +4621,7 @@ const QUESTIONS = [
   },
   {
     "id": 156,
-    "category": "Staff Java & Kotlin",
+    "category": "Kotlin",
     "question": "Which THREE statements accurately characterize Kotlin Coroutines and their core concurrency model?",
     "options": [
       {
@@ -4733,7 +4655,7 @@ const QUESTIONS = [
   },
   {
     "id": 157,
-    "category": "Staff Java & Kotlin",
+    "category": "Kotlin",
     "question": "Which TWO statements describe how Kotlin handles nullability when interoperating with Java code?",
     "options": [
       {
@@ -4762,7 +4684,7 @@ const QUESTIONS = [
   },
   {
     "id": 158,
-    "category": "Staff Java & Kotlin",
+    "category": "Concurrency",
     "question": "Which THREE statements accurately contrast `LongAdder`, `AtomicLong`, and `synchronized` counters under high thread contention?",
     "options": [
       {
@@ -4796,7 +4718,7 @@ const QUESTIONS = [
   },
   {
     "id": 159,
-    "category": "Staff Java & Kotlin",
+    "category": "Kotlin",
     "question": "What is the primary difference between `lateinit var` and `val by lazy` in Kotlin?",
     "options": [
       {
@@ -4824,7 +4746,7 @@ const QUESTIONS = [
   },
   {
     "id": 160,
-    "category": "Staff Java & Kotlin",
+    "category": "Core Java & JVM",
     "question": "Which TWO diagnostic techniques are standard industry practices when troubleshooting suspected Java heap memory leaks in production?",
     "options": [
       {
@@ -4853,7 +4775,7 @@ const QUESTIONS = [
   },
   {
     "id": 161,
-    "category": "Staff Java & Kotlin",
+    "category": "Concurrency",
     "question": "Which THREE statements accurately contrast `CountDownLatch`, `CyclicBarrier`, and `Semaphore` in Java concurrency?",
     "options": [
       {
@@ -4887,7 +4809,7 @@ const QUESTIONS = [
   },
   {
     "id": 162,
-    "category": "Staff Java & Kotlin",
+    "category": "Kotlin",
     "question": "What methods does the Kotlin compiler automatically generate for a `data class`?",
     "options": [
       {
@@ -4915,7 +4837,7 @@ const QUESTIONS = [
   },
   {
     "id": 163,
-    "category": "Staff Java & Kotlin",
+    "category": "Concurrency",
     "question": "Which TWO statements correctly contrast `ArrayBlockingQueue`, `LinkedBlockingQueue`, and `SynchronousQueue` in `java.util.concurrent`?",
     "options": [
       {
@@ -4944,7 +4866,7 @@ const QUESTIONS = [
   },
   {
     "id": 164,
-    "category": "Staff Java & Kotlin",
+    "category": "Core Java & JVM",
     "question": "Which THREE statements accurately describe the HotSpot JVM's JIT compilation and the application 'warm-up' phenomenon?",
     "options": [
       {
@@ -4978,35 +4900,35 @@ const QUESTIONS = [
   },
   {
     "id": 165,
-    "category": "Staff Java & Kotlin",
-    "question": "Why does calling a `@Transactional` method from another method within the same Spring bean fail to start or participate in a database transaction?",
+    "category": "Build Tools",
+    "question": "Why does Gradle still run configuration when the command names only one task?",
     "options": [
       {
         "id": "A",
-        "text": "Java prohibits calling one method from another method within the same class whenever database drivers are present on the classpath."
+        "text": "Naming one task skips configuration, so Gradle goes from initialization straight to executing that task."
       },
       {
         "id": "B",
-        "text": "The JDBC driver automatically closes all database connections whenever an internal method invocation is detected on the stack."
+        "text": "Only the task named on the command line is configured, and every other project that the settings file includes is left unconfigured."
       },
       {
         "id": "C",
-        "text": "Spring requires all transactional methods to be declared `static` so bytecode can be loaded into native Metaspace buffers."
+        "text": "The named task runs first, and configuration happens afterward to record the outputs that task wrote."
       },
       {
         "id": "D",
-        "text": "The call uses direct `this` reference dispatch, bypassing the Spring AOP proxy that intercepts calls to manage transactions."
+        "text": "Gradle initializes, then configures projects and the task graph, and only then executes, so configuration still runs for one task."
       }
     ],
     "correct": [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Spring AOP Proxy Mechanics: Spring manages `@Transactional` by wrapping your bean in a dynamic proxy (CGLIB or JDK dynamic proxy). When an *external* caller calls `bean.saveOrder()`, the call hits the proxy, which begins a transaction, calls the target method, and commits/rolls back.\n• The Self-Invocation Gotcha: If `methodA()` in `OrderService` calls `this.methodB()` (where `methodB()` has `@Transactional`), the call executes directly on `this` (the actual target instance), completely bypassing the Spring proxy! Thus, no transaction advice is ever executed.\n• Solutions:\n  1. Extract `methodB()` into a separate collaborator service bean.\n  2. Inject the self-proxy (e.g. `@Autowired private OrderService self;` with `@Lazy`).\n  3. Use AspectJ compile-time or load-time weaving instead of Spring AOP proxies.\n\nWhy other options are incorrect:\n• `@Transactional` cannot be `static`; it requires instance proxy interception.\n• JDBC drivers do not intercept internal method calls."
+    "explanation": "Why this is correct:\n• A Gradle build has three phases: initialization, configuration, and execution. Configuration builds the task graph and, by default, configures the projects before any task runs. Requesting one task selects what executes; it does not skip configuration.\n\nWhy other options are incorrect:\n• A jumps from initialization to execution and drops the phase that creates the task graph.\n• B describes configure-on-demand, which is not the default. A normal build configures the projects that participate.\n• C reverses the last two phases. Configuration is what makes execution possible."
   },
   {
     "id": 166,
-    "category": "Staff Java & Kotlin",
+    "category": "Databases",
     "question": "Which TWO approaches are standard, effective solutions to resolve the Hibernate / JPA N+1 query problem?",
     "options": [
       {
@@ -5035,7 +4957,7 @@ const QUESTIONS = [
   },
   {
     "id": 167,
-    "category": "Staff Java & Kotlin",
+    "category": "Spring & Hibernate",
     "question": "Which THREE statements accurately describe Spring bean lifecycle callbacks and initialization phases?",
     "options": [
       {
@@ -5069,7 +4991,7 @@ const QUESTIONS = [
   },
   {
     "id": 168,
-    "category": "Staff Java & Kotlin",
+    "category": "Core Java & JVM",
     "question": "Which standard JDK command-line diagnostic tool is used to inspect thread stack traces and automatically detect thread deadlocks?",
     "options": [
       {
@@ -5097,7 +5019,7 @@ const QUESTIONS = [
   },
   {
     "id": 169,
-    "category": "Staff Java & Kotlin",
+    "category": "Kotlin",
     "question": "Which TWO statements correctly describe how uncaught exceptions propagate inside Kotlin Coroutine scopes?",
     "options": [
       {
@@ -5126,7 +5048,7 @@ const QUESTIONS = [
   },
   {
     "id": 170,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Which TWO statements correctly contrast synchronous REST/gRPC communication with asynchronous event-driven messaging (Kafka/RabbitMQ)?",
     "options": [
       {
@@ -5155,7 +5077,7 @@ const QUESTIONS = [
   },
   {
     "id": 171,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "What is the 'Cache Stampede' (Thundering Herd) problem in high-throughput applications, and how is it standardly mitigated?",
     "options": [
       {
@@ -5183,7 +5105,7 @@ const QUESTIONS = [
   },
   {
     "id": 172,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Which THREE statements accurately characterize standard application caching strategies?",
     "options": [
       {
@@ -5217,7 +5139,7 @@ const QUESTIONS = [
   },
   {
     "id": 173,
-    "category": "Architecture & System Design",
+    "category": "Databases",
     "question": "Which TWO guidelines govern effective index design in relational database management systems?",
     "options": [
       {
@@ -5246,7 +5168,7 @@ const QUESTIONS = [
   },
   {
     "id": 174,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Which THREE design practices are essential when implementing Idempotent REST payment and order APIs?",
     "options": [
       {
@@ -5280,7 +5202,7 @@ const QUESTIONS = [
   },
   {
     "id": 175,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "What is horizontal database sharding, and what primary architectural trade-off does it introduce?",
     "options": [
       {
@@ -5308,7 +5230,7 @@ const QUESTIONS = [
   },
   {
     "id": 176,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Which TWO statements correctly contrast Token Bucket and Sliding Window rate limiting algorithms in API Gateways?",
     "options": [
       {
@@ -5337,7 +5259,7 @@ const QUESTIONS = [
   },
   {
     "id": 177,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Which THREE statements accurately describe the Resilience4j / Circuit Breaker operational model?",
     "options": [
       {
@@ -5371,35 +5293,35 @@ const QUESTIONS = [
   },
   {
     "id": 178,
-    "category": "Architecture & System Design",
-    "question": "What is the primary operational advantage of URI Path Versioning (`/api/v1/orders`) compared to Header / Content Negotiation Versioning in REST APIs?",
+    "category": "System Design",
+    "question": "How do active-passive and active-active multi-region deployments differ?",
     "options": [
       {
         "id": "A",
-        "text": "It eliminates the need to maintain backward compatibility when deleting required fields from business entities."
+        "text": "Active-active takes writes in a single region only, and active-passive takes writes in every region at once without any conflict handling at all."
       },
       {
         "id": "B",
-        "text": "It guarantees that mobile applications will never experience network disconnection errors during client updates."
+        "text": "Both forms take writes in every region, and they differ only in which region answers the health check."
       },
       {
         "id": "C",
-        "text": "It automatically converts all legacy database records into the latest JSON format without requiring application migrations."
+        "text": "Active-passive keeps a writable copy in every region, and active-active is a read-only cache in front of one primary."
       },
       {
         "id": "D",
-        "text": "It is explicit, easy to test in browsers, simple to route at API gateways/proxies, and works cleanly with standard HTTP caching."
+        "text": "Active-passive takes writes in one region and fails over, while active-active takes writes in more than one region and has to handle conflicts."
       }
     ],
     "correct": [
       "D"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• URI Path Versioning (`/v1/users`, `/v2/users`):\n  - Highly visible and explicit: Anyone looking at a log file, browser URL, or network trace instantly knows which API version is being called.\n  - Gateway & Proxy Friendly: Reverse proxies (NGINX, Envoy, AWS API Gateway) can easily route `/v1/` to legacy service clusters and `/v2/` to new service clusters based on simple URL path matching.\n  - Caching: CDNs and browser caches key off the URL path naturally.\n• Header Versioning (`Accept: application/vnd.company.v1+json`): Cleaner URIs (pure resource identifiers), but harder to test directly in browsers, harder to configure in standard CDN cache keys, and more complex to route at edge proxies.\n\nWhy other options are incorrect:\n• URI versioning does not convert database records.\n• It does not eliminate the need for backward compatibility or prevent network disconnection errors."
+    "explanation": "Why this is correct:\n• Active-passive has one region taking writes. Another region is ready to take over, which is the failover path.\n• Active-active takes writes in more than one region at the same time, so two updates can disagree and the design needs a conflict rule.\n\nWhy other options are incorrect:\n• A swaps the two forms and drops conflict handling from the multi-writer case.\n• B says both take writes everywhere.\n• C makes the passive deployment the one that writes in every region."
   },
   {
     "id": 179,
-    "category": "Architecture & System Design",
+    "category": "Databases",
     "question": "Which TWO statements reflect best practices when configuring database connection pools (such as HikariCP)?",
     "options": [
       {
@@ -5428,7 +5350,7 @@ const QUESTIONS = [
   },
   {
     "id": 180,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Which THREE architectural challenges are directly introduced by adopting the 'Database-per-Service' pattern in microservices?",
     "options": [
       {
@@ -5462,35 +5384,35 @@ const QUESTIONS = [
   },
   {
     "id": 181,
-    "category": "Architecture & System Design",
-    "question": "What sequence of actions occurs during a graceful shutdown of a Spring Boot microservice in Kubernetes upon receiving a `SIGTERM` signal?",
+    "category": "System Design",
+    "question": "How do partitions and a consumer group affect ordering in a log such as Kafka?",
     "options": [
       {
         "id": "A",
-        "text": "The service stops accepting new requests, drains in-flight requests within a grace period, releases resources, and terminates."
+        "text": "Records inside one partition stay in order, and a consumer group assigns each partition to one member so the members share the partitions."
       },
       {
         "id": "B",
-        "text": "The service rolls back all database transactions committed over the preceding 24 hours to prevent data corruption."
+        "text": "A consumer group delivers every partition to every member, and the topic promises one order across all partitions."
       },
       {
         "id": "C",
-        "text": "The service serializes the entire Java Virtual Machine heap to an external USB flash drive before disconnecting from the network."
+        "text": "Order is global for the whole topic, and partitions exist only as the place where consumer offsets are stored."
       },
       {
         "id": "D",
-        "text": "The service immediately sends a `SIGKILL` to all connected clients and deletes all local database tables from the cluster."
+        "text": "Several members of one group may read the same partition at the same time, and that shared read is what keeps the records in that partition ordered."
       }
     ],
     "correct": [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Kubernetes Graceful Shutdown Workflow:\n  1. Pod marked `Terminating`: Kubernetes removes the pod from the Service Endpoints / Load Balancer so no new traffic is routed to it.\n  2. `SIGTERM` sent: Spring Boot receives `SIGTERM`.\n  3. Stop accepting new connections: The embedded web server (Tomcat/Jetty) stops listening for new connections.\n  4. Grace period execution (`spring.lifecycle.timeout-per-shutdown-phase`): In-flight HTTP requests are allowed to complete within the configured timeout.\n  5. Resource cleanup: Spring shuts down beans, executes `@PreDestroy` methods, closes HikariCP database connection pools, and disconnects Kafka listeners.\n  6. Clean Exit (`SIGKILL` only sent if the grace period expires before the process terminates).\n\nWhy other options are incorrect:\n• Graceful shutdown does not drop connections immediately, roll back past transactions, or write heaps to USB drives."
+    "explanation": "Why this is correct:\n• A partition is an ordered log. The topic's order is per partition, not across partitions.\n• In one consumer group, each partition is assigned to a single member. The members split the partitions between them. A second group is a separate subscription and gets its own copy of the records.\n\nWhy other options are incorrect:\n• B gives every member every partition and promises one global order.\n• C stores only offsets in partitions and makes order global.\n• D lets several members of the same group read one partition together. That assignment is one member per partition."
   },
   {
     "id": 182,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Which TWO definitions correctly contrast Recovery Point Objective (RPO) and Recovery Time Objective (RTO) in disaster recovery planning?",
     "options": [
       {
@@ -5519,7 +5441,7 @@ const QUESTIONS = [
   },
   {
     "id": 183,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Which THREE statements accurately describe the architecture and security considerations of JSON Web Tokens (JWT)?",
     "options": [
       {
@@ -5553,7 +5475,7 @@ const QUESTIONS = [
   },
   {
     "id": 184,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Why do distributed message brokers (such as Apache Kafka and AWS SQS) provide 'At-Least-Once' delivery by default rather than exactly-once?",
     "options": [
       {
@@ -5581,7 +5503,7 @@ const QUESTIONS = [
   },
   {
     "id": 185,
-    "category": "Architecture & System Design",
+    "category": "System Design",
     "question": "Which TWO statements correctly contrast Layer 4 (Transport) and Layer 7 (Application) load balancing?",
     "options": [
       {
@@ -5610,7 +5532,7 @@ const QUESTIONS = [
   },
   {
     "id": 186,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "Which TWO statements accurately contrast Chaining and Open Addressing for resolving hash collisions in hash tables?",
     "options": [
       {
@@ -5639,7 +5561,7 @@ const QUESTIONS = [
   },
   {
     "id": 187,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "What combination of data structures allows an LRU (Least Recently Used) cache to achieve O(1) time complexity for both `get()` and `put()`?",
     "options": [
       {
@@ -5667,7 +5589,7 @@ const QUESTIONS = [
   },
   {
     "id": 188,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "Which THREE rules and practices apply to implementing correct Binary Search algorithms?",
     "options": [
       {
@@ -5701,7 +5623,7 @@ const QUESTIONS = [
   },
   {
     "id": 189,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "Which TWO statements correctly contrast Breadth-First Search (BFS) and Depth-First Search (DFS) on graphs?",
     "options": [
       {
@@ -5730,7 +5652,7 @@ const QUESTIONS = [
   },
   {
     "id": 190,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "How does Floyd's Tortoise and Hare algorithm detect a cycle in a singly linked list?",
     "options": [
       {
@@ -5758,7 +5680,7 @@ const QUESTIONS = [
   },
   {
     "id": 191,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "Which THREE statements accurately characterize the Sliding Window algorithmic technique?",
     "options": [
       {
@@ -5792,7 +5714,7 @@ const QUESTIONS = [
   },
   {
     "id": 192,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "What is the optimal time complexity to find the Top K frequent elements in an array of N items using a Min-Heap of size K?",
     "options": [
       {
@@ -5820,7 +5742,7 @@ const QUESTIONS = [
   },
   {
     "id": 193,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "Which TWO statements accurately contrast QuickSort, MergeSort, and TimSort?",
     "options": [
       {
@@ -5849,7 +5771,7 @@ const QUESTIONS = [
   },
   {
     "id": 194,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "Which tree traversal visits all nodes of a Binary Search Tree (BST) in ascending sorted order?",
     "options": [
       {
@@ -5877,7 +5799,7 @@ const QUESTIONS = [
   },
   {
     "id": 195,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "Which THREE characteristics accurately define a Trie (Prefix Tree) data structure?",
     "options": [
       {
@@ -5911,7 +5833,7 @@ const QUESTIONS = [
   },
   {
     "id": 196,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "Which THREE algorithmic scenarios correctly pair the problem requirement with its optimal linear data structure?",
     "options": [
       {
@@ -5945,7 +5867,7 @@ const QUESTIONS = [
   },
   {
     "id": 197,
-    "category": "Algorithms & Data Structures",
+    "category": "Algorithms",
     "question": "When is an Adjacency List preferred over an Adjacency Matrix for representing a graph?",
     "options": [
       {
@@ -5971,98 +5893,6 @@ const QUESTIONS = [
     "requiredCount": 1,
     "explanation": "Why this is correct:\n• Adjacency List:\n  - An array or map of lists: `List<Integer>[] adj`.\n  - Space Complexity: O(V + E). In sparse graphs (e.g. a social network or road map where vertices have far fewer edges than V), space is minimal.\n  - Neighbor Iteration: Iterating over all neighbors of vertex U takes O(degree(U)) time.\n• Adjacency Matrix:\n  - A 2D array `int[][] matrix = new int[V][V]`.\n  - Space Complexity: O(V^2). For a graph with 100,000 vertices, V^2 = 10^{10} cells (~10 GB RAM), even if there are only 1,000 edges!\n  - Best for dense graphs (E ~ V^2) where testing `matrix[u][v] != 0` in O(1) time is critical.\n\nWhy other options are incorrect:\n• Dense graphs favor Adjacency Matrices, not lists.\n• Negative edge weights have no bearing on matrix vs list representation."
   },
-  {
-    "id": 198,
-    "category": "Algorithms & Data Structures",
-    "question": "Which THREE foundational principles characterize Dynamic Programming (DP) algorithms?",
-    "options": [
-      {
-        "id": "A",
-        "text": "Dynamic Programming guarantees finding the global maximum in all NP-complete problems in strictly O(1) constant time."
-      },
-      {
-        "id": "B",
-        "text": "The problem exhibits Overlapping Subproblems: recursive formulations solve the exact same subproblems repeatedly."
-      },
-      {
-        "id": "C",
-        "text": "The problem exhibits Optimal Substructure: an optimal solution can be constructed from optimal solutions of its subproblems."
-      },
-      {
-        "id": "D",
-        "text": "Dynamic Programming requires converting all input data structures into balanced red-black binary search trees."
-      },
-      {
-        "id": "E",
-        "text": "Subproblem results can be cached via Top-Down with Memoization or evaluated iteratively via Bottom-Up Tabulation."
-      }
-    ],
-    "correct": [
-      "B",
-      "C",
-      "E"
-    ],
-    "requiredCount": 3,
-    "explanation": "Why this is correct:\n• Core DP Requirements:\n  1. Optimal Substructure: The optimal solution to the overall problem contains within it optimal solutions to subproblems (e.g. shortest path from A -> C through B is shortest path A -> B + shortest path B -> C).\n  2. Overlapping Subproblems: Unlike divide-and-conquer (MergeSort) where subproblems are independent, DP subproblems overlap (e.g. Fibonacci: fib(5) computes fib(3) multiple times).\n• Two Implementations:\n  - Top-Down with Memoization: Natural recursion, storing results in a hash map or array table so each subproblem is calculated once.\n  - Bottom-Up with Tabulation: Iterative table filling, starting from base cases and building up to the final answer (avoids recursion call stack overhead).\n\nWhy other options are incorrect:\n• DP does not solve NP-complete problems in O(1) time.\n• It does not require red-black trees."
-  },
-  {
-    "id": 199,
-    "category": "Algorithms & Data Structures",
-    "question": "What does the bitwise expression `(n & (n - 1)) == 0` evaluate for a positive integer `n > 0`?",
-    "options": [
-      {
-        "id": "A",
-        "text": "It returns `true` if `n` is a negative number, because negative numbers use two's complement sign bits."
-      },
-      {
-        "id": "B",
-        "text": "It returns `true` if `n` is divisible by 10, because decimal multiples cancel out binary bits during bitwise AND."
-      },
-      {
-        "id": "C",
-        "text": "It returns `true` if `n` is an odd number, because odd numbers have their least significant bit set to 1."
-      },
-      {
-        "id": "D",
-        "text": "It returns `true` if `n` is a power of 2, because powers of 2 have exactly one binary bit set to 1."
-      }
-    ],
-    "correct": [
-      "D"
-    ],
-    "requiredCount": 1,
-    "explanation": "Why this is correct:\n• How `n & (n - 1)` Works:\n  - Subtracting 1 from a number flips the lowest set bit (`1` -> `0`) and flips all trailing zeros to `1`s.\n  - Example: n = 8 (`1000`), n - 1 = 7 (`0111`).\n    `1000 & 0111 = 0000` (evaluates to 0!).\n  - Example: n = 6 (`0110`), n - 1 = 5 (`0101`).\n    `0110 & 0101 = 0100` (evaluates to 4 != 0).\n• A positive integer is a power of 2 (2^0, 2^1, 2^2, ...) if and only if it has EXACTLY ONE bit set in its binary representation. Clearing that single bit leaves 0!\n• Brian Kernighan's Algorithm: `n = n & (n - 1)` can be looped to count set bits (Hamming weight) in O(number of set bits) time instead of iterating all 32 bits.\n\nWhy other options are incorrect:\n• Testing odd numbers is `(n & 1) != 0`.\n• Negative numbers and divisibility by 10 are completely unrelated."
-  },
-  {
-    "id": 200,
-    "category": "Algorithms & Data Structures",
-    "question": "Which TWO statements accurately characterize algorithmic Big-O time and space complexity?",
-    "options": [
-      {
-        "id": "A",
-        "text": "Sorting an array of N objects using Java's `Arrays.sort()` requires O(N^2) auxiliary memory space."
-      },
-      {
-        "id": "B",
-        "text": "Binary search on a sorted array of N elements requires O(N) linear time in the worst case."
-      },
-      {
-        "id": "C",
-        "text": "Traversing a two-dimensional N x N matrix using nested loops executes in O(N^2) polynomial time."
-      },
-      {
-        "id": "D",
-        "text": "A recursive function with maximum call stack depth D consumes O(D) space, even if no heap objects are allocated."
-      }
-    ],
-    "correct": [
-      "C",
-      "D"
-    ],
-    "requiredCount": 2,
-    "explanation": "Why this is correct:\n• Nested Loops: An outer loop running N times with an inner loop running N times executes the inner body N x N = N^2 times, giving O(N^2) quadratic time.\n• Call Stack Space Complexity: Each recursive method invocation allocates a new stack frame on the thread's execution call stack (storing local variables and return addresses). If recursion descends to depth D, D stack frames exist simultaneously in memory, contributing O(D) auxiliary space complexity!\n  (Ignoring call stack memory in Big-O analysis is a common interview mistake).\n\nWhy other options are incorrect:\n• Binary search runs in O(log N) logarithmic time, NOT O(N).\n• Java's `Arrays.sort()` uses TimSort which takes O(N) auxiliary space (or O(log N) for primitive Dual-Pivot QuickSort), never O(N^2)."
-  }
-,
   {
     "id": 201,
     "category": "Design Patterns",
@@ -6719,7 +6549,7 @@ const QUESTIONS = [
   },
   {
     "id": 224,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "According to Robert C. Martin's definition, what constitutes a 'responsibility' under the Single Responsibility Principle (SRP)?",
     "options": [
       {
@@ -6747,7 +6577,7 @@ const QUESTIONS = [
   },
   {
     "id": 225,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "Which technique exemplifies adherence to the Open/Closed Principle (OCP) in Java?",
     "options": [
       {
@@ -6775,7 +6605,7 @@ const QUESTIONS = [
   },
   {
     "id": 226,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "Which TWO scenarios violate the Liskov Substitution Principle (LSP)?",
     "options": [
       {
@@ -6804,7 +6634,7 @@ const QUESTIONS = [
   },
   {
     "id": 227,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "What is the core directive of the Dependency Inversion Principle (DIP) in SOLID design?",
     "options": [
       {
@@ -6832,7 +6662,7 @@ const QUESTIONS = [
   },
   {
     "id": 228,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "What is the fundamental distinction between an Entity and a Value Object in Domain-Driven Design (DDD)?",
     "options": [
       {
@@ -6860,7 +6690,7 @@ const QUESTIONS = [
   },
   {
     "id": 229,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "Which TWO design rules must be respected when working with Aggregate Roots in Domain-Driven Design?",
     "options": [
       {
@@ -6889,7 +6719,7 @@ const QUESTIONS = [
   },
   {
     "id": 230,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "What is the primary difference in purpose and contract stability between Domain Events and Integration Events?",
     "options": [
       {
@@ -6917,7 +6747,7 @@ const QUESTIONS = [
   },
   {
     "id": 231,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "In Domain-Driven Design and enterprise architecture, how does the Repository pattern differ conceptually from a traditional Data Access Object (DAO)?",
     "options": [
       {
@@ -6945,7 +6775,7 @@ const QUESTIONS = [
   },
   {
     "id": 232,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "Why is establishing explicit Bounded Contexts critical in complex domain modeling?",
     "options": [
       {
@@ -6973,7 +6803,7 @@ const QUESTIONS = [
   },
   {
     "id": 233,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "When integrating a new Domain-Driven microservice with a legacy monolithic system, what is the purpose of an Anti-Corruption Layer (ACL)?",
     "options": [
       {
@@ -7001,7 +6831,7 @@ const QUESTIONS = [
   },
   {
     "id": 234,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "What is the primary architectural boundary between a Domain Service and an Application Service in DDD layered architecture?",
     "options": [
       {
@@ -7029,7 +6859,7 @@ const QUESTIONS = [
   },
   {
     "id": 235,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "What is the primary benefit of applying the Specification pattern (e.g., Spring Data JPA Specifications) to domain modeling?",
     "options": [
       {
@@ -7057,7 +6887,7 @@ const QUESTIONS = [
   },
   {
     "id": 236,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "How does Martin Fowler's Unit of Work pattern maintain database consistency in enterprise applications?",
     "options": [
       {
@@ -7085,7 +6915,7 @@ const QUESTIONS = [
   },
   {
     "id": 237,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "What is the primary architectural trade-off between Martin Fowler's Data Mapper pattern (e.g., Hibernate/JPA) and the Active Record pattern?",
     "options": [
       {
@@ -7113,7 +6943,7 @@ const QUESTIONS = [
   },
   {
     "id": 238,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "What is the fundamental architectural principle behind Command Query Responsibility Segregation (CQRS)?",
     "options": [
       {
@@ -7141,7 +6971,7 @@ const QUESTIONS = [
   },
   {
     "id": 239,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "Which TWO statements accurately characterize the Event Sourcing architectural pattern?",
     "options": [
       {
@@ -7170,7 +7000,7 @@ const QUESTIONS = [
   },
   {
     "id": 240,
-    "category": "Testing & Design",
+    "category": "SOLID & DDD",
     "question": "In Gregor Hohpe's Enterprise Integration Patterns (EIP), what is the role of a Content-Based Router versus a Splitter?",
     "options": [
       {
@@ -7195,8 +7025,7 @@ const QUESTIONS = [
     ],
     "requiredCount": 1,
     "explanation": "Why this is correct:\n• A content-based router inspects the message and chooses a channel. A splitter takes one message that contains several parts and emits one message per part. Neither rewrites the schema or joins messages.\n\nWhy other options are incorrect:\n• B swaps the router and the splitter.\n• C describes an aggregator and a deduplicator.\n• D describes a translator, and then gives the router’s job to the splitter."
-  }
-,
+  },
   {
     "id": 241,
     "category": "Docker & Kubernetes",

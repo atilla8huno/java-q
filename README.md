@@ -52,29 +52,27 @@ Navigation rules:
 
 - **Next** and **Previous** are always visible and unlocked, allowing free navigation between questions at any time without being blocked on wrong answers.
 - After submitting an answer (correct or incorrect), an **Answer again** button appears, allowing you to reset that question back to unanswered and practice it afresh.
-- Use the **Topic** dropdown to take a **Quick Exam 1–8** (each is 32 unique mixed questions covering the full bank with no overlap), filter by topic, select **Wrong Answers**, or select **Saved** to review questions you bookmarked.
+- Use the **Topic** dropdown to take a **Quick Exam 1–10** (each is 25 unique mixed questions covering the full bank with no overlap, and every exam includes every topic), filter by topic, select **Wrong Answers**, or select **Saved** to review questions you bookmarked.
 - The bookmark next to the topic name saves the current question for later. Click it again to remove it.
 - The stats header displays current question, score, live **Success %**, and total answered. **Reset progress** clears answers and score. Saved questions stay.
 
 ## Topics
 
-256 high-yield questions, plus 8 **Quick Exams** of 32 unique mixed questions each (every question appears in exactly one exam). Topics:
+250 high-yield questions, plus 10 **Quick Exams** of 25 unique mixed questions each (every question appears in exactly one exam, and every exam includes every topic). Topics:
 
-- Core Java (Inheritance, Overloading, String Pool, Try-With-Resources, Generics, Text Blocks)
-- Collections (PECS Wildcards, HashMaps, Unmodifiable Lists, Sequenced Collections)
-- Concurrency (ThreadLocal leaks, Volatile DCL, CompletableFuture, Virtual Threads, ForkJoinPool)
-- Streams & Functional (Lazy evaluation, Collectors.toMap, Optional best practices)
-- JVM & GC (Safepoints, Memory Layout, Metaspace, GC roots)
-- Spring & Hibernate (ProxyBeanMethods, Transactional propagation, N+1 problem)
-- REST & Web (HTTP semantics, Idempotency, Status codes)
-- Database (ACID, Isolation levels, Indexing)
-- Testing & Design (Clean architecture, TDD, Unit/Integration test doubles, SOLID principles: SRP, OCP, LSP, ISP, DIP; Domain-Driven Design: Entities, Value Objects, Aggregates, Domain vs Integration Events, Bounded Contexts, Anti-Corruption Layer, Specification; Enterprise Patterns: Unit of Work, Data Mapper vs Active Record, CQRS, Event Sourcing, EIP Content-Based Router & Splitter)
-- Design Patterns (Classic Gang of Four (GoF) Creational: Singleton, Factory Method, Abstract Factory, Builder, Prototype; Structural: Decorator, Facade, Composite, Bridge, Flyweight, Proxy, Adapter; Behavioral: Strategy, Observer, Command, Chain of Responsibility, State, Template Method, Iterator, Mediator, Memento, Visitor, Interpreter)
-- Docker & Kubernetes (Image vs container, Dockerfile layer cache, CMD vs ENTRYPOINT, multi-stage builds, volumes vs bind mounts; startup/liveness/readiness probes, graceful shutdown, CPU throttling vs OOMKilled, JVM memory vs the container limit, rolling updates, StatefulSet vs Deployment, DaemonSet, ClusterIP/NodePort/LoadBalancer, ConfigMaps and Secrets, Horizontal Pod Autoscaler, kubectl drain and PodDisruptionBudgets)
-- Modern Java (Records, Sealed Classes, Pattern Matching for Switch, Virtual Threads)
-- Staff Java & Kotlin (CompletableFuture exception handling, Virtual Thread Pinning in synchronized/JNI, Kotlin Coroutines vs Threads, Kotlin Platform Types & Nullability, LongAdder vs AtomicLong under contention, lateinit vs by lazy, Heap Dump & GC Log Leak Diagnostics, CountDownLatch vs CyclicBarrier vs Semaphore, Kotlin Data Classes, BlockingQueue implementations, JIT Compilation & Service Warm-up, Spring @Transactional Self-Invocation Proxy Trap, JPA N+1 Query Resolution, Spring Bean Lifecycle Callbacks, jstack Deadlock Analysis, Kotlin Coroutine Exception Propagation)
-- Architecture & System Design (Sync REST/gRPC vs Async Event-Driven, Cache Stampede / Thundering Herd mitigation, Caching Strategies: Cache-Aside vs Write-Through vs Write-Behind, Composite Index Leftmost Prefix Rule & Covering Indexes, Idempotent REST API Design, Horizontal Database Sharding Trade-offs, Token Bucket vs Sliding Window Rate Limiting, Circuit Breakers & Cascading Failures, URI Path vs Header API Versioning, HikariCP Connection Pool Sizing, Database-per-Service Microservice Challenges, Graceful Shutdown in Kubernetes, Disaster Recovery: RPO vs RTO, JWT Architecture & Revocation, At-Least-Once Delivery & Idempotent Consumers, L4 vs L7 Load Balancing)
-- Algorithms & Data Structures (Hash Table Collisions: Chaining vs Open Addressing, $O(1)$ LRU Cache Design with HashMap + Doubly Linked List, Binary Search Integer Overflow & Monotonicity, BFS vs DFS Traversal & Shortest Path, Floyd's Cycle Detection with Fast & Slow Pointers, Sliding Window Pattern, Top K Frequent Elements with Min-Heap, MergeSort vs TimSort vs QuickSort, Binary Search Tree In-Order Traversal, Trie (Prefix Tree) Lookup & Autocomplete, Stack vs Queue Optimal Use Cases, Adjacency List vs Matrix for Sparse Graphs, Dynamic Programming: Optimal Substructure & Overlapping Subproblems, Bit Manipulation: Powers of 2 with `n & (n - 1)`, Big-O Time & Call Stack Space Complexity Analysis)
+- Core Java & JVM (Inheritance, overloading, string pool, try-with-resources, generics, records, sealed classes, heap versus stack, garbage collection, safepoints, heap dumps, JIT warmup)
+- Collections & Streams (PECS wildcards, HashMap, unmodifiable lists, sequenced collections, lazy streams, `Collectors.toMap`, `Optional`)
+- Concurrency (ThreadLocal leaks, volatile double-checked locking, CompletableFuture, virtual threads, pinning, latches, ForkJoinPool)
+- Spring & Hibernate (ProxyBeanMethods, transactional propagation and the self-invocation proxy, bean lifecycle)
+- Kotlin (`val` versus `var`, extension functions, `object` and `companion object`, scope functions, `suspend`, coroutines, platform types, data classes)
+- HTTP & REST (HTTP method semantics, safe and idempotent methods, status codes, PUT versus PATCH, OAuth)
+- Databases (ACID, isolation anomalies, indexes and the leftmost prefix, N+1 queries, connection pool sizing, read-replica lag, slow-query diagnosis)
+- Build Tools (Maven scopes and transitive dependencies, the default lifecycle, `package` versus `install` versus `deploy`, phase bindings, the `clean` lifecycle, reactor builds, Gradle configuration versus `doLast`)
+- System Design (CAP, consistent hashing, cache stampede and cache strategies, sharding, multi-region active-passive versus active-active, partitioned logs and consumer groups, circuit breakers, rate limiting, at-least-once delivery)
+- Design Patterns (Gang of Four creational: Singleton, Factory Method, Abstract Factory, Builder, Prototype; structural: Decorator, Facade, Composite, Bridge, Flyweight, Proxy, Adapter; behavioral: Strategy, Observer, Command, Chain of Responsibility, State, Template Method, Iterator, Mediator, Memento, Visitor, Interpreter)
+- SOLID & DDD (test doubles, TDD, SOLID, entities and value objects, aggregates, domain versus integration events, bounded contexts, anti-corruption layer, unit of work, data mapper versus active record, CQRS, event sourcing)
+- Docker & Kubernetes (Image versus container, Dockerfile layer cache, CMD versus ENTRYPOINT, multi-stage builds, volumes versus bind mounts; probes, graceful shutdown, CPU throttling versus OOMKilled, rolling updates, StatefulSet, DaemonSet, Service types, ConfigMaps and Secrets, Horizontal Pod Autoscaler, kubectl drain and PodDisruptionBudgets)
+- Algorithms (Hash collisions, LRU cache, binary search, BFS versus DFS, Floyd cycle detection, sliding window, top-K with a heap, sorting, BST in-order traversal, trie, stack versus queue, adjacency list versus matrix)
 
 ## Project layout
 
@@ -92,7 +90,7 @@ Edit `questions.js`. Each item looks like:
 ```js
 {
   id: 1,
-  category: "Core Java",
+  category: "Core Java & JVM",
   question: "What typically causes a `StackOverflowError` in Java?",
   options: [
     { id: "A", text: "..." },
