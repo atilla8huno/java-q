@@ -7196,4 +7196,474 @@ const QUESTIONS = [
     "requiredCount": 1,
     "explanation": "Why this is correct:\n• Enterprise Integration Patterns (Gregor Hohpe & Bobby Woolf, Apache Camel / Spring Integration):\n  - Content-Based Router: Inspects the content of a message (payload fields or headers, e.g. `order.type == 'VIP'`) and routes it to the appropriate destination channel without modifying the message.\n  - Splitter: Takes a composite message containing multiple elements (e.g. an `Invoice` containing 5 line items) and breaks it down into individual messages so each element can be processed concurrently or independently.\n\nWhy other options are incorrect:\n• Data format transformation (JSON to XML) is the Message Translator pattern.\n• Combining multiple messages into a single message is the Aggregator pattern.\n• Filtering duplicate messages is the Idempotent Consumer / Message Deduplicator pattern."
   }
+,
+  {
+    "id": 241,
+    "category": "Kubernetes",
+    "question": "Which THREE statements accurately characterize the distinct roles of Startup, Liveness, and Readiness probes when running JVM applications in Kubernetes?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A failed Readiness probe immediately deletes the underlying container and triggers pod rescheduling to a different worker node."
+      },
+      {
+        "id": "B",
+        "text": "A Startup probe disables liveness and readiness checks until it succeeds, preventing Kubernetes from prematurely killing slow-starting JVM processes during warmup or schema migration."
+      },
+      {
+        "id": "C",
+        "text": "A failed Readiness probe removes the Pod from Service endpoints and load balancer pools without restarting the container, preventing user traffic from reaching an overloaded or initializing application."
+      },
+      {
+        "id": "D",
+        "text": "A failed Liveness probe causes the kubelet to restart the container in accordance with the pod's restartPolicy, recovering applications stuck in unrecoverable deadlocks or corrupted states."
+      },
+      {
+        "id": "E",
+        "text": "Liveness probes should query deep downstream dependencies like third-party payment gateways and primary databases so that the pod restarts whenever an external outage occurs."
+      }
+    ],
+    "correct": [
+      "B",
+      "C",
+      "D"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Startup Probe: Designed specifically for slow-starting legacy or JVM applications. All other probes (liveness and readiness) are disabled until the startup probe succeeds (e.g. `failureThreshold: 30`, `periodSeconds: 10` gives a 300s initialization window). This eliminates the anti-pattern of setting an enormous `initialDelaySeconds` on the liveness probe.\n• Readiness Probe: Signals whether the pod is ready to accept incoming network traffic. When a readiness probe fails, kubelet removes the pod's IP from the Endpoints / EndpointSlice of all matching Services. The container is NOT killed or restarted.\n• Liveness Probe: Signals whether the container process is alive and healthy. When it fails past `failureThreshold`, kubelet terminates and restarts the container.\n\nWhy other options are incorrect:\n• Readiness probe failure never restarts containers or triggers rescheduling; it only halts traffic routing.\n• Liveness probes must NEVER check external downstream dependencies (databases, third-party APIs). If a shared database experiences a blip or latency spike, deep liveness probes across the entire microservice fleet will fail simultaneously, causing cascading restarts (a restart storm) across all pods!"
+  },
+  {
+    "id": 242,
+    "category": "Kubernetes",
+    "question": "Why is a `preStop` sleep hook (e.g., `sleep 15`) commonly combined with graceful shutdown to achieve true zero-downtime rolling updates in Kubernetes?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Because Linux kernels prohibit processes from handling `SIGTERM` signals unless the container has been idle for at least 10 seconds."
+      },
+      {
+        "id": "B",
+        "text": "Because endpoint de-registration and kube-proxy iptables/IPVS rule propagation across all worker nodes happen asynchronously; a brief delay allows in-flight routing changes to settle before the application stops accepting connections."
+      },
+      {
+        "id": "C",
+        "text": "Because Kubernetes etcd database requires 15 seconds to flush Raft consensus logs before terminating any pod record."
+      },
+      {
+        "id": "D",
+        "text": "Because Spring Boot's JVM requires 15 seconds to serialize active heap objects to the host filesystem before shutdown."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• The Asynchronous Teardown Race Condition:\n  When a Pod is marked for deletion (e.g. during a `kubectl rollout`), two concurrent asynchronous events occur in Kubernetes:\n  1. Endpoint Controller removes the Pod IP from the Service's `Endpoints` / `EndpointSlice`, which must propagate across the network to kube-proxy and Ingress/Load Balancer controllers on all cluster nodes.\n  2. Kubelet simultaneously sends a `SIGTERM` signal to the container process.\n• If the application receives `SIGTERM` and immediately closes its listening socket before kube-proxy and external load balancers remove its IP, incoming client requests will still be routed to the dying pod, resulting in HTTP 502 Bad Gateway or connection reset errors!\n• The Solution: A `preStop` lifecycle hook (such as `exec: command: [\"/bin/sh\", \"-c\", \"sleep 15\"]`) blocks `SIGTERM` from reaching the application process for 15 seconds, allowing endpoint de-registration to complete cluster-wide while the pod continues servicing requests.\n\nWhy other options are incorrect:\n• Linux processes can intercept `SIGTERM` instantly without delay.\n• Etcd and JVM heap serialization have nothing to do with `preStop` delay mechanics."
+  },
+  {
+    "id": 243,
+    "category": "Kubernetes",
+    "question": "Which TWO statements correctly describe the behavior of CPU and memory requests and limits in Kubernetes?",
+    "options": [
+      {
+        "id": "A",
+        "text": "When a container exceeds its memory limit, the Linux cgroup OOM (Out of Memory) killer terminates the process immediately (typically reporting Exit Code 137)."
+      },
+      {
+        "id": "B",
+        "text": "When a container exceeds its CPU limit, Kubernetes immediately kills the pod and evacuates it to a different worker node."
+      },
+      {
+        "id": "C",
+        "text": "When a container reaches its CPU limit, the Linux Completely Fair Scheduler (CFS) throttles its CPU time via cgroup quota enforcement rather than terminating the container."
+      },
+      {
+        "id": "D",
+        "text": "A pod with different request and limit values for memory and CPU is classified into the Guaranteed Quality of Service (QoS) tier."
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Memory Limits & OOMKill: Memory is an incompressible resource. If a container allocates memory exceeding its `resources.limits.memory`, the Linux kernel cgroup OOM killer sends `SIGKILL` to the offending process. Kubernetes reports `OOMKilled` with exit code 137 (128 + 9 for SIGKILL).\n• CPU Limits & CFS Throttling: CPU is a compressible resource. Kubernetes uses Linux CFS (Completely Fair Scheduler) bandwidth control. If a container consumes more CPU cycles than its `resources.limits.cpu` within a CFS period (usually 100ms), threads are throttled (paused), resulting in latency spikes, but the process is NOT terminated!\n\nWhy other options are incorrect:\n• Reaching CPU limit throttles execution; it never kills or evacuates the pod.\n• Guaranteed QoS requires `requests` and `limits` to be explicitly set and strictly EQUAL for both CPU and memory across all containers in the pod. If requests are less than limits, the QoS class is Burstable; if no requests/limits are set, it is BestEffort."
+  },
+  {
+    "id": 244,
+    "category": "Kubernetes",
+    "question": "Why can a containerized Java microservice be terminated with Exit Code 137 (`OOMKilled`) even when Java heap metrics show utilization well below `-Xmx`?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Because Java Garbage Collectors require a dedicated secondary container to store serialized objects during compaction."
+      },
+      {
+        "id": "B",
+        "text": "Because Kubernetes terminates any container whose thread count exceeds the default Linux pid_max value of 32."
+      },
+      {
+        "id": "C",
+        "text": "Because JVM total memory consumption includes off-heap memory (Metaspace, thread stacks, JVM code cache, native memory buffers, and GC structures) that can exceed the container's cgroup memory limit."
+      },
+      {
+        "id": "D",
+        "text": "Because the JVM automatically shuts down whenever Docker or containerd restarts its network bridge interface."
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• JVM Memory vs Container Memory:\n  The container cgroup limit applies to the ENTIRE resident set size (RSS) of the OS process, NOT just the Java heap:\n  `Total Process Memory = Heap (-Xmx) + Metaspace + (Thread Count * -Xss) + Direct Byte Buffers (NIO) + Code Cache + GC internal data + Native C/C++ libraries`.\n• If a developer sets container memory limit to 1Gi and sets `-Xmx800m`, the remaining ~224MiB may be quickly overwhelmed by 200 thread stacks (200 * 1MB = 200MB), Metaspace (100MB+), and Netty direct buffers. The Linux kernel kills the container with Exit Code 137 even though heap usage is only 400MB!\n• Best Practice: Use `-XX:+UseContainerSupport` (default in modern JDKs), configure `-XX:MaxRAMPercentage=70.0` to leave headroom for off-heap allocations, and monitor container RSS alongside JVM heap.\n\nWhy other options are incorrect:\n• Garbage collectors operate entirely within the JVM process memory; they do not use secondary containers.\n• Linux `pid_max` is typically 32,768 to 4,194,304, not 32."
+  },
+  {
+    "id": 245,
+    "category": "Kubernetes",
+    "question": "In a Kubernetes Deployment with `replicas: 4`, `maxSurge: 25%`, and `maxUnavailable: 25%`, what are the maximum number of pods that can exist and the minimum number of available pods guaranteed during a rolling update?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Maximum 8 pods; minimum 2 available pods."
+      },
+      {
+        "id": "B",
+        "text": "Maximum 4 pods; minimum 4 available pods."
+      },
+      {
+        "id": "C",
+        "text": "Maximum 6 pods; minimum 1 available pod."
+      },
+      {
+        "id": "D",
+        "text": "Maximum 5 pods; minimum 3 available pods."
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Calculating RollingUpdate Constraints:\n  - Base Replicas = 4\n  - `maxSurge = 25%` of 4 = 1 pod. Maximum total pods allowed during rollout = `replicas + maxSurge = 4 + 1 = 5 pods`.\n  - `maxUnavailable = 25%` of 4 = 1 pod. Minimum available pods required at all times = `replicas - maxUnavailable = 4 - 1 = 3 pods`.\n• Workflow: Kubernetes creates 1 new pod (reaching 5). Once that new pod passes readiness checks, an old pod is terminated (dropping back to 4). It can also terminate 1 old pod immediately (down to 3) while spinning up new pods.\n\nWhy other options are incorrect:\n• 25% of 4 is 1, meaning maxSurge is 1 and maxUnavailable is 1. Maximum is 5 and minimum available is 3."
+  },
+  {
+    "id": 246,
+    "category": "Kubernetes",
+    "question": "Which TWO architectural characteristics make StatefulSets better suited than Deployments for distributed stateful systems like Kafka brokers or Cassandra nodes?",
+    "options": [
+      {
+        "id": "A",
+        "text": "StatefulSets run pods entirely in kernel space to bypass network socket overhead."
+      },
+      {
+        "id": "B",
+        "text": "StatefulSets provide stable, unique network identifiers (e.g. `kafka-0`, `kafka-1`) and ordered deployment, scaling, and rolling updates."
+      },
+      {
+        "id": "C",
+        "text": "StatefulSets automatically replicate database rows between pods without requiring application-level replication logic."
+      },
+      {
+        "id": "D",
+        "text": "Each replica in a StatefulSet receives its own dedicated PersistentVolume via `volumeClaimTemplates` that persists across pod rescheduling and restarts."
+      }
+    ],
+    "correct": [
+      "B",
+      "D"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• StatefulSet Guarantees:\n  1. Stable Network Identity: Pods have deterministic hostnames (`$(statefulset-name)-$(ordinal)`, e.g., `kafka-0`, `kafka-1`). When paired with a Headless Service, each pod gets a stable DNS A-record (`kafka-0.kafka-svc.default.svc.cluster.local`) that does not change if the pod restarts or moves to another node.\n  2. Stable Storage: `volumeClaimTemplates` provisions a dedicated `PersistentVolumeClaim` (PVC) for each ordinal replica (e.g., `data-kafka-0`). If `kafka-0` crashes and is recreated on another node, Kubernetes reattaches the exact same persistent storage volume (`data-kafka-0`).\n  3. Ordered Lifecycle: Pods are created from 0 to N-1 sequentially and terminated in reverse order (N-1 down to 0).\n\nWhy other options are incorrect:\n• StatefulSets run standard user-space containers; they do not run in kernel space.\n• Kubernetes manages infrastructure (storage, networking, compute); it does not perform application-level data replication between database rows."
+  },
+  {
+    "id": 247,
+    "category": "Kubernetes",
+    "question": "What is the primary operational distinction between a Kubernetes DaemonSet and a Deployment?",
+    "options": [
+      {
+        "id": "A",
+        "text": "DaemonSets run exclusively on control plane master nodes; Deployments run exclusively on worker nodes."
+      },
+      {
+        "id": "B",
+        "text": "A DaemonSet ensures that all (or some eligible) nodes run exactly one copy of a Pod, making it ideal for cluster-wide infrastructure agents like Fluentbit or node-exporter; a Deployment manages an arbitrary replica count distributed across available nodes."
+      },
+      {
+        "id": "C",
+        "text": "DaemonSets automatically restart pods on failures; Deployments terminate permanently upon container crash."
+      },
+      {
+        "id": "D",
+        "text": "DaemonSets cannot mount host filesystems or read container logs."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• DaemonSet vs Deployment:\n  - DaemonSet: Guarantees that every matching node in the cluster (or nodes selected by `nodeSelector`/taints) runs exactly one instance of the pod. As new nodes join the cluster, DaemonSet pods are automatically scheduled onto them; as nodes are removed, those pods are garbage-collected.\n  - Common Use Cases: Cluster logging agents (Fluentd, Promtail, Vector), node metrics collectors (Prometheus `node-exporter`), and network CNI plugins (Cilium, Calico).\n  - Deployment: Manages a declarative number of identical stateless application replicas, which the scheduler can place on any node (including multiple replicas on the same node).\n\nWhy other options are incorrect:\n• DaemonSets run across worker nodes, not just control plane nodes.\n• Both Deployments and DaemonSets restart failed containers based on pod restart policies.\n• DaemonSets frequently mount host paths (`hostPath`) specifically to read host logs (`/var/log`) and metrics (`/proc`)."
+  },
+  {
+    "id": 248,
+    "category": "Kubernetes",
+    "question": "What is the key functional difference between a standard Kubernetes Service (`ClusterIP`) and a Headless Service (`clusterIP: None`)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A Headless Service encrypts all TCP traffic using mTLS without requiring sidecar proxies."
+      },
+      {
+        "id": "B",
+        "text": "A standard ClusterIP Service is only accessible from outside the Kubernetes cluster via public internet routers."
+      },
+      {
+        "id": "C",
+        "text": "A Headless Service does not allocate a virtual cluster IP or perform proxy load balancing; DNS queries for the service return the individual IP addresses of all ready backend pods directly."
+      },
+      {
+        "id": "D",
+        "text": "A Headless Service disables DNS resolution within the cluster namespace."
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Headless Service (`clusterIP: None`):\n  - By setting `.spec.clusterIP: \"None\"`, Kubernetes does not allocate a virtual IP (VIP) for the service, and kube-proxy does NOT handle load balancing or create iptables/IPVS routing rules for it.\n  - DNS Behavior: When CoreDNS resolves a Headless Service name, it returns multiple `A`/`AAAA` records containing the direct IP addresses of all matching pods currently in the `Ready` state (or SRV records for named ports).\n  - Use Cases: Direct peer-to-peer discovery and client-side load balancing in distributed databases (e.g., MongoDB replica sets, Kafka broker discovery, Elasticsearch clusters).\n\nWhy other options are incorrect:\n• Standard ClusterIP is internal-only to the cluster.\n• Headless services do not provide mTLS encryption.\n• Headless services rely heavily on CoreDNS; they do not disable DNS."
+  },
+  {
+    "id": 249,
+    "category": "Kubernetes",
+    "question": "In the Kubernetes Gateway API (the modern evolution of Ingress), which THREE distinct resources separate role-oriented concerns across infrastructure, cluster operations, and application development?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`GatewayClass` (defined by infrastructure providers to describe controller implementations and templates)."
+      },
+      {
+        "id": "B",
+        "text": "`PodClass` (managed by container runtimes to configure cgroup CPU limits)."
+      },
+      {
+        "id": "C",
+        "text": "`Gateway` (managed by cluster operators to define point-of-entry listeners, ports, and TLS configurations)."
+      },
+      {
+        "id": "D",
+        "text": "`HTTPRoute` / `GRPCRoute` (managed by application developers to define routing rules, path matches, and backend service destinations)."
+      },
+      {
+        "id": "E",
+        "text": "`ServiceMeshRoute` (managed by cloud hypervisors to assign hardware MAC addresses)."
+      }
+    ],
+    "correct": [
+      "A",
+      "C",
+      "D"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Gateway API Role-Oriented Design:\n  1. `GatewayClass` (Infrastructure Provider): Specifies the controller implementation (e.g. Envoy, Istio, NGINX) and cluster-level capabilities.\n  2. `Gateway` (Cluster Operator / Platform Admin): Declares an instance of an ingress/gateway point of entry, binding to a `GatewayClass`, defining listening IP/ports, TLS certificates, and allowed route namespaces.\n  3. Route resources (`HTTPRoute`, `GRPCRoute`, `TCPRoute`, `TLSRoute`) (Application Developer): Attached to a `Gateway`, defining path-based rules, header filters, traffic splitting (canary weights), and routing to target Services.\n\nWhy other options are incorrect:\n• `PodClass` and `ServiceMeshRoute` are not resources in the Kubernetes Gateway API specification."
+  },
+  {
+    "id": 250,
+    "category": "Kubernetes",
+    "question": "Which statement accurately describes how Kubernetes NetworkPolicies enforce network traffic segmentation between Pods?",
+    "options": [
+      {
+        "id": "A",
+        "text": "NetworkPolicies are applied by the Linux kernel automatically without requiring any third-party Container Network Interface (CNI) plugin."
+      },
+      {
+        "id": "B",
+        "text": "By default, all pods in Kubernetes can communicate with each other; once a NetworkPolicy selects a pod, that pod becomes isolated and will drop any traffic not explicitly permitted by matching ingress or egress rules."
+      },
+      {
+        "id": "C",
+        "text": "NetworkPolicies can only restrict traffic based on external public IP addresses, never based on Kubernetes pod labels or namespaces."
+      },
+      {
+        "id": "D",
+        "text": "NetworkPolicies operate exclusively at Layer 7 to inspect and parse HTTP JSON request bodies."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Kubernetes NetworkPolicy Mechanics:\n  - Default Behavior: Flat, open network model. By default, pods are non-isolated: any pod in any namespace can send traffic to and receive traffic from any other pod.\n  - Isolation upon Selection: As soon as a pod is matched by `.spec.podSelector` in a NetworkPolicy, it switches to \"isolated\" for the specified policy types (`Ingress`, `Egress`). All traffic not explicitly whitelisted by a rule is dropped.\n  - CNI Plugin Requirement: NetworkPolicy resources are specifications only; enforcing them requires a network CNI plugin that supports policy enforcement (e.g., Calico, Cilium, Weave Net). If using a CNI without policy support (like basic flannel), NetworkPolicies are silently ignored!\n\nWhy other options are incorrect:\n• NetworkPolicies require a capable CNI provider (Calico, Cilium).\n• NetworkPolicies extensively use `podSelector` and `namespaceSelector` for label-based rules.\n• NetworkPolicies operate at Layer 3 / Layer 4 (IP addresses and TCP/UDP ports), not L7 JSON payload inspection."
+  },
+  {
+    "id": 251,
+    "category": "Kubernetes",
+    "question": "Which TWO statements accurately contrast consuming ConfigMaps/Secrets as Environment Variables versus as Mounted Volumes in a Pod?",
+    "options": [
+      {
+        "id": "A",
+        "text": "ConfigMaps mounted as volumes are updated automatically (via atomic symlink swaps to `..data`) when the ConfigMap is modified, whereas environment variables are static and never update without restarting the pod."
+      },
+      {
+        "id": "B",
+        "text": "Environment variables update dynamically within running JVM processes without requiring any container restart or application refresh."
+      },
+      {
+        "id": "C",
+        "text": "Kubernetes Secrets are stored in plaintext base64 encoding in the API manifest by default and require enabling Encryption at Rest in etcd for true cryptographic protection."
+      },
+      {
+        "id": "D",
+        "text": "Secrets mounted as volumes are written directly to unencrypted persistent hard disk drives on the worker node."
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Environment Variables vs Volume Mounts:\n  - Environment Variables: Injected at container process creation (`env` / `envFrom`). They are completely static for the lifetime of the process. If the underlying ConfigMap changes, the process never sees the update unless the Pod is restarted.\n  - Volume Mounts (`volumes` / `volumeMounts`): Kubelet periodically syncs changes. When the ConfigMap/Secret changes, kubelet atomically updates the files using symlinks (`..data -> ..data_tmp`). Applications that watch the filesystem can reload configuration with zero downtime!\n• Secrets Security:\n  - Kubernetes Secret values are merely Base64-encoded in YAML/JSON manifests—Base64 is an encoding, NOT encryption! Anyone with RBAC access to read secrets can decode them with `base64 -d`.\n  - Real cluster security requires enabling Encryption at Rest for the API server / etcd (using KMS plugins like AWS KMS, Google Cloud KMS, or HashiCorp Vault).\n\nWhy other options are incorrect:\n• Environment variables cannot update dynamically within a running JVM process.\n• Secret volumes are backed by in-memory `tmpfs` storage on the node, not persistent hard disks."
+  },
+  {
+    "id": 252,
+    "category": "Kubernetes",
+    "question": "Why is Kubernetes Event-driven Autoscaling (KEDA) frequently utilized alongside the Horizontal Pod Autoscaler (HPA) for backend event consumers?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Because HPA cannot run on cloud-managed Kubernetes distributions like EKS or GKE."
+      },
+      {
+        "id": "B",
+        "text": "Because KEDA replaces the Linux kernel CFS scheduler to prioritize batch threads."
+      },
+      {
+        "id": "C",
+        "text": "Because standard HPA only scales based on container resource metrics (CPU and Memory) via Metrics Server, whereas KEDA provides event-driven scalers capable of scaling pods based on external metrics like Kafka consumer group lag or RabbitMQ queue depth (even down to zero replicas)."
+      },
+      {
+        "id": "D",
+        "text": "Because HPA requires applications to be written in Go, whereas KEDA supports Java."
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• HPA Limitations with Message Queues:\n  - Standard HPA queries the Kubernetes Metrics Server, which collects resource consumption (CPU and Memory).\n  - Event consumers (e.g. Kafka or SQS consumers) often consume very low CPU while waiting on network I/O or processing records slowly. Even when consumer lag spikes to millions of unread records, CPU utilization may remain low, meaning HPA will NOT scale out!\n• KEDA (Kubernetes Event-driven Autoscaling):\n  - Acts as a custom metrics adapter for HPA.\n  - Queries external systems (Kafka, RabbitMQ, AWS SQS, Azure Service Bus, Redis) directly for event counts or consumer lag.\n  - Can scale pods from 0 to 1 when events arrive (which standard HPA cannot do, as it cannot scale from 0 without custom metrics), and delegates active scaling (1 to N) back to standard HPA.\n\nWhy other options are incorrect:\n• HPA runs natively on all standard Kubernetes distributions (EKS, GKE, AKS, OpenShift).\n• KEDA is language-agnostic and does not replace the Linux CFS scheduler."
+  },
+  {
+    "id": 253,
+    "category": "Kubernetes",
+    "question": "Which scheduling feature should you configure to ensure that replicas of a mission-critical backend service are evenly distributed across multiple Availability Zones without co-locating all pods on a single node?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`nodeSelector` targeting a single static node name."
+      },
+      {
+        "id": "B",
+        "text": "`topologySpreadConstraints` with `topologyKey: topology.kubernetes.io/zone` combined with `podAntiAffinity` on the hostname."
+      },
+      {
+        "id": "C",
+        "text": "Setting `hostNetwork: true` on the pod specification."
+      },
+      {
+        "id": "D",
+        "text": "Configuring a single PersistentVolume without a StorageClass."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• High Availability Scheduling in Kubernetes:\n  1. `topologySpreadConstraints`: Distributes pods evenly across failure domains (e.g., cloud Availability Zones) using standard labels like `topology.kubernetes.io/zone`. Setting `maxSkew: 1` and `whenUnsatisfiable: DoNotSchedule` guarantees an even spread.\n  2. `podAntiAffinity`: Prevents multiple instances of the same service from being scheduled onto the same physical worker node (`topologyKey: kubernetes.io/hostname`). If a single node crashes or undergoes kernel patching, only one replica is impacted.\n\nWhy other options are incorrect:\n• `nodeSelector` targeting one node concentrates all replicas onto a single point of failure.\n• `hostNetwork: true` exposes pod network ports directly to the node network, causing port conflicts between replicas."
+  },
+  {
+    "id": 254,
+    "category": "Kubernetes",
+    "question": "During planned worker node maintenance, how do Node Taints, Pod Tolerations, and PodDisruptionBudgets (PDBs) interact when executing `kubectl drain <node>`?",
+    "options": [
+      {
+        "id": "A",
+        "text": "`kubectl drain` cordons the node and evicts pods using the Eviction API, which respects PodDisruptionBudgets (blocking eviction if minimum available replicas would be violated); pods without matching tolerations cannot be rescheduled back onto tainted nodes."
+      },
+      {
+        "id": "B",
+        "text": "`kubectl drain` forcibly terminates all pods on the cluster within 1 millisecond and ignores PDBs."
+      },
+      {
+        "id": "C",
+        "text": "PDBs prevent nodes from ever being updated or rebooted by cluster administrators."
+      },
+      {
+        "id": "D",
+        "text": "Tolerations allow pods to run without CPU or memory requests."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Safe Maintenance Workflow with `kubectl drain`:\n  1. Cordoning: The node is marked `SchedulingDisabled` (tainted with `node.kubernetes.io/unschedulable:NoSchedule`).\n  2. Safe Eviction: `kubectl drain` uses the Kubernetes Eviction API rather than raw pod deletion.\n  3. Respecting PDB (`PodDisruptionBudget`): The Eviction API checks active PDBs (e.g. `minAvailable: 2` or `maxUnavailable: 1`). If evicting a pod would violate its PDB, eviction is blocked until replacements are healthy elsewhere!\n  4. Rescheduling: The evicted pods are rescheduled onto other nodes. They will not land on tainted nodes unless they have matching `tolerations`.\n\nWhy other options are incorrect:\n• `kubectl drain` uses the Eviction API and respects PDBs.\n• PDBs protect service availability; they do not permanently block maintenance."
+  },
+  {
+    "id": 255,
+    "category": "Kubernetes",
+    "question": "What is the difference between `ReadWriteOnce` (RWO), `ReadOnlyMany` (ROX), and `ReadWriteMany` (RWX) AccessModes for Persistent Volumes in Kubernetes?",
+    "options": [
+      {
+        "id": "A",
+        "text": "RWO allows a single container thread to write; RWX allows multiple JVM threads to write concurrently."
+      },
+      {
+        "id": "B",
+        "text": "RWO allows the volume to be mounted as read-write by a single node; ROX allows read-only mounting by many nodes; RWX allows read-write mounting simultaneously by many nodes."
+      },
+      {
+        "id": "C",
+        "text": "RWO is for SSD drives; RWX is exclusively for tape backup drives."
+      },
+      {
+        "id": "D",
+        "text": "RWO volumes can be written to once and become immutable forever."
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• Persistent Volume Access Modes (Kubernetes Storage):\n  Access modes define how many NODES (not pods or threads) can mount the volume simultaneously:\n  - `ReadWriteOnce` (RWO): Can be mounted as read-write by a SINGLE node. Typical of block storage (AWS EBS, GCP Persistent Disk, Azure Managed Disks). Multiple pods running on the same node can share it, but pods on different nodes cannot!\n  - `ReadOnlyMany` (ROX): Can be mounted as read-only by MANY nodes simultaneously.\n  - `ReadWriteMany` (RWX): Can be mounted as read-write by MANY nodes simultaneously. Typical of network file systems (NFS, AWS EFS, CephFS).\n\nWhy other options are incorrect:\n• Access modes refer to node-level mounting, not thread concurrency.\n• RWO does not make storage write-once/immutable (WORM)."
+  },
+  {
+    "id": 256,
+    "category": "Kubernetes",
+    "question": "Which THREE security configurations align with the Kubernetes Pod Security Standards (Restricted profile) and zero-trust principles?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Setting `securityContext.runAsNonRoot: true` to prevent containers from executing processes with UID 0 (root)."
+      },
+      {
+        "id": "B",
+        "text": "Granting `privileged: true` to allow containers direct access to host devices and kernel capabilities."
+      },
+      {
+        "id": "C",
+        "text": "Setting `securityContext.readOnlyRootFilesystem: true` to prevent attackers from writing malicious binaries or modifying container root binaries."
+      },
+      {
+        "id": "D",
+        "text": "Disabling automated token injection via `automountServiceAccountToken: false` when a pod does not need to talk to the Kubernetes API server."
+      },
+      {
+        "id": "E",
+        "text": "Running all pods with `hostPID: true` and `hostIPC: true` to bypass Linux kernel namespaces."
+      }
+    ],
+    "correct": [
+      "A",
+      "C",
+      "D"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• Pod Security Standards (Restricted Profile) & Hardening:\n  1. `runAsNonRoot: true` & `runAsUser`: Enforces that the container process runs with a non-zero UID. If an attacker achieves remote code execution (RCE), they do not gain root access inside the container.\n  2. `readOnlyRootFilesystem: true`: Enforces an immutable container filesystem. Attackers cannot download malware, modify system libraries, or overwrite scripts (temporary writeable scratch space can be mounted via in-memory `emptyDir` volumes).\n  3. `automountServiceAccountToken: false`: By default, Kubernetes mounts a JWT API token in every pod at `/var/run/secrets/kubernetes.io/serviceaccount/token`. Disabling it prevents attackers from using stolen pod credentials against the cluster API.\n\nWhy other options are incorrect:\n• `privileged: true`, `hostPID: true`, and `hostIPC: true` completely destroy container isolation, granting full root control over the host node."
+  }
 ];
