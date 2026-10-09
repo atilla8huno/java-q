@@ -189,6 +189,111 @@
     return left.every((value, i) => value === right[i]);
   }
 
+  const DISPLAY_LETTERS = ["A", "B", "C", "D", "E"];
+  const ARTICLE_NEXT = new Set(["detached", "subclass", "signed"]);
+
+  function canonicalDeal(question) {
+    return {
+      order: question.options.map((option) => option.id),
+      variants: Object.fromEntries(question.options.map((option) => [option.id, 0])),
+    };
+  }
+
+  function storedDeal(question, rec) {
+    const deal = rec && rec.deal;
+    const ids = question.options.map((option) => option.id);
+    if (!deal || !Array.isArray(deal.order) || !deal.variants) return canonicalDeal(question);
+    const sameSlots = deal.order.length === ids.length && ids.every((id) => deal.order.includes(id));
+    if (!sameSlots) return canonicalDeal(question);
+    return deal;
+  }
+
+  function variantText(option, index) {
+    const variants = Array.isArray(option.variants) && option.variants.length ? option.variants : [option.text];
+    const pick = Number.isInteger(index) && index >= 0 && index < variants.length ? index : 0;
+    return variants[pick];
+  }
+
+  function displayItems(question, deal) {
+    return deal.order.map((slotId, index) => {
+      const slot = question.options.find((option) => option.id === slotId);
+      return {
+        letter: DISPLAY_LETTERS[index],
+        slotId,
+        text: variantText(slot, deal.variants[slotId]),
+        correct: question.correct.includes(slotId),
+      };
+    });
+  }
+
+  function shuffleIds(ids) {
+    const copy = [...ids];
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function nextDeal(question, previous) {
+    const variants = {};
+    for (const option of question.options) {
+      const count = Array.isArray(option.variants) && option.variants.length ? option.variants.length : 1;
+      const last = previous.variants[option.id] ?? 0;
+      if (count <= 1) {
+        variants[option.id] = 0;
+        continue;
+      }
+      let pick = last;
+      while (pick === last) pick = Math.floor(Math.random() * count);
+      variants[option.id] = pick;
+    }
+    let order = shuffleIds(question.options.map((option) => option.id));
+    if (order.length > 1 && order.every((id, index) => id === previous.order[index])) {
+      order = order.slice(1).concat(order[0]);
+    }
+    return { order, variants };
+  }
+
+  function remapExplanation(text, items) {
+    const slotToLetter = Object.fromEntries(items.map((item) => [item.slotId, item.letter]));
+    const marker = "Why other options are incorrect:";
+    const at = text.indexOf(marker);
+    if (at < 0) return text;
+    const head = text.slice(0, at + marker.length);
+    const tail = text.slice(at + marker.length).replace(
+      /^• ([A-E])(?: and ([A-E]))?(?= )/gm,
+      (match, first, second, offset, source) => {
+        const word = (source.slice(offset + match.length).match(/^ (\S+)/) || [])[1] || "";
+        if (/^[A-Z]/.test(word) || ARTICLE_NEXT.has(word) || !slotToLetter[first]) return match;
+        if (!second) return `• ${slotToLetter[first]}`;
+        if (!slotToLetter[second]) return match;
+        const shown = [slotToLetter[first], slotToLetter[second]].sort();
+        return `• ${shown[0]} and ${shown[1]}`;
+      },
+    );
+    return head + tail;
+  }
+
+  function explanationForDeal(question, items, deal) {
+    const wrongItems = items.filter((item) => !item.correct);
+    const anyNewWrong = wrongItems.some((item) => (deal.variants[item.slotId] || 0) !== 0);
+    if (!anyNewWrong) return remapExplanation(question.explanation, items);
+
+    const marker = "Why other options are incorrect:";
+    const at = question.explanation.indexOf(marker);
+    const correctPart = (at < 0 ? question.explanation : question.explanation.slice(0, at)).trimEnd();
+    const bullets = [];
+    for (const item of wrongItems) {
+      const slot = question.options.find((option) => option.id === item.slotId);
+      const index = deal.variants[item.slotId] || 0;
+      const reason = slot && Array.isArray(slot.reasons) ? slot.reasons[index] : "";
+      if (!reason) return remapExplanation(question.explanation, items);
+      bullets.push(`• ${item.letter} ${reason}`);
+    }
+    return `${correctPart}\n\nWhy other options are incorrect:\n${bullets.join("\n")}`;
+  }
+
   function scoreSummary() {
     const pool = filteredQuestions();
     let correct = 0;
@@ -264,7 +369,7 @@
     return question.requiredCount || 1;
   }
 
-  function optionClass(question, optionId, rec) {
+  function optionClass(question, optionId, rec, isCorrectSlot) {
     const selected = rec.selected.includes(optionId);
     const max = requiredCount(question);
     const atLimit = !rec.submitted && max > 1 && rec.selected.length >= max && !selected;
@@ -272,9 +377,8 @@
     if (selected) classes.push("selected");
     if (atLimit) classes.push("at-limit");
     if (rec.submitted) {
-      const isCorrect = question.correct.includes(optionId);
-      if (isCorrect) classes.push("correct");
-      if (selected && !isCorrect) classes.push("incorrect");
+      if (isCorrectSlot) classes.push("correct");
+      if (selected && !isCorrectSlot) classes.push("incorrect");
       classes.push("disabled");
     }
     return classes.join(" ");
@@ -308,6 +412,8 @@
     }
 
     const rec = answerRecord(question.id);
+    const deal = storedDeal(question, rec);
+    const items = displayItems(question, deal);
     const max = requiredCount(question);
     const picked = rec.selected.length;
     els.categoryBadge.textContent = question.category;
@@ -330,19 +436,19 @@
     els.questionText.innerHTML = formatRichText(question.question);
 
     els.optionsForm.innerHTML = "";
-    question.options.forEach((option) => {
+    items.forEach((item) => {
       const button = document.createElement("button");
-      const selected = rec.selected.includes(option.id);
+      const selected = rec.selected.includes(item.letter);
       const atLimit = !rec.submitted && max > 1 && picked >= max && !selected;
       button.type = "button";
-      button.className = optionClass(question, option.id, rec);
+      button.className = optionClass(question, item.letter, rec, item.correct);
       button.disabled = rec.submitted || atLimit;
       button.setAttribute("aria-disabled", button.disabled ? "true" : "false");
       button.innerHTML = `
-        <span class="option-id">${option.id}</span>
-        <span class="option-text">${formatRichText(option.text)}</span>
+        <span class="option-id">${item.letter}</span>
+        <span class="option-text">${formatRichText(item.text)}</span>
       `;
-      button.addEventListener("click", () => toggleOption(question, option.id));
+      button.addEventListener("click", () => toggleOption(question, item.letter));
       els.optionsForm.appendChild(button);
     });
 
@@ -351,7 +457,7 @@
       els.feedback.classList.toggle("correct", rec.correct);
       els.feedback.classList.toggle("incorrect", !rec.correct);
       els.feedbackBanner.textContent = rec.correct ? "Correct" : "Incorrect";
-      els.explanationText.innerHTML = formatRichText(question.explanation);
+      els.explanationText.innerHTML = formatRichText(explanationForDeal(question, items, deal));
     } else {
       els.feedback.classList.add("hidden");
     }
@@ -386,7 +492,9 @@
     if (!question) return;
     const rec = answerRecord(question.id);
     if (rec.selected.length !== requiredCount(question)) return;
-    const correct = arraysEqual(rec.selected, question.correct);
+    const items = displayItems(question, storedDeal(question, rec));
+    const correctLetters = items.filter((item) => item.correct).map((item) => item.letter);
+    const correct = arraysEqual(rec.selected, correctLetters);
     setAnswer(question.id, {
       submitted: true,
       correct,
@@ -397,7 +505,13 @@
   function resetCurrentQuestion() {
     const question = currentQuestion();
     if (!question) return;
-    delete state.answers[question.id];
+    const previous = storedDeal(question, state.answers[question.id]);
+    state.answers[question.id] = {
+      selected: [],
+      submitted: false,
+      correct: false,
+      deal: nextDeal(question, previous),
+    };
     persistState();
     render();
   }

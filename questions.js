@@ -6,19 +6,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Method invocation frames accumulate continuously on the thread stack without returning, exceeding `-Xss` capacity."
+        "variants": [
+          "Method invocation frames accumulate continuously on the thread stack without returning, exceeding `-Xss` capacity.",
+          "Method frames keep accumulating on the thread stack and never return, until they exceed the `-Xss` capacity.",
+          "Invocation frames pile up continuously on the thread stack without returning, overflowing the configured `-Xss` capacity."
+        ]
       },
       {
         "id": "B",
-        "text": "The JVM fails to allocate space in the young generation heap despite executing repeated garbage collection cycles."
+        "reasons": [
+          "Failing to allocate young-generation space after repeated garbage collection is a heap `OutOfMemoryError`, not a `StackOverflowError`.",
+          "A tight infinite loop that makes no further calls stays in one frame, so it does not exhaust the thread stack or throw `StackOverflowError`.",
+          "A Java array is allocated on the heap, so a large local array does not consume `-Xss` stack capacity or by itself raise `StackOverflowError`."
+        ],
+        "variants": [
+          "The JVM fails to allocate space in the young generation heap despite executing repeated garbage collection cycles.",
+          "A single method spinning in a tight infinite loop is reported as a `StackOverflowError` even though it makes no further calls.",
+          "A very large primitive array declared as a local variable is stored on the thread stack and overflows the `-Xss` limit."
+        ]
       },
       {
         "id": "C",
-        "text": "A thread's call stack exhausts its configured memory limit, typically caused by deep or unbounded recursion."
+        "variants": [
+          "A thread's call stack exhausts its configured memory limit, typically caused by deep or unbounded recursion.",
+          "Deep or unbounded recursion typically exhausts a thread's configured call-stack memory limit.",
+          "A thread runs out of its configured stack memory, usually because recursion is too deep or never ends."
+        ]
       },
       {
         "id": "D",
-        "text": "Native memory allocated for Metaspace reaches its configured maximum limit while defining dynamic class metadata."
+        "reasons": [
+          "Reaching the Metaspace limit while defining class metadata throws `OutOfMemoryError`, not `StackOverflowError`.",
+          "Failing to start more threads because native memory is exhausted is an `OutOfMemoryError`, not a stack overflow on a thread that is already running.",
+          "Running out of native memory for direct byte buffers is an off-heap allocation failure, not a thread call stack exceeding its limit."
+        ],
+        "variants": [
+          "Native memory allocated for Metaspace reaches its configured maximum limit while defining dynamic class metadata.",
+          "Creating a great many threads exhausts native memory reserved for stacks and is reported as `StackOverflowError`.",
+          "Allocating many direct byte buffers exhausts off-heap native memory and the JVM surfaces that as `StackOverflowError`."
+        ]
       }
     ],
     "correct": [
@@ -35,23 +61,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Packages prevent namespace collisions between classes that share identical simple names in different libraries."
+        "variants": [
+          "Packages prevent namespace collisions between classes that share identical simple names in different libraries.",
+          "Packages stop classes that share one simple name in different libraries from colliding in a single namespace.",
+          "Identical simple class names from separate libraries avoid collision because each package is its own namespace."
+        ]
       },
       {
         "id": "B",
-        "text": "Subpackages in Java are independent namespaces and do not inherit access privileges from enclosing parent packages."
+        "variants": [
+          "Subpackages in Java are independent namespaces and do not inherit access privileges from enclosing parent packages.",
+          "A Java subpackage is an independent namespace and gains no access privileges from the package that encloses it.",
+          "Enclosing parent packages grant no access privileges to subpackages, which remain separate namespaces of their own."
+        ]
       },
       {
         "id": "C",
-        "text": "Packages establish access control boundaries via default package-private visibility for classes and class members."
+        "variants": [
+          "Packages establish access control boundaries via default package-private visibility for classes and class members.",
+          "Package-private default visibility on classes and members is how packages form their access-control boundaries.",
+          "Packages create access-control boundaries through default package-private visibility of both classes and members."
+        ]
       },
       {
         "id": "D",
-        "text": "Declaring a class in a subpackage automatically grants protected access to members in the enclosing parent package."
+        "reasons": [
+          "Placing a class in a subpackage does not give it `protected` access to members of the enclosing parent package.",
+          "An import only creates a short name in the source file and never grants access to `private` fields of the imported types.",
+          "Package-private access follows the package name and class loader, so classes from different JARs in the same package can still share those members."
+        ],
+        "variants": [
+          "Declaring a class in a subpackage automatically grants protected access to members in the enclosing parent package.",
+          "A wildcard import of a package lets the importing compilation unit read `private` fields of every imported type.",
+          "Two classes that share a package name but come from different JAR files cannot access each other's package-private members."
+        ]
       },
       {
         "id": "E",
-        "text": "Packages completely eliminate the necessity of declaring access modifiers like `private` on class instance fields."
+        "reasons": [
+          "A package does not remove the need for modifiers such as `private`, because package-private fields are still visible throughout that package.",
+          "A `public` class does not change the access of its fields, and the compiler still enforces whatever modifier each field declares.",
+          "Access modifiers apply to fields as well as methods, and an instance field is not automatically visible to every class in the application."
+        ],
+        "variants": [
+          "Packages completely eliminate the necessity of declaring access modifiers like `private` on class instance fields.",
+          "Making a class `public` makes every instance field `public` as well, so field modifiers are ignored by the compiler.",
+          "Access modifiers apply only to methods, and instance fields stay visible to every class in the same application."
+        ]
       }
     ],
     "correct": [
@@ -69,19 +125,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Provide public getter and setter methods while enforcing strict non-null validation checks on all incoming parameters."
+        "reasons": [
+          "Public setters still allow mutation after construction, so non-null checks on parameters do not make the class immutable.",
+          "A `public final` field can still point at a mutable object, and `final` does not stop callers from changing that object's contents.",
+          "Returning a live internal collection lets callers mutate it, so a comment that the class is immutable does not actually protect that state."
+        ],
+        "variants": [
+          "Provide public getter and setter methods while enforcing strict non-null validation checks on all incoming parameters.",
+          "Expose every field as `public final` and rely on `final` to stop callers from mutating objects held in those fields.",
+          "Document the class as immutable and return the live internal collections from getters, trusting callers not to modify them."
+        ]
       },
       {
         "id": "B",
-        "text": "Declare all fields `private` and `final`, and perform defensive copies of all mutable input and output references."
+        "variants": [
+          "Declare all fields `private` and `final`, and perform defensive copies of all mutable input and output references.",
+          "Make every field `private` and `final`, and defensively copy each mutable reference that enters or leaves the object.",
+          "Keep all fields `private` and `final`, and copy mutable inputs and outputs so callers never retain those live references."
+        ]
       },
       {
         "id": "C",
-        "text": "Declare the class `final` so that subclasses cannot override methods to introduce mutable state or expose fields."
+        "variants": [
+          "Declare the class `final` so that subclasses cannot override methods to introduce mutable state or expose fields.",
+          "Make the class `final` so subclasses cannot override methods in ways that add mutable state or reveal fields.",
+          "A `final` class blocks subclasses from overriding methods to expose fields or to introduce mutable state."
+        ]
       },
       {
         "id": "D",
-        "text": "Declare all methods `synchronized` to prevent concurrent threads from mutating internal state during read operations."
+        "reasons": [
+          "Synchronizing every method does not stop the object from mutating; it only serializes access, so the class can still change.",
+          "Writing a reference to a `volatile` field publishes that reference safely, but it does not freeze the object's fields against later mutation.",
+          "A `ConcurrentHashMap` synchronizes its own table operations and does not make the objects stored in it immutable."
+        ],
+        "variants": [
+          "Declare all methods `synchronized` to prevent concurrent threads from mutating internal state during read operations.",
+          "Publish each instance through a `volatile` field so later readers observe a frozen, unchangeable snapshot of it.",
+          "Store instances in a `ConcurrentHashMap`, whose concurrency controls make each stored object immutable."
+        ]
       }
     ],
     "correct": [
@@ -98,19 +180,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`StringBuilder` overrides `equals()` and `hashCode()` for content equality; `StringBuffer` inherits reference identity."
+        "reasons": [
+          "Neither `StringBuilder` nor `StringBuffer` overrides `equals()` or `hashCode()` for content; both inherit identity comparison from `Object`.",
+          "`StringBuilder` does not extend `StringBuffer`; the two classes are separate subtypes of `AbstractStringBuilder`.",
+          "Both classes provide comparable `append` overloads, including `CharSequence`, so `StringBuffer` is not limited to `String`."
+        ],
+        "variants": [
+          "`StringBuilder` overrides `equals()` and `hashCode()` for content equality; `StringBuffer` inherits reference identity.",
+          "`StringBuilder` is a subclass of `StringBuffer` and simply drops synchronization from the mutators it inherits.",
+          "`StringBuffer` can append only `String` values, whereas `StringBuilder` can append any `CharSequence`."
+        ]
       },
       {
         "id": "B",
-        "text": "`StringBuffer` stores characters in the heap string pool; `StringBuilder` stores character sequences on the stack."
+        "reasons": [
+          "Neither class stores its working buffer in the intern pool or on the stack; both keep a resizable array in the heap.",
+          "Both classes store characters in one resizable array, and `StringBuffer` is not implemented as a linked list of chunks.",
+          "Calling `append` on either class updates a private buffer and does not place that buffer into the string intern pool."
+        ],
+        "variants": [
+          "`StringBuffer` stores characters in the heap string pool; `StringBuilder` stores character sequences on the stack.",
+          "`StringBuffer` keeps characters in a linked list of chunks, while `StringBuilder` uses one contiguous array.",
+          "`StringBuilder` interns its buffer on every `append` call, while `StringBuffer` keeps a private buffer until `toString()`."
+        ]
       },
       {
         "id": "C",
-        "text": "`StringBuilder` is unsynchronized and faster, making it preferred for single-threaded string construction operations."
+        "variants": [
+          "`StringBuilder` is unsynchronized and faster, making it preferred for single-threaded string construction operations.",
+          "`StringBuilder` skips synchronization and is faster, so it is preferred when one thread builds a string.",
+          "For single-threaded string construction, unsynchronized `StringBuilder` is the faster and preferred choice."
+        ]
       },
       {
         "id": "D",
-        "text": "`StringBuffer` methods are synchronized for thread safety, incurring intrinsic monitor lock overhead on invocations."
+        "variants": [
+          "`StringBuffer` methods are synchronized for thread safety, incurring intrinsic monitor lock overhead on invocations.",
+          "`StringBuffer` synchronizes its methods for thread safety, and each invocation pays for an intrinsic monitor lock.",
+          "Thread-safe `StringBuffer` methods take an intrinsic monitor lock, so every invocation carries that locking overhead."
+        ]
       }
     ],
     "correct": [
@@ -127,19 +235,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "To enable safe sharing and reuse of string literals across threads within the JVM shared string intern pool."
+        "variants": [
+          "To enable safe sharing and reuse of string literals across threads within the JVM shared string intern pool.",
+          "So string literals can be safely shared and reused across threads in the JVM's shared intern pool.",
+          "So the JVM shared intern pool can let any thread safely share and reuse the same string literals."
+        ]
       },
       {
         "id": "B",
-        "text": "To ensure that the class loader automatically promotes string instances directly into permanent Metaspace memory."
+        "reasons": [
+          "The class loader does not promote ordinary string instances into Metaspace; that is not why `String` is immutable.",
+          "Equal contents do not make two `String` objects identical, and `new String` still allocates a distinct object from the literal.",
+          "Moving an object during collection still requires its references to be updated, and immutability does not exempt `String` from that."
+        ],
+        "variants": [
+          "To ensure that the class loader automatically promotes string instances directly into permanent Metaspace memory.",
+          "So two strings with equal characters are always one object, even when each was built with `new String`.",
+          "So the collector can relocate a `String` in memory without updating references that still point at it."
+        ]
       },
       {
         "id": "C",
-        "text": "To allow the JVM to allocate character arrays on CPU cache registers to completely eliminate garbage collection."
+        "reasons": [
+          "Character data of a `String` lives on the heap and is still collected; immutability does not place it in CPU registers or abolish garbage collection.",
+          "`String` is a reference type, not a value type, and assignment copies the reference rather than guaranteeing a private instance.",
+          "The compiler does not universally erase `String` allocations, and immutability was not introduced to make every string object disappear."
+        ],
+        "variants": [
+          "To allow the JVM to allocate character arrays on CPU cache registers to completely eliminate garbage collection.",
+          "So every `String` is a value type copied on assignment, and two variables never share one instance.",
+          "So the compiler can replace each `String` with its characters at the use site and never allocate the object."
+        ]
       },
       {
         "id": "D",
-        "text": "To guarantee that cached hash codes remain constant, allowing strings to be used safely as hash collection keys."
+        "variants": [
+          "To guarantee that cached hash codes remain constant, allowing strings to be used safely as hash collection keys.",
+          "So a cached hash code stays constant and a string can safely be a key in a hash-based collection.",
+          "Cached hash codes must remain constant, which lets strings serve safely as keys in hash collections."
+        ]
       }
     ],
     "correct": [
@@ -156,19 +290,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Calling `intern()` returns the canonical reference from the string pool that is logically equal to the target string."
+        "variants": [
+          "Calling `intern()` returns the canonical reference from the string pool that is logically equal to the target string.",
+          "Calling `intern()` yields the string pool's canonical reference, the one logically equal to the target string.",
+          "`intern()` returns the pooled canonical instance that is logically equal to the string you asked to intern."
+        ]
       },
       {
         "id": "B",
-        "text": "Creating strings via `new String(\"abc\")` bypasses heap allocation and places instances on the thread stack frame."
+        "reasons": [
+          "`new String(\"abc\")` does allocate a heap object, and it does not place that instance on the calling thread's stack frame.",
+          "`new String(\"abc\")` copies the characters into a new heap `String` and does not return the pooled literal as that instance.",
+          "The constructor does not intern the new object, so `==` against the literal is false unless `intern()` is called."
+        ],
+        "variants": [
+          "Creating strings via `new String(\"abc\")` bypasses heap allocation and places instances on the thread stack frame.",
+          "The call `new String(\"abc\")` returns the pooled literal itself and never allocates a distinct `String` object.",
+          "The call `new String(\"abc\")` interns its result automatically, so `==` with the literal is always true afterward."
+        ]
       },
       {
         "id": "C",
-        "text": "The string pool is allocated outside of JVM memory within unmanaged operating system virtual paging swap files."
+        "reasons": [
+          "The string pool is not stored in operating-system swap files outside JVM memory; since Java 7 it lives on the heap.",
+          "The intern pool is a heap structure, not a Metaspace region that grows only when new classes are defined.",
+          "The pool grows as new strings are interned and does not reject further literals because a startup-sized table filled up."
+        ],
+        "variants": [
+          "The string pool is allocated outside of JVM memory within unmanaged operating system virtual paging swap files.",
+          "The string pool resides in Metaspace and expands only as additional classes are loaded into the running JVM.",
+          "The string pool is a fixed-size table created when the JVM starts, and further literals fail once that table is full."
+        ]
       },
       {
         "id": "D",
-        "text": "String literals are automatically interned and stored in the heap-based string pool upon class initialization."
+        "variants": [
+          "String literals are automatically interned and stored in the heap-based string pool upon class initialization.",
+          "Literals are interned automatically and placed in the heap string pool when their class is initialized.",
+          "On class initialization, string literals are automatically interned into the heap-based string pool."
+        ]
       }
     ],
     "correct": [
@@ -185,19 +345,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`val` forbids assigning a new reference after initialization, but the object that reference points at can still change when that object is mutable."
+        "variants": [
+          "`val` forbids assigning a new reference after initialization, but the object that reference points at can still change when that object is mutable.",
+          "`val` blocks assigning a different reference after initialization, but a mutable object behind that reference can still change.",
+          "Once a `val` is initialized it cannot be rebound, yet the object it already references can still change when that object is mutable."
+        ]
       },
       {
         "id": "B",
-        "text": "`val` deep-freezes the whole instance after construction, so none of its properties can change, and `var` is only a shorter spelling of that same restriction."
+        "reasons": [
+          "`val` does not deep-freeze the instance, so a mutable object's properties can still change, and `var` is a reassignable binding rather than a short spelling of `val`.",
+          "`val` is not a JVM `const` and its initializer may be any expression, including a function call, while `const` is the separate modifier for compile-time constants.",
+          "Visibility and accessors are chosen independently of `val` and `var`; a `val` is not always `private`, and a `var` is not a bare `public` field."
+        ],
+        "variants": [
+          "`val` deep-freezes the whole instance after construction, so none of its properties can change, and `var` is only a shorter spelling of that same restriction.",
+          "`val` is compiled as a JVM `const` at compile time, so its initializer must be a constant, and `var` is required when the initializer calls a function.",
+          "`val` properties are always emitted as `private` fields read through a getter, while `var` properties are `public` fields with neither getter nor setter."
+        ]
       },
       {
         "id": "C",
-        "text": "`var` may be assigned once during initialization, and `val` may be assigned again later in the same function."
+        "reasons": [
+          "The opposite is true: `var` may be reassigned after initialization, and `val` may not be assigned again later in the function.",
+          "A `val` cannot be assigned again inside a loop, and a `var` does not become immutable merely because the function that created it has returned.",
+          "Kotlin lambdas can capture `var` as well as `val`, and the choice does not place one on the stack and the other on the heap."
+        ],
+        "variants": [
+          "`var` may be assigned once during initialization, and `val` may be assigned again later in the same function.",
+          "A `val` may be assigned again from inside a loop, while a `var` becomes immutable once its enclosing function returns.",
+          "A lambda may capture a `val` but not a `var`, because a `var` is kept on the stack and a `val` is kept on the heap."
+        ]
       },
       {
         "id": "D",
-        "text": "`val` is legal only for local variables, and a class property has to be declared `var`."
+        "reasons": [
+          "`val` is legal for properties as well as locals, and a class property does not have to be declared `var`.",
+          "Primary-constructor parameters may be declared `val`, and that is a normal way to expose a read-only property.",
+          "A `val` property may use a custom getter, so a computed property does not have to be declared `var`."
+        ],
+        "variants": [
+          "`val` is legal only for local variables, and a class property has to be declared `var`.",
+          "A primary constructor may declare only `var`, because a `val` parameter is illegal.",
+          "Computed properties must be `var`, because a `val` property cannot declare a custom getter."
+        ]
       }
     ],
     "correct": [
@@ -213,19 +404,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It must be explicitly annotated with `@FunctionalInterface` or the Java compiler will reject lambda assignment."
+        "reasons": [
+          "The `@FunctionalInterface` annotation is optional documentation, and a lambda can target a qualifying interface that lacks it.",
+          "Any interface with a single abstract method can be a functional interface, and it does not have to extend `Function`.",
+          "The abstract method may have any legal name, and lambdas do not require that name to be `apply`."
+        ],
+        "variants": [
+          "It must be explicitly annotated with `@FunctionalInterface` or the Java compiler will reject lambda assignment.",
+          "It must extend `java.util.function.Function`, or the compiler will refuse to target it with a lambda expression.",
+          "Its single abstract method must be named `apply`, matching the JDK function types, or a lambda assignment will not compile."
+        ]
       },
       {
         "id": "B",
-        "text": "It declares exactly one abstract method, which acts as the target type for lambda expressions and method references."
+        "variants": [
+          "It declares exactly one abstract method, which acts as the target type for lambda expressions and method references.",
+          "It has exactly one abstract method, and that method is the target type for lambdas and method references.",
+          "Lambda expressions and method references target the single abstract method that this interface declares."
+        ]
       },
       {
         "id": "C",
-        "text": "It is strictly forbidden from declaring public abstract methods that override methods of `java.lang.Object`."
+        "reasons": [
+          "Redeclaring public methods of `java.lang.Object` is allowed, and those methods do not count toward the single abstract method.",
+          "A functional interface may extend another interface when the result still has exactly one abstract method.",
+          "The abstract method may return any type, and many functional interfaces exist specifically to produce a value."
+        ],
+        "variants": [
+          "It is strictly forbidden from declaring public abstract methods that override methods of `java.lang.Object`.",
+          "It cannot extend another interface, because inherited members would always count as extra abstract methods.",
+          "Its abstract method must return `void`, because a lambda on a functional interface cannot produce a value."
+        ]
       },
       {
         "id": "D",
-        "text": "It can define any number of `default` or `static` methods in addition to its single declared abstract method."
+        "variants": [
+          "It can define any number of `default` or `static` methods in addition to its single declared abstract method.",
+          "Besides that one abstract method, it may include any number of `default` methods or `static` methods.",
+          "Any number of `default` or `static` methods may sit alongside the single abstract method it declares."
+        ]
       }
     ],
     "correct": [
@@ -242,19 +459,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The JVM runtime optimization that packs multiple primitive fields into a single 64-bit machine word to reduce memory footprint."
+        "reasons": [
+          "Packing several primitive fields into one machine word is a layout optimization, not the conversion between primitives and wrappers.",
+          "Autoboxing does not rewrite a primitive array as an array of wrappers, and collections do not receive that conversion automatically.",
+          "Parsing decimal text into a primitive is a library operation such as `parseInt`, not the compiler's boxing conversion."
+        ],
+        "variants": [
+          "The JVM runtime optimization that packs multiple primitive fields into a single 64-bit machine word to reduce memory footprint.",
+          "The compiler rewrite that turns a primitive array into an array of wrapper objects so generic collections can store those values.",
+          "The runtime conversion that parses a `String` of decimal digits into the matching primitive before an arithmetic operator runs."
+        ]
       },
       {
         "id": "B",
-        "text": "The automatic conversion that the Java compiler performs between primitive types and their corresponding wrapper classes."
+        "variants": [
+          "The automatic conversion that the Java compiler performs between primitive types and their corresponding wrapper classes.",
+          "The Java compiler's automatic conversion between a primitive type and the wrapper class that corresponds to it.",
+          "Automatic conversion, inserted by the Java compiler, between primitives and their corresponding wrapper classes."
+        ]
       },
       {
         "id": "C",
-        "text": "The compiler mechanism that automatically wraps checked exceptions inside an unchecked `RuntimeException` at boundary methods."
+        "reasons": [
+          "The compiler does not wrap checked exceptions in `RuntimeException` as part of autoboxing; that wrapping is something application code writes itself.",
+          "A primitive return stays primitive unless the target type is a wrapper, and the compiler does not box it into `Optional` on its own.",
+          "Boxing does not widen `Integer` to `Long`; those wrapper types are unrelated, and no implicit conversion exists between them."
+        ],
+        "variants": [
+          "The compiler mechanism that automatically wraps checked exceptions inside an unchecked `RuntimeException` at boundary methods.",
+          "The rewrite that boxes a primitive return value into `Optional` whenever the method's declared return type is primitive.",
+          "The implicit conversion that widens a wrapper such as `Integer` into a wider wrapper such as `Long` at a call site."
+        ]
       },
       {
         "id": "D",
-        "text": "The automatic promotion of smaller primitive types like `byte` or `short` to `int` during arithmetic evaluation in expressions."
+        "reasons": [
+          "Promoting `byte` or `short` to `int` in arithmetic is numeric promotion, not the boxing conversion between a primitive and its wrapper.",
+          "The `Integer` cache covers only a bounded range, and `==` on boxed values compares references except for those cached identities.",
+          "When both a primitive overload and a wrapper overload apply, the compiler selects the primitive overload before it considers boxing."
+        ],
+        "variants": [
+          "The automatic promotion of smaller primitive types like `byte` or `short` to `int` during arithmetic evaluation in expressions.",
+          "The cache of a wrapper instance for every `int` value, so `==` on boxed integers compares their numeric values rather than references.",
+          "The overload rule that prefers a wrapper parameter over a primitive parameter whenever both overloads could accept the argument."
+        ]
       }
     ],
     "correct": [
@@ -270,23 +518,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`finalize()` was an `Object` cleanup hook historically invoked by the GC, now deprecated due to severe unpredictability."
+        "variants": [
+          "`finalize()` was an `Object` cleanup hook historically invoked by the GC, now deprecated due to severe unpredictability.",
+          "`finalize()` was a cleanup hook on `Object`, historically run by the GC, now deprecated for severe unpredictability.",
+          "The GC historically called `Object.finalize()` as a cleanup hook, and that hook is now deprecated for severe unpredictability."
+        ]
       },
       {
         "id": "B",
-        "text": "`final` restricts class inheritance, prevents method overriding, and prohibits variable reassignment after initialization."
+        "variants": [
+          "`final` restricts class inheritance, prevents method overriding, and prohibits variable reassignment after initialization.",
+          "`final` blocks subclassing, stops a method from being overridden, and forbids reassigning a variable after initialization.",
+          "A `final` class cannot be extended, a `final` method cannot be overridden, and a `final` variable stays fixed after initialization."
+        ]
       },
       {
         "id": "C",
-        "text": "`finally` blocks execute even if a thread executes `System.exit(0)` or experiences an immediate virtual machine crash."
+        "reasons": [
+          "`finally` does not run after `System.exit(0)` and does not run if the virtual machine crashes.",
+          "`finally` runs after `try` and `catch` finish, and it also runs when `try` completes without throwing.",
+          "A `return` inside `try` does not skip `finally`; the `finally` block runs before that return actually completes."
+        ],
+        "variants": [
+          "`finally` blocks execute even if a thread executes `System.exit(0)` or experiences an immediate virtual machine crash.",
+          "A `finally` block runs before the matching `catch` block, and it runs only when the associated `try` block actually threw an exception.",
+          "A `finally` block is skipped when `try` ends by `return`, because that return is treated as leaving the method immediately."
+        ]
       },
       {
         "id": "D",
-        "text": "`finally` defines a block attached to try-catch statements that guarantees execution during normal and exceptional exits."
+        "variants": [
+          "`finally` defines a block attached to try-catch statements that guarantees execution during normal and exceptional exits.",
+          "A `finally` block attached to try-catch is guaranteed to run for both a normal exit and an exceptional exit.",
+          "`finally` is the block on a try-catch that still runs whether the exit is normal or caused by an exception."
+        ]
       },
       {
         "id": "E",
-        "text": "Declaring a local variable `final` instructs the compiler to allocate that variable directly within Metaspace memory."
+        "reasons": [
+          "`final` does not place a local variable in Metaspace; the variable still uses an ordinary local slot or a field location.",
+          "A `final` `String` local is interned only when it is a constant variable, not when its initializer is an arbitrary method call.",
+          "The JVM does not turn a `final` parameter into tail-call optimization, and recursion still allocates a new frame."
+        ],
+        "variants": [
+          "Declaring a local variable `final` instructs the compiler to allocate that variable directly within Metaspace memory.",
+          "A `final` local whose type is `String` is always interned, even when its initializer is a runtime method call.",
+          "Marking a parameter `final` enables tail-call optimization so a recursive method reuses the current stack frame."
+        ]
       }
     ],
     "correct": [
@@ -304,19 +582,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It ensures that read and write operations to the field bypass the CPU L1/L2 caches and interact directly with RAM."
+        "reasons": [
+          "`transient` does not bypass CPU caches or force each read and write of the field to go directly to RAM.",
+          "Cross-thread visibility without a lock is the role of `volatile` or another synchronization action, not of `transient`.",
+          "Instance fields can already be mutated from a lambda, and `transient` is not what permits that mutation."
+        ],
+        "variants": [
+          "It ensures that read and write operations to the field bypass the CPU L1/L2 caches and interact directly with RAM.",
+          "It makes every write to the field immediately visible to other threads without those threads acquiring a lock.",
+          "It lets a lambda modify the field even when that field is captured from an enclosing instance scope."
+        ]
       },
       {
         "id": "B",
-        "text": "It allows a local variable declared in an outer method to be accessed and mutated inside an anonymous inner class."
+        "reasons": [
+          "`transient` does not relax capture rules for local variables, and anonymous classes still cannot mutate a non-final local.",
+          "The compiler does not tie thread-safety warnings to `transient`, and unsynchronized reads remain unsynchronized.",
+          "`transient` does not turn a field into a computed property, and the field's value is still stored in the instance."
+        ],
+        "variants": [
+          "It allows a local variable declared in an outer method to be accessed and mutated inside an anonymous inner class.",
+          "It suppresses warnings when several threads read the field without any synchronization around those reads.",
+          "It marks the field as computed on demand, so the runtime should not store the value inside the instance."
+        ]
       },
       {
         "id": "C",
-        "text": "It instructs default Java serialization to ignore the field so its value is not written to the serialized byte stream."
+        "variants": [
+          "It instructs default Java serialization to ignore the field so its value is not written to the serialized byte stream.",
+          "Under default Java serialization the field is ignored, so its value is not placed into the serialized byte stream.",
+          "The field is omitted from the serialized byte stream because default Java serialization is told to ignore it."
+        ]
       },
       {
         "id": "D",
-        "text": "It informs the garbage collector that the object referenced by the field should be treated as a weak reference."
+        "reasons": [
+          "`transient` does not make the referenced object a weak reference, and the collector does not treat it as one.",
+          "`equals` and `hashCode` are unaffected by `transient`, which only influences default serialization of the field.",
+          "The collector does not clear a `transient` field early, and the keyword creates no special reachability for that reference."
+        ],
+        "variants": [
+          "It informs the garbage collector that the object referenced by the field should be treated as a weak reference.",
+          "It drops the field from any generated `equals` and `hashCode` methods so the field cannot affect identity or hashing.",
+          "It tells the collector to clear the field before reclamation so the referenced object can be freed sooner."
+        ]
       }
     ],
     "correct": [
@@ -332,19 +641,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Mutual exclusion: it prevents concurrent threads from executing any method within the enclosing class simultaneously."
+        "reasons": [
+          "`volatile` does not lock the enclosing class, and other threads may still run methods of that class at the same time.",
+          "`volatile` has no entry queue and does not force threads to read the variable in FIFO arrival order.",
+          "`volatile` is not a lock, so it has no owner and no reentrant acquisition that a writing thread could reenter."
+        ],
+        "variants": [
+          "Mutual exclusion: it prevents concurrent threads from executing any method within the enclosing class simultaneously.",
+          "Fair scheduling: threads that touch the variable enter a FIFO queue and may read it only in the order they arrived.",
+          "Reentrancy: the thread that last wrote the variable may update it again recursively without blocking on itself."
+        ]
       },
       {
         "id": "B",
-        "text": "Atomicity: it guarantees that compound operations such as pre-increment (`++count`) execute as an atomic transaction."
+        "reasons": [
+          "`volatile` does not make compound actions atomic, and `++count` can still lose updates when two threads interleave it.",
+          "A `volatile` write publishes that variable, but it does not atomically modify the other fields of the object.",
+          "The JIT does not delete `synchronized` blocks because a variable they use is `volatile`; those locks still run."
+        ],
+        "variants": [
+          "Atomicity: it guarantees that compound operations such as pre-increment (`++count`) execute as an atomic transaction.",
+          "A write to one `volatile` field also atomically updates every other field that belongs to that same object.",
+          "Marking a variable `volatile` lets the JIT remove `synchronized` blocks that read or write that same variable."
+        ]
       },
       {
         "id": "C",
-        "text": "Instruction ordering: it establishes a happens-before relationship that prevents compiler and CPU memory reordering."
+        "variants": [
+          "Instruction ordering: it establishes a happens-before relationship that prevents compiler and CPU memory reordering.",
+          "It forms a happens-before edge so compiler and CPU cannot reorder memory operations around that variable.",
+          "Compiler and CPU memory reordering is barred around it because a happens-before relationship is established."
+        ]
       },
       {
         "id": "D",
-        "text": "Memory visibility: writes to a volatile variable are immediately visible to subsequent reads by any other thread."
+        "variants": [
+          "Memory visibility: writes to a volatile variable are immediately visible to subsequent reads by any other thread.",
+          "Writes to a `volatile` variable become visible immediately to subsequent reads performed by any other thread.",
+          "Any later read of a `volatile` variable by any other thread observes the preceding write immediately."
+        ]
       }
     ],
     "correct": [
@@ -361,19 +696,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Yes, and combining them is the recommended practice for declaring high-performance thread-safe global constants."
+        "reasons": [
+          "The compiler rejects `volatile` together with `final`, so the pair is not a recommended way to declare thread-safe constants.",
+          "An array field cannot be both `volatile` and `final` either, and `volatile` on the array would not cover its elements.",
+          "Assigning the field once in the constructor is how a `final` field is normally published, and adding `volatile` is still illegal."
+        ],
+        "variants": [
+          "Yes, and combining them is the recommended practice for declaring high-performance thread-safe global constants.",
+          "Yes, but only when the field is an array type, so `volatile` covers every element while `final` freezes that array reference.",
+          "Yes, whenever the field is assigned exactly once inside the constructor and is only read by other threads afterward."
+        ]
       },
       {
         "id": "B",
-        "text": "Yes, but only if the field is also declared `static` and initialized inside a static initialization block."
+        "reasons": [
+          "Adding `static` and initializing the field in a static block does not make `volatile` and `final` legal together.",
+          "A `String` field initialized with a literal still cannot be declared both `volatile` and `final`.",
+          "Fields of an `enum` constant are under the same rule, and the compiler still rejects `volatile` on a `final` field."
+        ],
+        "variants": [
+          "Yes, but only if the field is also declared `static` and initialized inside a static initialization block.",
+          "Yes, but only for a `String` field that is initialized from a string literal in its declaration.",
+          "Yes, but only for a field declared inside an `enum` constant body and assigned from that constant's constructor."
+        ]
       },
       {
         "id": "C",
-        "text": "No, unless the field is of a primitive type and declared within an interface definition."
+        "reasons": [
+          "There is no exception for primitive fields declared in an interface; `volatile` and `final` are still incompatible.",
+          "Privacy and a lack of external reads do not create an exception; the compiler still forbids the combination.",
+          "A `record` component is `final` and is not also `volatile`, and the compiler does not imply both modifiers."
+        ],
+        "variants": [
+          "No, unless the field is of a primitive type and declared within an interface definition.",
+          "No, except when the field is `private` and is never read outside its declaring class.",
+          "No, except on a `record` component, where the compiler supplies both modifiers together."
+        ]
       },
       {
         "id": "D",
-        "text": "No, the compiler disallows it because `final` fields cannot change value while `volatile` is intended for mutable shared state."
+        "variants": [
+          "No, the compiler disallows it because `final` fields cannot change value while `volatile` is intended for mutable shared state.",
+          "No, the compiler forbids that pair, because a `final` field cannot change value and `volatile` is for mutable shared state.",
+          "No, the combination is illegal, since `final` fields cannot change value and `volatile` targets mutable shared state."
+        ]
       }
     ],
     "correct": [
@@ -389,19 +755,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The volatile modifier applies exclusively to the array reference pointer, ensuring reference updates are visible."
+        "variants": [
+          "The volatile modifier applies exclusively to the array reference pointer, ensuring reference updates are visible.",
+          "Only the array reference itself is volatile, so replacing that reference is what other threads are guaranteed to see.",
+          "The volatile modifier covers the pointer to the array alone, which makes updates of that reference visible."
+        ]
       },
       {
         "id": "B",
-        "text": "Volatile read and write semantics for individual array elements require `AtomicIntegerArray` or `VarHandle` accessors."
+        "variants": [
+          "Volatile read and write semantics for individual array elements require `AtomicIntegerArray` or `VarHandle` accessors.",
+          "Each element's reads and writes need `AtomicIntegerArray` or `VarHandle` when those accesses must be volatile.",
+          "Volatile semantics on individual elements come from `AtomicIntegerArray` or from `VarHandle` accessors."
+        ]
       },
       {
         "id": "C",
-        "text": "The compiler rejects `volatile` on arrays because arrays are dynamically sized, mutable heap reference structures."
+        "reasons": [
+          "The compiler does accept `volatile` array variables; arrays being resizable heap objects does not make the modifier illegal.",
+          "`volatile` and `final` cannot be combined, and a `volatile` array does not need to be `final` to compile.",
+          "The component type may be a reference type, and `volatile String[]` is a legal declaration."
+        ],
+        "variants": [
+          "The compiler rejects `volatile` on arrays because arrays are dynamically sized, mutable heap reference structures.",
+          "The compiler accepts `volatile` on an array only when that array variable is also declared `final`.",
+          "A `volatile` array variable is illegal unless the component type of the array is a primitive type."
+        ]
       },
       {
         "id": "D",
-        "text": "Declaring the array reference `volatile` automatically propagates volatile read-write visibility to all indexed elements."
+        "reasons": [
+          "Volatility of the array reference does not extend to the elements, so indexed reads and writes are ordinary accesses.",
+          "Element updates such as `arr[i]++` stay compound actions, and a `volatile` array reference does not make them atomic.",
+          "A local copy of the reference is a plain variable, and reading elements through it does not gain volatile semantics."
+        ],
+        "variants": [
+          "Declaring the array reference `volatile` automatically propagates volatile read-write visibility to all indexed elements.",
+          "A `volatile` array reference makes a compound element update such as `arr[i]++` atomic against every other racing thread.",
+          "Storing the `volatile` array reference in a local variable still gives later reads of elements volatile visibility."
+        ]
       }
     ],
     "correct": [
@@ -418,23 +810,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Subclasses of `Exception` (excluding `RuntimeException`) are checked and must be caught or declared in the `throws` clause."
+        "variants": [
+          "Subclasses of `Exception` (excluding `RuntimeException`) are checked and must be caught or declared in the `throws` clause.",
+          "Checked exceptions are subclasses of `Exception` other than `RuntimeException`, and they must be caught or listed in `throws`.",
+          "Aside from `RuntimeException`, subclasses of `Exception` are checked and must be caught or declared in a `throws` clause."
+        ]
       },
       {
         "id": "B",
-        "text": "Custom unchecked exceptions can be created by subclassing `RuntimeException` or any of its descendants."
+        "variants": [
+          "Custom unchecked exceptions can be created by subclassing `RuntimeException` or any of its descendants.",
+          "A custom unchecked exception is created by extending `RuntimeException` or a subclass of it.",
+          "Extending `RuntimeException`, or any type that already extends it, defines a custom unchecked exception."
+        ]
       },
       {
         "id": "C",
-        "text": "Methods that throw unchecked exceptions must explicitly declare them in their method signature using `throws`."
+        "reasons": [
+          "Unchecked exceptions may be thrown without a `throws` clause, and the compiler does not require them to be declared.",
+          "Declaring a method on an interface does not change an unchecked exception into a checked one.",
+          "A `catch` of `RuntimeException` is legal on its own, and the compiler does not require a preceding `catch` of `Exception`."
+        ],
+        "variants": [
+          "Methods that throw unchecked exceptions must explicitly declare them in their method signature using `throws`.",
+          "An unchecked exception becomes checked when the method that throws it is declared on an interface.",
+          "Catching `RuntimeException` is a compile error unless that method also catches `Exception` earlier in the same try."
+        ]
       },
       {
         "id": "D",
-        "text": "`Error` and its subclasses are unchecked and typically represent abnormal conditions that applications should not catch."
+        "variants": [
+          "`Error` and its subclasses are unchecked and typically represent abnormal conditions that applications should not catch.",
+          "Subclasses of `Error` are unchecked and usually signal abnormal conditions that application code should not catch.",
+          "Unchecked `Error` types and their subclasses usually stand for abnormal conditions that application code is not meant to catch."
+        ]
       },
       {
         "id": "E",
-        "text": "All checked exceptions are automatically converted to unchecked exceptions when thrown inside lambda expressions."
+        "reasons": [
+          "A lambda does not convert checked exceptions into unchecked ones, and a checked exception is still illegal when the function type does not declare it.",
+          "Putting `NullPointerException` in a `throws` clause does not make it checked; the exception type stays unchecked.",
+          "`RuntimeException` is unchecked even though it extends `Exception`, and its subclasses are unchecked rather than checked."
+        ],
+        "variants": [
+          "All checked exceptions are automatically converted to unchecked exceptions when thrown inside lambda expressions.",
+          "Listing any exception in a `throws` clause makes it checked, so `throws NullPointerException` makes that exception checked.",
+          "`RuntimeException` itself counts as checked because it extends `Exception`, and every direct subclass of `Exception` is checked."
+        ]
       }
     ],
     "correct": [
@@ -452,19 +874,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It restricts generic type arguments to `Number` or any of its subclasses (such as `Integer` or `Double`)."
+        "variants": [
+          "It restricts generic type arguments to `Number` or any of its subclasses (such as `Integer` or `Double`).",
+          "Type arguments are limited to `Number` or to its subclasses, such as `Integer` or `Double`.",
+          "Only `Number`, or a subclass such as `Integer` or `Double`, is accepted as the type argument."
+        ]
       },
       {
         "id": "B",
-        "text": "It instructs the compiler to retain generic type information at runtime, disabling type erasure for class `T`."
+        "reasons": [
+          "A bound such as `<T extends Number>` does not reify `T` or turn off type erasure for that type variable.",
+          "Generics stay invariant, and a bound of `Number` does not allow a `List<Integer>` to be passed as a `List<Number>`.",
+          "Type arguments must be reference types, so `int` and `double` cannot be used in place of `Integer` or `Double`."
+        ],
+        "variants": [
+          "It instructs the compiler to retain generic type information at runtime, disabling type erasure for class `T`.",
+          "It makes `List` covariant under this bound, so a `List<Integer>` may be passed where a `List<Number>` is required.",
+          "It allows primitive type arguments, so the declaration may be instantiated with `int` or `double` as well as `Integer`."
+        ]
       },
       {
         "id": "C",
-        "text": "It allows invoking `Number` methods (such as `doubleValue()`) directly on instances of `T` without explicit casting."
+        "variants": [
+          "It allows invoking `Number` methods (such as `doubleValue()`) directly on instances of `T` without explicit casting.",
+          "A value of type `T` can call `Number` methods such as `doubleValue()` directly, without an explicit cast.",
+          "Methods declared on `Number`, including `doubleValue()`, can be invoked on `T` with no cast beforehand."
+        ]
       },
       {
         "id": "D",
-        "text": "It allows adding any arbitrary subtype of `Number` into a generic `List<T>` collection container at runtime."
+        "reasons": [
+          "A `List<T>` accepts values of type `T` only, and the bound does not allow every subtype of `Number` to be added.",
+          "`List<T>` is not interchangeable with `List<Number>`, so a `List<Number>` expression is not a valid return for `List<T>`.",
+          "A cast from `T` to a particular subclass can fail at runtime, and the bound does not make that cast safe."
+        ],
+        "variants": [
+          "It allows adding any arbitrary subtype of `Number` into a generic `List<T>` collection container at runtime.",
+          "It lets a method whose return type is `List<T>` return an expression whose static type is `List<Number>`.",
+          "It permits a cast from `T` to any chosen subclass of `Number` that is guaranteed to succeed at runtime."
+        ]
       }
     ],
     "correct": [
@@ -481,19 +929,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The JVM garbage collector deletes unused generic class definitions dynamically from Metaspace memory buffers."
+        "reasons": [
+          "The garbage collector does not delete generic class definitions from Metaspace as part of type erasure.",
+          "Erasure does the opposite of specialization: distinct type arguments still share one runtime class rather than getting a class each.",
+          "Generic signatures are stored in the class file's `Signature` attribute, and the verifier does not discard them."
+        ],
+        "variants": [
+          "The JVM garbage collector deletes unused generic class definitions dynamically from Metaspace memory buffers.",
+          "Erasure specializes each generic class into a distinct raw class for every type argument the program uses.",
+          "The verifier strips generic signatures from the class file, so a `Signature` attribute is never retained there."
+        ]
       },
       {
         "id": "B",
-        "text": "Parameterized instances share the same runtime `Class` object (for example, `List<String>` and `List<Integer>` share `List.class`)."
+        "variants": [
+          "Parameterized instances share the same runtime `Class` object (for example, `List<String>` and `List<Integer>` share `List.class`).",
+          "At runtime, `List<String>` and `List<Integer>` share a single `Class` object, and that shared object is `List.class`.",
+          "One runtime `Class` object serves each parameterized type, so both `List<String>` and `List<Integer>` use `List.class`."
+        ]
       },
       {
         "id": "C",
-        "text": "Type erasure completely prevents reflection from inspecting generic return types and parameter types on methods."
+        "reasons": [
+          "Reflection can still read generic return types and parameter types from signature attributes, so erasure does not hide them completely.",
+          "The compiler generates bridge methods for covariant overrides, and erasure does not delete those bridges.",
+          "Two methods that erase to the same parameter types cannot be overloaded, because the erased signatures would clash."
+        ],
+        "variants": [
+          "Type erasure completely prevents reflection from inspecting generic return types and parameter types on methods.",
+          "Erasure deletes the bridge methods, so a covariant override compiles as one method whose return type is already the subtype.",
+          "After erasure, one class may declare two methods that differ only by the generic type argument on matching parameters."
+        ]
       },
       {
         "id": "D",
-        "text": "The compiler removes generic type arguments at compile time and inserts synthetic casts into bytecode where needed."
+        "variants": [
+          "The compiler removes generic type arguments at compile time and inserts synthetic casts into bytecode where needed.",
+          "During compilation the compiler drops generic type arguments and inserts synthetic casts in the bytecode where required.",
+          "Generic type arguments are removed at compile time, and the compiler adds synthetic bytecode casts where they are needed."
+        ]
       }
     ],
     "correct": [
@@ -510,23 +984,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The Bootstrap ClassLoader is written in Java and can be inspected as an ordinary public Spring singleton bean."
+        "reasons": [
+          "The bootstrap loader is not a Java class exposed as a Spring singleton, and application code does not look it up that way.",
+          "The bootstrap loader is a native, internal loader represented as null, and application code cannot subclass it and install a replacement.",
+          "`java.lang.Object` is defined once by the bootstrap loader and is shared, so other loaders do not each define their own `Object`."
+        ],
+        "variants": [
+          "The Bootstrap ClassLoader is written in Java and can be inspected as an ordinary public Spring singleton bean.",
+          "The bootstrap loader is a `java.lang.ClassLoader` subclass that application code is expected to extend and then replace.",
+          "Each class loader defines its own `java.lang.Object`, so loaders never share one `Object` class."
+        ]
       },
       {
         "id": "B",
-        "text": "ClassLoaders load `.class` bytecode files into JVM memory and instantiate corresponding `java.lang.Class` objects."
+        "variants": [
+          "ClassLoaders load `.class` bytecode files into JVM memory and instantiate corresponding `java.lang.Class` objects.",
+          "A class loader reads `.class` bytecode into JVM memory and creates the matching `java.lang.Class` object.",
+          "They load `.class` bytecode into JVM memory and build the corresponding `java.lang.Class` instances."
+        ]
       },
       {
         "id": "C",
-        "text": "ClassLoaders automatically recompile loaded bytecode into native C++ code whenever memory consumption rises."
+        "reasons": [
+          "Class loaders do not recompile bytecode into C++ when memory use grows; native code generation is the JIT's separate job.",
+          "Verification analyzes bytecode without executing it, and a class is not verified by a preliminary interpreter run.",
+          "A class can be unloaded only after its defining loader is unreachable, not merely because a static name reference was dropped."
+        ],
+        "variants": [
+          "ClassLoaders automatically recompile loaded bytecode into native C++ code whenever memory consumption rises.",
+          "A class loader verifies bytecode by running it once in the interpreter before the class is made visible to callers.",
+          "A loader unloads a class as soon as the application drops its last static reference to that class's binary name."
+        ]
       },
       {
         "id": "D",
-        "text": "They follow a parent-delegation model where a loader delegates search requests to its parent before searching locally."
+        "variants": [
+          "They follow a parent-delegation model where a loader delegates search requests to its parent before searching locally.",
+          "Under parent delegation, a loader asks its parent to find the class before it searches the loader's own locations.",
+          "A loader delegates the search to its parent first and searches its own local sources only after that parent search."
+        ]
       },
       {
         "id": "E",
-        "text": "Custom class loaders can be implemented to load class bytecode from network URLs, databases, or encrypted streams."
+        "variants": [
+          "Custom class loaders can be implemented to load class bytecode from network URLs, databases, or encrypted streams.",
+          "A custom loader can be written to read class bytecode from network URLs, from databases, or from encrypted streams.",
+          "Custom loaders may take bytecode from network URLs, from a database, or from an encrypted stream."
+        ]
       }
     ],
     "correct": [
@@ -544,19 +1048,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Abstraction restricts subclassing using final modifiers; encapsulation forces all class methods to be declared abstract."
+        "reasons": [
+          "Abstraction is not a ban on subclassing via `final`, and encapsulation does not require every method to be abstract.",
+          "Abstraction does not require every operation to live on an interface, and encapsulation does not mean publishing every field as `public`.",
+          "Every class already inherits from `Object`, and marking a class `final` is neither the definition of encapsulation nor of abstraction."
+        ],
+        "variants": [
+          "Abstraction restricts subclassing using final modifiers; encapsulation forces all class methods to be declared abstract.",
+          "Abstraction means every operation is declared only on an interface, and encapsulation means every field is `public` and documented.",
+          "Abstraction is inheritance from `java.lang.Object`, and encapsulation is the decision to mark the class `final`."
+        ]
       },
       {
         "id": "B",
-        "text": "Abstraction hides implementation complexity behind high-level interfaces; encapsulation hides internal state behind controlled methods."
+        "variants": [
+          "Abstraction hides implementation complexity behind high-level interfaces; encapsulation hides internal state behind controlled methods.",
+          "A high-level interface lets abstraction conceal implementation complexity, and controlled methods let encapsulation conceal internal state.",
+          "In abstraction, a high-level interface conceals implementation complexity, and in encapsulation, controlled methods conceal internal state."
+        ]
       },
       {
         "id": "C",
-        "text": "Abstraction binds runtime polymorphic calls dynamically; encapsulation translates checked exceptions into unchecked ones."
+        "reasons": [
+          "Dynamic dispatch is polymorphism, not the definition of abstraction, and turning checked exceptions into unchecked ones is not encapsulation.",
+          "Choosing an overload at compile time and dispatching an override at runtime are separate from abstraction versus encapsulation.",
+          "Java does not allow a class to extend multiple concrete superclasses, and a `private` constructor is not what encapsulation means."
+        ],
+        "variants": [
+          "Abstraction binds runtime polymorphic calls dynamically; encapsulation translates checked exceptions into unchecked ones.",
+          "Abstraction is compile-time overload resolution, and encapsulation is runtime dispatch of an overriding method.",
+          "Abstraction requires a class to extend several concrete superclasses, and encapsulation requires a single `private` constructor."
+        ]
       },
       {
         "id": "D",
-        "text": "Abstraction is achieved solely through private variables; encapsulation is achieved exclusively through public static methods."
+        "reasons": [
+          "Private variables are not the sole means of abstraction, and public static methods are not the exclusive means of encapsulation.",
+          "Both ideas are design disciplines visible in the type's structure, not a JIT behavior that compilation throws away.",
+          "Neither concept is tied to whether the class is generic; ordinary classes use abstraction and encapsulation as well."
+        ],
+        "variants": [
+          "Abstraction is achieved solely through private variables; encapsulation is achieved exclusively through public static methods.",
+          "Abstraction is only a runtime behavior of the JIT optimizer, and encapsulation lives only in source and is discarded when the class compiles.",
+          "Abstraction applies only to generic types that declare type parameters, and encapsulation applies only to classes with no type parameters."
+        ]
       }
     ],
     "correct": [
@@ -572,23 +1107,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Private and static methods declared in a superclass can be overridden polymorphically by extending subclasses."
+        "reasons": [
+          "Private methods and static methods are not overridden polymorphically; a subclass declaration does not dynamically replace them.",
+          "Overriding is selected from the runtime type of the object, whereas overload selection uses the compile-time types of the reference and arguments.",
+          "Constructors are not inherited and cannot be overridden, even when a subclass declares a constructor with the same parameter list."
+        ],
+        "variants": [
+          "Private and static methods declared in a superclass can be overridden polymorphically by extending subclasses.",
+          "Override selection uses only the reference's static type, by the same compile-time rule that chooses which overload is called.",
+          "Constructors are inherited from the superclass and can be overridden when the subclass repeats the same parameter list."
+        ]
       },
       {
         "id": "B",
-        "text": "Overloading defines methods with the same name but different parameter lists within a class and is resolved at compile time."
+        "variants": [
+          "Overloading defines methods with the same name but different parameter lists within a class and is resolved at compile time.",
+          "Overloading is several methods with one name and different parameter lists in a class, and the compiler resolves the call.",
+          "Methods that share a name but not a parameter list are overloads, and that choice is made at compile time."
+        ]
       },
       {
         "id": "C",
-        "text": "Overloading can be achieved simply by declaring two methods with identical parameter lists and different return types."
+        "reasons": [
+          "Identical parameter lists with different return types do not overload; the compiler rejects two methods that differ only by return type.",
+          "Overloading requires the same method name, so two methods with different names and the same parameters are simply different methods.",
+          "Keeping the parameter list and narrowing the return type is a covariant override, not an overload."
+        ],
+        "variants": [
+          "Overloading can be achieved simply by declaring two methods with identical parameter lists and different return types.",
+          "Two methods overload one another when the names differ and the parameter lists are otherwise identical.",
+          "A subclass overloads a superclass method by keeping the same parameter list and narrowing only the return type."
+        ]
       },
       {
         "id": "D",
-        "text": "Overriding provides a new implementation in a subclass with the same signature and is resolved at runtime via dynamic dispatch."
+        "variants": [
+          "Overriding provides a new implementation in a subclass with the same signature and is resolved at runtime via dynamic dispatch.",
+          "A subclass override supplies a new body for the same signature, and dynamic dispatch selects that body at runtime.",
+          "Overriding replaces a superclass method of the same signature, and the call is chosen at runtime by dynamic dispatch."
+        ]
       },
       {
         "id": "E",
-        "text": "An overriding method cannot declare a checked exception that is broader or higher in the hierarchy than the overridden method."
+        "variants": [
+          "An overriding method cannot declare a checked exception that is broader or higher in the hierarchy than the overridden method.",
+          "An override must not add a checked exception broader than, or higher than, those of the method being overridden.",
+          "The overriding method cannot throw a checked exception higher in the hierarchy than the overridden method permits."
+        ]
       }
     ],
     "correct": [
@@ -606,19 +1171,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A shallow copy duplicates the outer object instance but shares references to internal nested objects with the original."
+        "variants": [
+          "A shallow copy duplicates the outer object instance but shares references to internal nested objects with the original.",
+          "A shallow copy copies the outer instance and still shares the original's references to nested objects.",
+          "The outer object is duplicated, while nested objects remain shared through the same references held by the original."
+        ]
       },
       {
         "id": "B",
-        "text": "A deep copy creates an independent object graph by recursively duplicating all nested referenced objects in memory."
+        "variants": [
+          "A deep copy creates an independent object graph by recursively duplicating all nested referenced objects in memory.",
+          "A deep copy recursively duplicates every nested object and thereby builds an independent object graph in memory.",
+          "Deep copy walks the nested references and duplicates those objects so the resulting graph is independent of the original."
+        ]
       },
       {
         "id": "C",
-        "text": "The default implementation of `Object.clone()` automatically performs a deep recursive copy of all member fields."
+        "reasons": [
+          "The default `Object.clone()` performs a shallow field copy, not an automatic deep recursive copy of every member.",
+          "`Object.clone()` is protected, and calling it without `Cloneable` throws `CloneNotSupportedException` instead of copying freely.",
+          "The compiler does not generate copy constructors, including for classes that rely on the default constructor."
+        ],
+        "variants": [
+          "The default implementation of `Object.clone()` automatically performs a deep recursive copy of all member fields.",
+          "`Object.clone()` is public, so any instance can be copied without `Cloneable` or `CloneNotSupportedException`.",
+          "Java inserts a compiler-generated copy constructor into every class that does not declare a constructor of its own."
+        ]
       },
       {
         "id": "D",
-        "text": "Shallow copies are strictly prohibited by the JVM security manager when executing within named Java module systems."
+        "reasons": [
+          "Named modules and the security manager do not forbid shallow copies, which remain an ordinary copying technique.",
+          "Method arguments pass the reference value, and the callee does not receive a deep copy unless the program builds one.",
+          "Default serialization walks the reachable object graph and writes those objects, so the result is not a shallow copy."
+        ],
+        "variants": [
+          "Shallow copies are strictly prohibited by the JVM security manager when executing within named Java module systems.",
+          "Passing an object into a method always produces a deep copy, so the callee receives an independent object graph.",
+          "Java serialization always produces a shallow copy, because the stream writes references and does not walk the object graph."
+        ]
       }
     ],
     "correct": [
@@ -635,23 +1226,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Testing `a instanceof Dog` before performing a downcast prevents unexpected runtime `ClassCastException` failures."
+        "variants": [
+          "Testing `a instanceof Dog` before performing a downcast prevents unexpected runtime `ClassCastException` failures.",
+          "Guarding the downcast with `a instanceof Dog` avoids an unexpected `ClassCastException` when the cast then runs.",
+          "Checking `a instanceof Dog` before downcasting prevents a surprise `ClassCastException` at runtime."
+        ]
       },
       {
         "id": "B",
-        "text": "Assigning `Animal a = new Dog();` is an implicit upcast that succeeds because every `Dog` is an `Animal`."
+        "variants": [
+          "Assigning `Animal a = new Dog();` is an implicit upcast that succeeds because every `Dog` is an `Animal`.",
+          "Every `Dog` is an `Animal`, so `Animal a = new Dog();` is an implicit upcast that the compiler accepts.",
+          "No cast operator is required on `Animal a = new Dog();`, because that assignment is an implicit upcast to `Animal`."
+        ]
       },
       {
         "id": "C",
-        "text": "Downcasting an `Animal` reference pointing to an `Animal` instance into a `Dog` reference succeeds silently."
+        "reasons": [
+          "If `a` refers to a plain `Animal`, the downcast to `Dog` throws `ClassCastException` and does not succeed silently.",
+          "An upcast from `Dog` to `Animal` is implicit, and the compiler accepts it without an explicit cast.",
+          "Sharing a compilation unit does not move downcast checks to compile time, and a bad downcast still fails at runtime."
+        ],
+        "variants": [
+          "Downcasting an `Animal` reference pointing to an `Animal` instance into a `Dog` reference succeeds silently.",
+          "An upcast from a `Dog` reference to an `Animal` reference needs an explicit cast and will not compile without one.",
+          "If `Dog` and `Animal` share a compilation unit, a downcast to `Dog` is fully checked at compile time and cannot fail."
+        ]
       },
       {
         "id": "D",
-        "text": "Assigning `Dog d = (Dog) a;` is an explicit downcast that compiles but throws `ClassCastException` at runtime if `a` is not a `Dog`."
+        "variants": [
+          "Assigning `Dog d = (Dog) a;` is an explicit downcast that compiles but throws `ClassCastException` at runtime if `a` is not a `Dog`.",
+          "At compile time, `Dog d = (Dog) a;` counts as an explicit downcast and throws `ClassCastException` at runtime if `a` is not a `Dog`.",
+          "If `a` is not a `Dog`, the explicit downcast `Dog d = (Dog) a;` still compiles and then throws `ClassCastException`."
+        ]
       },
       {
         "id": "E",
-        "text": "The compiler permits `Dog d = a;` without an explicit cast whenever both classes reside within the exact same package."
+        "reasons": [
+          "Being in the same package does not let `Dog d = a` compile; an `Animal` reference still needs an explicit downcast.",
+          "Java does not infer that downcast from an earlier `new Dog()` assignment, and `Dog d = a` still fails to compile.",
+          "The downcast check remains at runtime, and it still throws `ClassCastException` when the object is not a `Dog`."
+        ],
+        "variants": [
+          "The compiler permits `Dog d = a;` without an explicit cast whenever both classes reside within the exact same package.",
+          "When the previous statement was `a = new Dog()`, the compiler inserts the downcast to `Dog` without an explicit cast in source.",
+          "A downcast along one inheritance line is erased by the compiler, so it cannot throw `ClassCastException` when the program later runs."
+        ]
       }
     ],
     "correct": [
@@ -669,19 +1290,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`PATCH` replaces the whole resource at the URI, and `PUT` changes only the fields that appear in the body."
+        "reasons": [
+          "Those roles are reversed: `PUT` replaces the whole resource, and `PATCH` is the method intended for a partial change.",
+          "`PATCH` is not defined to be idempotent, and creating a subordinate resource is the role of `POST`, not of `PUT`.",
+          "`PUT` sends a full representation of the replacement resource, and servers are not required to reject that body with `415`."
+        ],
+        "variants": [
+          "`PATCH` replaces the whole resource at the URI, and `PUT` changes only the fields that appear in the body.",
+          "`PATCH` is specified to be idempotent, and `PUT` is specified to create a subordinate resource beneath the target URI.",
+          "`PUT` may contain only the fields that changed, and a server must reject a full representation with status `415`."
+        ]
       },
       {
         "id": "B",
-        "text": "`PUT` replaces the resource at the target URI with the representation you send, and sending that same representation again leaves the same state."
+        "variants": [
+          "`PUT` replaces the resource at the target URI with the representation you send, and sending that same representation again leaves the same state.",
+          "The body sent with `PUT` becomes the whole resource at the target URI, and sending that same body again leaves the stored state unchanged.",
+          "Sending one representation with `PUT` replaces the target resource, and sending that same representation again does not change the state."
+        ]
       },
       {
         "id": "C",
-        "text": "`PATCH` applies a partial change, and it is not idempotent unless that particular patch document is written so that repeating it is safe."
+        "variants": [
+          "`PATCH` applies a partial change, and it is not idempotent unless that particular patch document is written so that repeating it is safe.",
+          "A `PATCH` carries a partial modification, and that call is not idempotent unless the particular patch document was written so a second apply is safe.",
+          "Repeating `PATCH` is not automatically safe, because the call expresses a partial change and only a document written for safe repetition may be repeated."
+        ]
       },
       {
         "id": "D",
-        "text": "`PUT` is safe and cacheable in the same way as `GET`, and `PATCH` is the method that creates a brand-new resource and returns `201 Created`."
+        "reasons": [
+          "`PUT` is neither safe nor cacheable like `GET`, and `PATCH` is not the method that creates a resource and returns `201 Created`.",
+          "An empty `PATCH` is not defined as deletion, and an empty `PUT` is not defined to return `304 Not Modified`.",
+          "`PUT` replaces the representation rather than appending to it, and `PATCH` does not become a full replacement merely because `If-Match` is absent."
+        ],
+        "variants": [
+          "`PUT` is safe and cacheable in the same way as `GET`, and `PATCH` is the method that creates a brand-new resource and returns `201 Created`.",
+          "An empty `PATCH` body is defined to delete the target resource, and an empty `PUT` body is defined to respond with `304 Not Modified`.",
+          "`PUT` appends its request body onto the representation that is already stored, and `PATCH` fully replaces that entire resource only when `If-Match` is absent."
+        ]
       }
     ],
     "correct": [
@@ -698,19 +1345,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It enables runtime inspection and dynamic invocation of constructors, methods, and fields without compile-time binding."
+        "variants": [
+          "It enables runtime inspection and dynamic invocation of constructors, methods, and fields without compile-time binding.",
+          "Reflection inspects and dynamically invokes constructors, methods, and fields without binding those members at compile time.",
+          "It inspects constructors, methods, and fields at runtime and invokes them dynamically, without compile-time binding."
+        ]
       },
       {
         "id": "B",
-        "text": "It can access private members using `setAccessible(true)`, subject to JVM security and module encapsulation boundaries."
+        "variants": [
+          "It can access private members using `setAccessible(true)`, subject to JVM security and module encapsulation boundaries.",
+          "Private members can be opened with `setAccessible(true)`, within JVM security limits and module encapsulation boundaries.",
+          "`setAccessible(true)` can reach private members, subject to JVM security checks and to module encapsulation boundaries."
+        ]
       },
       {
         "id": "C",
-        "text": "It executes with zero performance overhead because the JIT compiler completely inlines all reflective method lookups."
+        "reasons": [
+          "Reflective lookup and invocation have runtime cost, and the JIT does not inline every reflective method lookup away.",
+          "Using reflection on a class does not permanently stop the JIT from inlining ordinary direct calls on that class.",
+          "`getMethod` resolves the member at runtime and throws if it is missing; it is not a compile-time type check."
+        ],
+        "variants": [
+          "It executes with zero performance overhead because the JIT compiler completely inlines all reflective method lookups.",
+          "Once a class has been used reflectively, the JIT refuses to inline later direct call sites on that same class.",
+          "A lookup through `getMethod` is checked against the static type and fails compilation when the named method does not exist."
+        ]
       },
       {
         "id": "D",
-        "text": "It preserves compile-time type safety and prevents runtime exceptions such as `NoSuchMethodException` and `IllegalAccessException`."
+        "reasons": [
+          "Reflection does not preserve compile-time type safety, and calls can still throw `NoSuchMethodException` or `IllegalAccessException`.",
+          "`Constructor.newInstance` cannot instantiate an abstract class, and the attempt fails instead of returning an instance.",
+          "Reflective field access initializes the class when that is required, so it does not skip the static initializer."
+        ],
+        "variants": [
+          "It preserves compile-time type safety and prevents runtime exceptions such as `NoSuchMethodException` and `IllegalAccessException`.",
+          "Reflection can directly create an instance of an abstract class by invoking `Constructor.newInstance` on that class's `Class` object.",
+          "Reading a field through reflection skips class initialization, so the static initializer of that class never runs."
+        ]
       }
     ],
     "correct": [
@@ -727,19 +1400,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "An extension on a base type is chosen from the runtime instance, so a subclass overrides it the same way it overrides an ordinary open method."
+        "reasons": [
+          "Extension functions are resolved statically from the declared type and are not overridden by a subclass the way an open member is.",
+          "An extension is compiled as a static method outside the receiver and cannot see that receiver's `private` members.",
+          "A member such as `toString` wins over an extension of the same name, and the extension does not replace it for Java callers."
+        ],
+        "variants": [
+          "An extension on a base type is chosen from the runtime instance, so a subclass overrides it the same way it overrides an ordinary open method.",
+          "An extension can read the receiver's `private` members, because the compiler treats the function as written inside that receiver's class.",
+          "Declaring an extension named `toString` replaces `Any.toString` for that receiver type, including calls made from Java code."
+        ]
       },
       {
         "id": "B",
-        "text": "An extension can be called only on a non-null receiver, and the compiler rejects `?.` when the function being called is an extension."
+        "reasons": [
+          "Extensions may be invoked with a safe call, and `?.` is accepted for an extension the same way it is accepted for an ordinary member.",
+          "An extension on a nullable type still sees a nullable receiver, and null checks inside that function are not optional.",
+          "An extension on a non-null type does not compile when the receiver is null, and the call is not silently skipped."
+        ],
+        "variants": [
+          "An extension can be called only on a non-null receiver, and the compiler rejects `?.` when the function being called is an extension.",
+          "A nullable extension receiver is treated as a platform type, so null checks on that receiver inside the function are optional.",
+          "An extension declared on a non-null type may be called on null, and the call is then skipped just as a safe call would skip it."
+        ]
       },
       {
         "id": "C",
-        "text": "An extension is resolved from the receiver's declared type at compile time, not by overriding a member of the runtime instance."
+        "variants": [
+          "An extension is resolved from the receiver's declared type at compile time, not by overriding a member of the runtime instance.",
+          "Compile-time resolution picks the extension from the receiver's declared type, not from an override on the runtime instance.",
+          "The static declared type of the receiver selects the extension during compilation, with no runtime member override involved."
+        ]
       },
       {
         "id": "D",
-        "text": "A call on a nullable receiver needs a safe call such as `?.`, unless that extension is itself declared on the nullable type."
+        "variants": [
+          "A call on a nullable receiver needs a safe call such as `?.`, unless that extension is itself declared on the nullable type.",
+          "Unless the extension is declared on the nullable type, a nullable receiver must be called through a safe call such as `?.`.",
+          "A nullable receiver requires `?.` when calling an extension, except where that extension is already declared on the nullable type."
+        ]
       }
     ],
     "correct": [
@@ -756,19 +1455,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It is internally backed by a `HashMap` where set elements are stored as map keys to ensure uniqueness."
+        "variants": [
+          "It is internally backed by a `HashMap` where set elements are stored as map keys to ensure uniqueness.",
+          "A `HashSet` is backed by a `HashMap`, and its elements are stored as that map's keys so each element stays unique.",
+          "Uniqueness comes from storing each `HashSet` element as a key in the backing `HashMap`."
+        ]
       },
       {
         "id": "B",
-        "text": "It permits duplicate keys as long as their respective computed 32-bit integer hash codes are identical."
+        "reasons": [
+          "`HashSet` rejects a second key that is equal under `equals`, including when both keys share the same hash code.",
+          "Equality for `HashSet` membership follows `equals` and `hashCode`, so a different identity hash does not keep a second equal element.",
+          "`HashSet` grows and rehashes its table as the load factor is crossed, and a lookup does not scan every key."
+        ],
+        "variants": [
+          "It permits duplicate keys as long as their respective computed 32-bit integer hash codes are identical.",
+          "`HashSet` keeps two objects when their identity hash codes differ, even if `equals` reports that the objects match.",
+          "`HashSet` sizes its table to the current element count and never rehashes, so later lookups scan every stored key."
+        ]
       },
       {
         "id": "C",
-        "text": "It maintains elements in a balanced red-black binary search tree, ordering items via natural `Comparable` logic."
+        "reasons": [
+          "`HashSet` is a hash table of keys, and it does not keep elements in a red-black tree ordered by `Comparable`.",
+          "Insertion-order links belong to `LinkedHashSet`, and a plain `HashSet` does not chain entries to remember insertion order.",
+          "`HashSet` accepts a single `null` element and stores it in a dedicated bucket rather than rejecting null."
+        ],
+        "variants": [
+          "It maintains elements in a balanced red-black binary search tree, ordering items via natural `Comparable` logic.",
+          "`HashSet` preserves insertion order by linking each entry to the previous entry and the next entry in the set.",
+          "`HashSet` rejects a `null` element because its table has no bucket that can stand for a missing hash code."
+        ]
       },
       {
         "id": "D",
-        "text": "A shared static dummy `Object` instance is stored as the associated value for every key in the backing map."
+        "variants": [
+          "A shared static dummy `Object` instance is stored as the associated value for every key in the backing map.",
+          "Every key in the backing map has the same shared static dummy `Object` stored as its associated value.",
+          "The value stored for each key of the backing map is one shared static dummy `Object` instance."
+        ]
       }
     ],
     "correct": [
@@ -785,23 +1510,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`ArrayList` grows its internal array capacity by approximately 50% by default, whereas `Vector` doubles its capacity by default."
+        "variants": [
+          "`ArrayList` grows its internal array capacity by approximately 50% by default, whereas `Vector` doubles its capacity by default.",
+          "`ArrayList` expands its internal array by about 50% by default, while `Vector` doubles its capacity by default.",
+          "By default, `Vector` doubles its array capacity, whereas `ArrayList` grows its internal array by roughly 50%."
+        ]
       },
       {
         "id": "B",
-        "text": "`Vector` allows storing primitive types directly without autoboxing; `ArrayList` can only store reference types."
+        "reasons": [
+          "Both `Vector` and `ArrayList` store object references only, so `Vector` does not hold raw primitives without boxing.",
+          "Iterators of both `Vector` and `ArrayList` are fail-fast and throw `ConcurrentModificationException` after a structural change.",
+          "Both `ArrayList` and `Vector` accept `null` elements, so null is not forbidden in `ArrayList` or special to `Vector`."
+        ],
+        "variants": [
+          "`Vector` allows storing primitive types directly without autoboxing; `ArrayList` can only store reference types.",
+          "`Vector` iterators ignore structural changes during traversal, while an `ArrayList` iterator fails fast if the list is changed.",
+          "`ArrayList` rejects every `null` element outright, whereas `Vector` may store several `null` entries together in the same list."
+        ]
       },
       {
         "id": "C",
-        "text": "`Vector` completely prevents memory reallocation by allocating an infinite buffer array upon initial construction."
+        "reasons": [
+          "`Vector` reallocates a larger array when it fills, and it does not allocate an infinite buffer at construction.",
+          "A `capacityIncrement` of zero tells `Vector` to double capacity, so `add` still grows the array when it is full.",
+          "`ArrayList` uses one contiguous backing array, just as `Vector` does, rather than a chain of fixed-size chunks."
+        ],
+        "variants": [
+          "`Vector` completely prevents memory reallocation by allocating an infinite buffer array upon initial construction.",
+          "A `Vector` whose `capacityIncrement` is zero never expands, and later `add` calls fail once that initial capacity has been filled.",
+          "`ArrayList` keeps elements in a linked series of fixed-size chunks, while `Vector` keeps its elements in one contiguous array."
+        ]
       },
       {
         "id": "D",
-        "text": "`ArrayList` is part of modern Java Collections; `Vector` is a legacy Java 1.0 class retained primarily for backward compatibility."
+        "variants": [
+          "`ArrayList` is part of modern Java Collections; `Vector` is a legacy Java 1.0 class retained primarily for backward compatibility.",
+          "`ArrayList` is a modern Collections type, while `Vector` is a Java 1.0 legacy class kept mainly for compatibility.",
+          "`Vector` remains a Java 1.0 legacy class for backward compatibility, and `ArrayList` is part of modern Collections."
+        ]
       },
       {
         "id": "E",
-        "text": "`ArrayList` is unsynchronized and faster for single-threaded use; `Vector` synchronizes every method, incurring locking overhead."
+        "variants": [
+          "`ArrayList` is unsynchronized and faster for single-threaded use; `Vector` synchronizes every method, incurring locking overhead.",
+          "`ArrayList` is unsynchronized and faster on one thread, while `Vector` locks inside every method and pays that locking overhead.",
+          "Every `Vector` method acquires a lock and adds overhead, whereas `ArrayList` is unsynchronized and faster for single-threaded use."
+        ]
       }
     ],
     "correct": [
@@ -819,23 +1574,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`LinkedList` provides O(1) insertion/deletion at known iterator nodes, but indexing to an arbitrary position requires O(n) pointer traversal."
+        "variants": [
+          "`LinkedList` provides O(1) insertion/deletion at known iterator nodes, but indexing to an arbitrary position requires O(n) pointer traversal.",
+          "`LinkedList` inserts or deletes in O(1) at a known iterator node, but an arbitrary index is still an O(n) pointer chase.",
+          "An arbitrary `LinkedList` index is an O(n) pointer walk, while insert or delete at a known iterator node stays O(1) too."
+        ]
       },
       {
         "id": "B",
-        "text": "Due to CPU cache locality and lower per-node pointer memory overhead, `ArrayList` is practically faster than `LinkedList` for most use cases."
+        "variants": [
+          "Due to CPU cache locality and lower per-node pointer memory overhead, `ArrayList` is practically faster than `LinkedList` for most use cases.",
+          "CPU cache locality and lower per-node pointer costs make `ArrayList` practically faster than `LinkedList` for most uses.",
+          "`ArrayList` beats `LinkedList` for most uses through cache locality plus lower per-node pointer memory overhead in Java."
+        ]
       },
       {
         "id": "C",
-        "text": "`LinkedList` stores primitive data types directly in nodes without requiring wrapper object autoboxing."
+        "reasons": [
+          "`LinkedList` nodes store references, so primitive values are still boxed rather than held as raw primitives.",
+          "`LinkedList.get` walks links from an end and is O(n), and nodes do not keep indexes in an auxiliary array.",
+          "A middle `ArrayList` removal shifts later elements, which is O(n), and it does not finish by rewriting only the size."
+        ],
+        "variants": [
+          "`LinkedList` stores primitive data types directly in nodes without requiring wrapper object autoboxing.",
+          "`LinkedList.get` is O(1) because each node keeps its index in an auxiliary array stored beside it.",
+          "A middle `ArrayList` removal is O(1), since it rewrites only the size field and never shifts the tail in memory."
+        ]
       },
       {
         "id": "D",
-        "text": "`LinkedList` is synchronized and thread-safe by default, whereas `ArrayList` requires external locking."
+        "reasons": [
+          "Neither `LinkedList` nor `ArrayList` synchronizes its methods by default, so `LinkedList` is not the thread-safe one.",
+          "`LinkedList` iterators are fail-fast, and a structural modification during iteration can throw `ConcurrentModificationException`.",
+          "`ArrayList.add` does not publish a happens-before edge to unsynchronized readers, so those readers can miss the new size."
+        ],
+        "variants": [
+          "`LinkedList` is synchronized and thread-safe by default, whereas `ArrayList` requires external locking.",
+          "`LinkedList` iterators are snapshots, so a structural change during iteration can never invalidate that iterator.",
+          "`ArrayList.add` creates a happens-before edge, so an unsynchronized reader is guaranteed to observe a stable size."
+        ]
       },
       {
         "id": "E",
-        "text": "`ArrayList` provides O(1) random access by index via its backing array, but middle insertions and deletions require O(n) element shifting."
+        "variants": [
+          "`ArrayList` provides O(1) random access by index via its backing array, but middle insertions and deletions require O(n) element shifting.",
+          "`ArrayList` gives O(1) index access via its backing array, but a middle insert or delete still shifts elements in O(n).",
+          "Middle inserts and deletes on an `ArrayList` shift elements in O(n), while an index read on the backing array is O(1)."
+        ]
       }
     ],
     "correct": [
@@ -853,23 +1638,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Elements must be mutually comparable; attempting to insert non-comparable objects causes a runtime `ClassCastException`."
+        "variants": [
+          "Elements must be mutually comparable; attempting to insert non-comparable objects causes a runtime `ClassCastException`.",
+          "`TreeSet` elements must be mutually comparable, and a non-comparable insert throws runtime `ClassCastException`.",
+          "A non-comparable `TreeSet` insert throws a runtime `ClassCastException`, because elements must be mutually comparable."
+        ]
       },
       {
         "id": "B",
-        "text": "It implements `NavigableSet` and maintains elements in sorted order based on natural ordering or an explicit `Comparator`."
+        "variants": [
+          "It implements `NavigableSet` and maintains elements in sorted order based on natural ordering or an explicit `Comparator`.",
+          "`TreeSet` implements `NavigableSet` and keeps elements sorted by natural ordering or by an explicit `Comparator`.",
+          "Natural ordering or an explicit `Comparator` keeps a `TreeSet` sorted, and the class implements `NavigableSet`."
+        ]
       },
       {
         "id": "C",
-        "text": "`TreeSet` determines element uniqueness using `compareTo()` or `compare()` returning 0, rather than using `equals()`."
+        "variants": [
+          "`TreeSet` determines element uniqueness using `compareTo()` or `compare()` returning 0, rather than using `equals()`.",
+          "`TreeSet` treats uniqueness as `compareTo()` or `compare()` returning 0, and it does not consult `equals()`.",
+          "When `compareTo()` or `compare()` returns 0, `TreeSet` treats the elements as duplicates instead of calling `equals()`."
+        ]
       },
       {
         "id": "D",
-        "text": "`TreeSet` allows multiple `null` elements as long as a custom comparator handles null values explicitly."
+        "reasons": [
+          "A `TreeSet` accepts at most one `null`, and only with a comparator that orders null, so multiple null elements are rejected.",
+          "`TreeSet` methods are not synchronized, so concurrent writers still need external coordination.",
+          "Iterator order is ascending under the set's ordering, and the red-black root is not defined to be the maximum element."
+        ],
+        "variants": [
+          "`TreeSet` allows multiple `null` elements as long as a custom comparator handles null values explicitly.",
+          "`TreeSet` synchronizes each public method, so concurrent writers can share one set and use no external lock whatsoever.",
+          "`TreeSet` always iterates from the largest element downward, because the tree root is defined to hold the maximum."
+        ]
       },
       {
         "id": "E",
-        "text": "`TreeSet` provides constant O(1) time complexity for `add()`, `remove()`, and `contains()` operations."
+        "reasons": [
+          "`TreeSet` operations follow the tree height, so `add`, `remove`, and `contains` are O(log n), not constant time.",
+          "Those methods walk or rebalance a path of the existing tree in O(log n) and do not rebuild the tree from scratch.",
+          "`contains` searches the current tree in O(log n) and does not sort the set again on each lookup."
+        ],
+        "variants": [
+          "`TreeSet` provides constant O(1) time complexity for `add()`, `remove()`, and `contains()` operations.",
+          "`add`, `remove`, and `contains` on a `TreeSet` are O(n), because each call rebuilds the red-black tree from scratch.",
+          "`TreeSet.contains` costs O(n log n), because each lookup sorts every element again before it searches."
+        ]
       }
     ],
     "correct": [
@@ -887,19 +1702,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Collection` as the unified root interface that extends both `List` and `Map` to provide common iteration methods."
+        "reasons": [
+          "`Collection` does not extend `List` or `Map`, because `List` extends `Collection` and `Map` is a separate interface.",
+          "`Iterator` is not the root type, and both `Collection` and `Map` are interfaces rather than concrete classes.",
+          "`List` and `Set` do not extend `Queue`, and `Map` does not extend `Queue` to obtain key lookup."
+        ],
+        "variants": [
+          "`Collection` as the unified root interface that extends both `List` and `Map` to provide common iteration methods.",
+          "`Iterator` is the shared root of both frameworks, and `Collection` and `Map` are concrete classes rather than interfaces.",
+          "`Queue` is the parent interface of both `List` and `Set`, and `Map` extends `Queue` to provide keyed lookup."
+        ]
       },
       {
         "id": "B",
-        "text": "`Iterable` as the parent interface of `Map`, allowing direct enhanced for-loop iteration over map entries without calling `entrySet()`."
+        "reasons": [
+          "`Map` does not extend `Iterable`, so a map is not itself a for-each target and entry iteration goes through `entrySet()`.",
+          "`Map` does not extend `Collection`, so a map cannot be passed where a `Collection` of entries is required.",
+          "`Deque` is not a parent of `Map` or of `Collection`, and those types do not inherit `peek` and `poll`."
+        ],
+        "variants": [
+          "`Iterable` as the parent interface of `Map`, allowing direct enhanced for-loop iteration over map entries without calling `entrySet()`.",
+          "`Map` extends `Collection`, so a map can be passed into any method that wants a `Collection` built from that map's entries without copying.",
+          "`Deque` sits above both `Map` and `Collection` as their shared parent in the core JDK, and both inherit `peek` and `poll` from that parent."
+        ]
       },
       {
         "id": "C",
-        "text": "`Map` as the top-level parent interface from which `Set`, `List`, and `Queue` inherit key-value storage properties."
+        "reasons": [
+          "`Map` is not a parent of `Set`, `List`, or `Queue`, and those interfaces do not inherit key-value storage from it.",
+          "`Set` does not extend `List`, and a set does not provide index-based access.",
+          "`Collection` does not extend `Enumeration`, and `Map` does not obtain its traversal methods from `Enumeration`."
+        ],
+        "variants": [
+          "`Map` as the top-level parent interface from which `Set`, `List`, and `Queue` inherit key-value storage properties.",
+          "`Set` extends `List` and adds a uniqueness rule while still offering index-based access to elements.",
+          "`Enumeration` is the superinterface of `Collection`, and `Map` takes its cursor methods from `Enumeration`."
+        ]
       },
       {
         "id": "D",
-        "text": "`Collection` (with subinterfaces `List`, `Set`, and `Queue`/`Deque`) and `Map` (as a distinct, parallel key-value hierarchy)."
+        "variants": [
+          "`Collection` (with subinterfaces `List`, `Set`, and `Queue`/`Deque`) and `Map` (as a distinct, parallel key-value hierarchy).",
+          "The primary roots are `Collection`, with `List`, `Set`, and `Queue`/`Deque` beneath it, and a separate parallel `Map` key-value hierarchy.",
+          "`List`, `Set`, and `Queue`/`Deque` are subinterfaces of `Collection`, while `Map` is a distinct parallel key-value hierarchy."
+        ]
       }
     ],
     "correct": [
@@ -915,19 +1761,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A `Set` always preserves the exact chronological insertion order of elements across all concrete implementations."
+        "reasons": [
+          "Insertion order is not part of the `Set` contract, and implementations such as `HashSet` do not preserve it.",
+          "The `Set` interface has no index-based `get`, and element positions are not stable indexes.",
+          "`Set` iteration is not defined as numeric `hashCode` order, and several implementations use a different order."
+        ],
+        "variants": [
+          "A `Set` always preserves the exact chronological insertion order of elements across all concrete implementations.",
+          "A `Set` provides `get` by integer index, and that index stays fixed for as long as the element remains in the set.",
+          "Every `Set` sorts its elements by `hashCode` before iteration, so traversal follows numeric hash order."
+        ]
       },
       {
         "id": "B",
-        "text": "A `List` is an ordered sequence that permits duplicate elements and allows positional access via integer indices."
+        "variants": [
+          "A `List` is an ordered sequence that permits duplicate elements and allows positional access via integer indices.",
+          "A `List` is an ordered sequence that allows duplicate elements and supports access by an integer index.",
+          "Integer indexes provide positional access on a `List`, which is an ordered sequence that also permits duplicates."
+        ]
       },
       {
         "id": "C",
-        "text": "A `Set` contains unique elements according to `equals()`, rejecting duplicate additions by returning `false`."
+        "variants": [
+          "A `Set` contains unique elements according to `equals()`, rejecting duplicate additions by returning `false`.",
+          "A `Set` stores unique elements under `equals()`, and an attempt to add a duplicate returns `false`.",
+          "Adding a duplicate element to a `Set` returns `false`, because membership is unique according to `equals()`."
+        ]
       },
       {
         "id": "D",
-        "text": "A `List` automatically sorts all inserted elements according to their natural `Comparable` implementations."
+        "reasons": [
+          "A `List` does not sort inserts by `Comparable`, because order is the positional order the caller established.",
+          "A `List` may contain many `null` elements, and indexes are not required to point at distinct non-null objects.",
+          "Inserting at an index other than zero is normal for a `List`, and the iterator does not reject that position."
+        ],
+        "variants": [
+          "A `List` automatically sorts all inserted elements according to their natural `Comparable` implementations.",
+          "A `List` rejects a second `null`, because every index must refer to a distinct non-null reference.",
+          "A `List` iterator throws if an element is inserted at any position other than the front of the list."
+        ]
       }
     ],
     "correct": [
@@ -944,19 +1816,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`java.lang.Iterable`, which declares `iterator()` and is extended by `java.util.Collection`."
+        "variants": [
+          "`java.lang.Iterable`, which declares `iterator()` and is extended by `java.util.Collection`.",
+          "`java.lang.Iterable` declares `iterator()` and is the interface extended by `java.util.Collection`.",
+          "`java.util.Collection` extends `java.lang.Iterable`, which is the type that declares `iterator()`."
+        ]
       },
       {
         "id": "B",
-        "text": "`java.lang.Cloneable`, which guarantees that all collection implementations can produce deep element copies."
+        "reasons": [
+          "`Cloneable` does not enable for-each, and it does not promise that collections produce deep copies of their elements.",
+          "For-each does not require `AutoCloseable`, and it does not close the iterator when the loop finishes.",
+          "Collections implement `Iterable` rather than extending `Iterator`, and `Iterator` is not the hierarchy root."
+        ],
+        "variants": [
+          "`java.lang.Cloneable`, which guarantees that all collection implementations can produce deep element copies.",
+          "`java.lang.AutoCloseable` is the root, because the enhanced for-each loop closes the iterator when the loop ends.",
+          "`java.util.Iterator` is the root of the hierarchy, and collection classes extend `Iterator` directly."
+        ]
       },
       {
         "id": "C",
-        "text": "`java.util.Collection`, which is the absolute root interface and contains no parent superinterfaces."
+        "reasons": [
+          "`java.util.Collection` extends `Iterable`, so it is not an absolute root and it does have a parent interface.",
+          "`List` is not the root of for-each, and `Set` and `Queue` do not obtain that loop by extending `List`.",
+          "`Object` does not declare `iterator()`, so the for-each loop is not provided by the root class."
+        ],
+        "variants": [
+          "`java.util.Collection`, which is the absolute root interface and contains no parent superinterfaces.",
+          "`java.util.List` is the root interface, and `Set` and `Queue` gain for-each only by extending `List`.",
+          "`java.lang.Object` enables for-each because it declares `iterator()` for every object in the platform."
+        ]
       },
       {
         "id": "D",
-        "text": "`java.util.Enumeration`, which provides the underlying cursor mechanism for all modern collection classes."
+        "reasons": [
+          "`Enumeration` is a legacy cursor and is not the mechanism the enhanced for-each loop uses on modern collections.",
+          "For-each is desugared to `iterator()` on `Iterable`, and it is not compiled into a `Stream` pipeline.",
+          "`RandomAccess` is an optional marker for some lists, and for-each does not require it before iterating."
+        ],
+        "variants": [
+          "`java.util.Enumeration`, which provides the underlying cursor mechanism for all modern collection classes.",
+          "`java.util.stream.Stream` is the root interface, and the enhanced for-each loop compiles into a stream pipeline.",
+          "`java.util.RandomAccess` is the root marker that for-each checks before it will iterate a collection."
+        ]
       }
     ],
     "correct": [
@@ -972,23 +1875,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Collections created via `List.of(...)` allow mutating elements in-place by providing custom `Comparator` sorting instances."
+        "reasons": [
+          "`List.of(...)` does not support in-place mutation, and a `Comparator` cannot be used to sort that list in place.",
+          "`List.of(...)` copies its elements into an unmodifiable list, so later writes to a caller array do not show up there.",
+          "`Set.of(...)` throws `UnsupportedOperationException` on `add` immediately, including before any iteration."
+        ],
+        "variants": [
+          "Collections created via `List.of(...)` allow mutating elements in-place by providing custom `Comparator` sorting instances.",
+          "`List.of(...)` is a live view of the caller-supplied array, so a later write into that array becomes visible in the list.",
+          "`Set.of(...)` still accepts `add` until iteration starts, and the set turns immutable only after that first iteration begins."
+        ]
       },
       {
         "id": "B",
-        "text": "`List.of(...)` returns an unmodifiable list that throws `UnsupportedOperationException` on any attempt to add or remove elements."
+        "variants": [
+          "`List.of(...)` returns an unmodifiable list that throws `UnsupportedOperationException` on any attempt to add or remove elements.",
+          "`List.of(...)` returns an unmodifiable list, and any `add` or `remove` call throws `UnsupportedOperationException`.",
+          "Calling `add` or `remove` on the unmodifiable list from `List.of(...)` throws `UnsupportedOperationException`."
+        ]
       },
       {
         "id": "C",
-        "text": "`Collections.emptyList()` and `List.of()` return unmodifiable empty lists with zero memory allocation overhead."
+        "variants": [
+          "`Collections.emptyList()` and `List.of()` return unmodifiable empty lists with zero memory allocation overhead.",
+          "`Collections.emptyList()` and `List.of()` both return unmodifiable empty lists with zero allocation overhead.",
+          "The unmodifiable empty lists from `List.of()` and `Collections.emptyList()` have zero memory allocation overhead."
+        ]
       },
       {
         "id": "D",
-        "text": "`Arrays.asList(...)` returns an unmodifiable list that prevents element replacement via index `set()` operations."
+        "reasons": [
+          "`Arrays.asList(...)` is a fixed-size view that still allows `set` and does not forbid element replacement.",
+          "`Arrays.asList(...)` wraps the array in a fixed-size list, so `add` and `remove` throw rather than resizing a copy.",
+          "The list from `Arrays.asList(...)` is not synchronized, and structural calls do not take the list's monitor."
+        ],
+        "variants": [
+          "`Arrays.asList(...)` returns an unmodifiable list that prevents element replacement via index `set()` operations.",
+          "`Arrays.asList(...)` copies its elements into a resizable `ArrayList` that then allows both `add` and `remove` calls.",
+          "`Arrays.asList(...)` returns a synchronized list, so every structural update locks on that same list instance."
+        ]
       },
       {
         "id": "E",
-        "text": "`List.of(...)` and `List.copyOf(...)` strictly prohibit `null` elements and throw `NullPointerException` if null is passed."
+        "variants": [
+          "`List.of(...)` and `List.copyOf(...)` strictly prohibit `null` elements and throw `NullPointerException` if null is passed.",
+          "`List.of(...)` and `List.copyOf(...)` both forbid `null` elements and throw `NullPointerException` if null is passed.",
+          "A `null` passed to `List.of(...)` or `List.copyOf(...)` throws `NullPointerException`, since null elements are forbidden."
+        ]
       }
     ],
     "correct": [
@@ -1006,19 +1939,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Comparator` defines external or alternative ordering strategies via `compare(o1, o2)` passed to sort methods."
+        "variants": [
+          "`Comparator` defines external or alternative ordering strategies via `compare(o1, o2)` passed to sort methods.",
+          "`Comparator` provides an external or alternative order through `compare(o1, o2)`, which is passed into sort methods.",
+          "Sort methods accept a `Comparator` whose `compare(o1, o2)` defines an ordering outside the element class itself."
+        ]
       },
       {
         "id": "B",
-        "text": "`Comparable` defines a class's natural ordering via `compareTo()` implemented directly by the domain class itself."
+        "variants": [
+          "`Comparable` defines a class's natural ordering via `compareTo()` implemented directly by the domain class itself.",
+          "`Comparable` defines the class's natural ordering as `compareTo()` implemented directly on the domain class.",
+          "Natural order is `compareTo()` written on the domain class, which is the ordering `Comparable` defines."
+        ]
       },
       {
         "id": "C",
-        "text": "`Comparable` can only be implemented by numeric classes; `Comparator` is used exclusively for sorting String objects."
+        "reasons": [
+          "Any class may implement `Comparable`, and `Comparator` is not limited to sorting `String` objects.",
+          "`compare` returns an int ordering, not a boolean equal to `equals`, and a nonzero result is valid.",
+          "`Comparator` is a separate object passed to the algorithm, and it is not installed by editing `compareTo`."
+        ],
+        "variants": [
+          "`Comparable` can only be implemented by numeric classes; `Comparator` is used exclusively for sorting String objects.",
+          "`Comparator.compare` must return the same boolean that `equals` returns, and a nonzero result is rejected when the code compiles.",
+          "A `Comparator` is installed by rewriting `compareTo`, because the two ordering interfaces share one method."
+        ]
       },
       {
         "id": "D",
-        "text": "Implementing `Comparable` requires the class to override `hashCode()` and `equals()` with identical return values."
+        "reasons": [
+          "Implementing `Comparable` does not require `hashCode()` and `equals()` to return the same value.",
+          "`TreeSet` orders by `compareTo` or a comparator, and it does not require that ordering to match insertion order.",
+          "One class may implement both `Comparable` and `Comparator`, because the language does not limit a type to one of them."
+        ],
+        "variants": [
+          "Implementing `Comparable` requires the class to override `hashCode()` and `equals()` with identical return values.",
+          "`Comparable` has to follow insertion order, or a `TreeSet` rejects the class at the moment the first element is added.",
+          "A class cannot implement both `Comparator` and `Comparable`, because the JVM allows only one ordering interface."
+        ]
       }
     ],
     "correct": [
@@ -1035,19 +1994,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`test-compile` runs before `compile`, so test sources are compiled before any production class exists."
+        "reasons": [
+          "`compile` runs before `test-compile`, so production classes already exist when test sources are compiled.",
+          "Dependency resolution is not what `test-compile` does, and `compile` does emit bytecode for `src/main`.",
+          "`compile` does not invoke `main`, and Surefire runs later in the `test` phase rather than in `test-compile`."
+        ],
+        "variants": [
+          "`test-compile` runs before `compile`, so test sources are compiled before any production class exists.",
+          "`test-compile` resolves project dependencies, while `compile` only type-checks sources and emits no class files.",
+          "`compile` runs `main` methods under `src/main`, and `test-compile` executes those same classes through Surefire."
+        ]
       },
       {
         "id": "B",
-        "text": "`compile` compiles `src/main`, and the later `test-compile` phase compiles `src/test` against those main classes."
+        "variants": [
+          "`compile` compiles `src/main`, and the later `test-compile` phase compiles `src/test` against those main classes.",
+          "`compile` builds classes from `src/main`, and the later `test-compile` phase builds `src/test` against those main classes.",
+          "Once `compile` has built `src/main`, `test-compile` compiles `src/test` using the classes produced from main."
+        ]
       },
       {
         "id": "C",
-        "text": "`compile` compiles both `src/main` and `src/test`, and `test-compile` only executes the tests that were just compiled."
+        "reasons": [
+          "`compile` builds only main sources, and `test-compile` compiles test sources rather than executing the tests.",
+          "Main sources are compiled by `compile`, and test sources are compiled by `test-compile`, not the other way around.",
+          "Neither phase rewrites coverage probes, since `compile` emits main classes and `test-compile` emits test classes."
+        ],
+        "variants": [
+          "`compile` compiles both `src/main` and `src/test`, and `test-compile` only executes the tests that were just compiled.",
+          "`test-compile` compiles `src/main` using the test classpath, while `compile` compiles `src/test` without those main classes.",
+          "`compile` inserts coverage probes into class files, and `test-compile` strips those probes before those unit tests can start."
+        ]
       },
       {
         "id": "D",
-        "text": "`test-compile` compiles `src/test` into the main artifact, so those classes are shipped when `package` runs."
+        "reasons": [
+          "Test classes compiled by `test-compile` stay out of the main artifact and are not shipped by `package`.",
+          "`test-compile` only compiles test sources, and `compile` does not publish the POM to a remote repository.",
+          "`compile` does not shade dependencies, and `test-compile` does not attach a sources jar."
+        ],
+        "variants": [
+          "`test-compile` compiles `src/test` into the main artifact, so those classes are shipped when `package` runs.",
+          "`test-compile` publishes the test classes to the remote repository, and `compile` installs only the project POM.",
+          "`compile` shades dependencies into a single jar, and `test-compile` attaches the sources jar to the build."
+        ]
       }
     ],
     "correct": [
@@ -1063,23 +2053,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Collections.unmodifiableList(list)` returns a read-only view that reflects subsequent mutations made to the underlying backing list."
+        "variants": [
+          "`Collections.unmodifiableList(list)` returns a read-only view that reflects subsequent mutations made to the underlying backing list.",
+          "`Collections.unmodifiableList(list)` returns a read-only view that shows later mutations of the underlying backing list.",
+          "Later changes to the backing list remain visible through the read-only view from `Collections.unmodifiableList(list)`."
+        ]
       },
       {
         "id": "B",
-        "text": "`List.copyOf(list)` creates an independent immutable snapshot that is completely isolated from subsequent backing list modifications."
+        "variants": [
+          "`List.copyOf(list)` creates an independent immutable snapshot that is completely isolated from subsequent backing list modifications.",
+          "`List.copyOf(list)` builds an independent immutable snapshot that stays isolated from later changes to the source list.",
+          "The immutable snapshot produced by `List.copyOf(list)` is fully isolated from subsequent modifications of the backing list."
+        ]
       },
       {
         "id": "C",
-        "text": "`List.copyOf(list)` returns a mutable collection copy that allows modifying elements via index `set()` invocations."
+        "reasons": [
+          "`List.copyOf(list)` returns an unmodifiable copy, so callers cannot change its elements with `set`.",
+          "`List.copyOf` does not share mutable storage with the source, so a later `set` on that source does not change the copy.",
+          "`List.copyOf` does not return the identical instance for every `List`, because a mutable source yields a new unmodifiable copy."
+        ],
+        "variants": [
+          "`List.copyOf(list)` returns a mutable collection copy that allows modifying elements via index `set()` invocations.",
+          "`List.copyOf(list)` aliases the source storage, so a later `set` on the source overwrites elements stored in the copy.",
+          "`List.copyOf(list)` returns the identical instance for every `List` it receives and never allocates a distinct copy of the data."
+        ]
       },
       {
         "id": "D",
-        "text": "`List.copyOf(list)` strictly rejects `null` elements in the source list and throws `NullPointerException` if any are present."
+        "variants": [
+          "`List.copyOf(list)` strictly rejects `null` elements in the source list and throws `NullPointerException` if any are present.",
+          "`List.copyOf(list)` rejects `null` elements in the source list and throws `NullPointerException` if any null is present.",
+          "If the source list contains a `null`, `List.copyOf(list)` throws `NullPointerException` and refuses that element."
+        ]
       },
       {
         "id": "E",
-        "text": "`Collections.unmodifiableList(list)` performs a deep recursive clone of all elements contained within the source list."
+        "reasons": [
+          "`Collections.unmodifiableList(list)` wraps the original list and does not deep-clone the elements inside it.",
+          "The wrapper is not synchronized, and reads or writes do not acquire the list's monitor.",
+          "The wrapper keeps list semantics, including duplicate elements, and it does not turn the data into a `Set`."
+        ],
+        "variants": [
+          "`Collections.unmodifiableList(list)` performs a deep recursive clone of all elements contained within the source list.",
+          "`Collections.unmodifiableList(list)` installs a synchronized view, so every read and every write takes the list's monitor.",
+          "`Collections.unmodifiableList(list)` converts the list into a `Set`, so duplicate elements are dropped from the returned view."
+        ]
       }
     ],
     "correct": [
@@ -1097,19 +2117,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`204` means a POST created a resource, `201` means success with an empty body, `403` means the caller is not yet authenticated, and `401` means the caller is authenticated but not allowed."
+        "reasons": [
+          "Those four meanings are swapped: creation is `201`, an empty success body is `204`, missing authentication is `401`, and an authenticated denial is `403`.",
+          "`200` is a general success, `204` is success with no body, `401` means unauthenticated, and `403` means authenticated but not allowed.",
+          "`201` means a resource was created, `204` means success with no body, `401` means the caller is not authenticated, and `403` means the caller is authenticated but forbidden."
+        ],
+        "variants": [
+          "`204` means a POST created a resource, `201` means success with an empty body, `403` means the caller is not yet authenticated, and `401` means the caller is authenticated but not allowed.",
+          "`200` means a resource was created, `204` means the caller is forbidden, `401` means the response body was empty, and `403` means the request conflicts with the resource's current state.",
+          "`201` means the server accepted the request for later processing, `204` means a partial byte range was returned, `401` means the HTTP method is not allowed, and `403` means the target URI was not found."
+        ]
       },
       {
         "id": "B",
-        "text": "`200` is the status for every created resource, `201` means the caller was not authenticated, and `409` means the resource was removed."
+        "reasons": [
+          "`200` is not reserved for creation, `201` means a resource was created rather than an authentication failure, and `409` means a conflict rather than deletion.",
+          "`200` is a successful response, `201` means a resource was created, and `409` means the request conflicts with current state.",
+          "`204` means success with no body, `404` means the target was not found, and `409` means a conflict rather than creation."
+        ],
+        "variants": [
+          "`200` is the status for every created resource, `201` means the caller was not authenticated, and `409` means the resource was removed.",
+          "`200` means request validation failed, `201` means the resource was deleted, and `409` means a cached response was reused without change.",
+          "`204` means the client sent too many requests, `404` means the caller lacks a required role, and `409` means the entity was just created."
+        ]
       },
       {
         "id": "C",
-        "text": "`201` means a POST created a resource, `204` means success with no response body, `401` means the caller is not authenticated, and `403` means the caller is authenticated but not allowed."
+        "variants": [
+          "`201` means a POST created a resource, `204` means success with no response body, `401` means the caller is not authenticated, and `403` means the caller is authenticated but not allowed.",
+          "`201` means a POST created a resource, `204` means success with no body, `401` means the caller is not authenticated, and `403` means the caller is authenticated but forbidden.",
+          "A POST that creates a resource is `201`, success with an empty body is `204`, an unauthenticated caller is `401`, and an authenticated caller who is not allowed is `403`."
+        ]
       },
       {
         "id": "D",
-        "text": "`401` means the request conflicts with current state, `409` means the caller must authenticate, and `204` means a new resource was created."
+        "reasons": [
+          "`401` means the caller is not authenticated, `409` means a conflict with current state, and `204` means success with no body rather than creation.",
+          "`403` means authenticated but not allowed, `301` means a permanent redirect, and `201` means a resource was created.",
+          "`200` is a successful response that may include a body, `204` means success with no body, and `400` means the request was malformed."
+        ],
+        "variants": [
+          "`401` means the request conflicts with current state, `409` means the caller must authenticate, and `204` means a new resource was created.",
+          "`403` means the resource moved permanently, `301` means the caller is forbidden, and `201` means a precondition of the request failed.",
+          "`200` means no content was returned, `204` means the request was malformed, and `400` means the update succeeded and included a response body."
+        ]
       }
     ],
     "correct": [
@@ -1125,23 +2176,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Choose `LinkedHashSet` when predictable insertion-order iteration is required, such as building LRU cache eviction queues."
+        "variants": [
+          "Choose `LinkedHashSet` when predictable insertion-order iteration is required, such as building LRU cache eviction queues.",
+          "Choose `LinkedHashSet` when iteration must follow insertion order, such as when building an LRU cache eviction queue.",
+          "An LRU cache eviction queue that needs predictable insertion-order iteration is a case for choosing `LinkedHashSet`."
+        ]
       },
       {
         "id": "B",
-        "text": "Choose `TreeSet` when elements must be sorted or queried using range operations (such as `subSet`, `headSet`, or `tailSet`)."
+        "variants": [
+          "Choose `TreeSet` when elements must be sorted or queried using range operations (such as `subSet`, `headSet`, or `tailSet`).",
+          "Choose `TreeSet` when elements must be sorted or queried with range operations such as `subSet`, `headSet`, or `tailSet`.",
+          "Sorted order, or range queries such as `subSet`, `headSet`, or `tailSet`, is a reason to choose `TreeSet`."
+        ]
       },
       {
         "id": "C",
-        "text": "Choose `TreeSet` for memory-constrained embedded environments because red-black trees consume less memory than hash tables."
+        "reasons": [
+          "A `TreeSet` node stores extra child and parent links, so it is not the smaller-memory choice versus a hash table.",
+          "Hash-based equality lookups with no ordering need are a fit for `HashSet`, not for a sorted `TreeSet`.",
+          "`LinkedHashSet` keeps insertion or access order and does not reorder elements by `compareTo` on insert."
+        ],
+        "variants": [
+          "Choose `TreeSet` for memory-constrained embedded environments because red-black trees consume less memory than hash tables.",
+          "Choose `TreeSet` when the hot path is `hashCode` equality and the program will never ask for the elements in sorted order.",
+          "Choose `LinkedHashSet` when every insertion must leave the whole set ordered by each element's `compareTo` result."
+        ]
       },
       {
         "id": "D",
-        "text": "Choose `HashSet` whenever duplicate keys must be retained in the exact chronological sequence in which they were added."
+        "reasons": [
+          "`HashSet` neither preserves chronological order nor retains duplicate keys, and a duplicate `add` is rejected.",
+          "Comparator order and rejection of non-comparable elements belong to `TreeSet`, not to `HashSet`.",
+          "A total sort on each insertion is `TreeSet` behavior, and `LinkedHashSet` is chosen when order is insertion or access order."
+        ],
+        "variants": [
+          "Choose `HashSet` whenever duplicate keys must be retained in the exact chronological sequence in which they were added.",
+          "Choose `HashSet` when iteration has to follow a `Comparator` and a non-comparable element must fail as soon as it is inserted.",
+          "Choose `LinkedHashSet` when constant-time lookup is too expensive and each insertion is required to preserve a total ordering."
+        ]
       },
       {
         "id": "E",
-        "text": "Choose `HashSet` when looking for maximum lookup, insertion, and deletion throughput and iteration order does not matter."
+        "variants": [
+          "Choose `HashSet` when looking for maximum lookup, insertion, and deletion throughput and iteration order does not matter.",
+          "Choose `HashSet` for the highest lookup, insertion, and deletion throughput when iteration order does not matter.",
+          "When iteration order is irrelevant and lookup, insertion, and deletion throughput should be maximized, choose `HashSet`."
+        ]
       }
     ],
     "correct": [
@@ -1159,19 +2240,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Hashtable` uses fine-grained lock striping across buckets; `HashMap` uses a single coarse monitor lock on the table array."
+        "reasons": [
+          "`Hashtable` synchronizes the whole table, and `HashMap` does not lock its buckets or the table on each call.",
+          "`Hashtable` rejects every `null` key and value, while `HashMap` allows one `null` key and many `null` values.",
+          "`HashMap` resizes when size passes capacity times the default 0.75 load factor, and `Hashtable` resizes as it grows too."
+        ],
+        "variants": [
+          "`Hashtable` uses fine-grained lock striping across buckets; `HashMap` uses a single coarse monitor lock on the table array.",
+          "`Hashtable` allows one `null` value but never a `null` key, while `HashMap` rejects every `null` value a caller attempts to store in it.",
+          "`HashMap` resizes only after its load factor exceeds 1.0, and `Hashtable` never resizes once construction has finished."
+        ]
       },
       {
         "id": "B",
-        "text": "`HashMap` guarantees consistent insertion-order iteration; `Hashtable` orders elements based on their internal hash codes."
+        "reasons": [
+          "Neither `HashMap` nor `Hashtable` promises insertion order, and a linked variant is what keeps insertion order.",
+          "Both maps hash the key on insert and on lookup, and `Hashtable` does not replace the key with its `toString` text.",
+          "Crossing the load factor resizes either table and rehashes entries, and it does not evict the oldest `Hashtable` entry."
+        ],
+        "variants": [
+          "`HashMap` guarantees consistent insertion-order iteration; `Hashtable` orders elements based on their internal hash codes.",
+          "`HashMap` hashes a key only during `get`, and `Hashtable` stores `toString` of the key as the only lookup token it keeps.",
+          "`Hashtable` drops its oldest entry when the load factor is reached, and `HashMap` never drops entries while resizing the table."
+        ]
       },
       {
         "id": "C",
-        "text": "`Hashtable` is part of modern `java.util.concurrent`; `HashMap` is a deprecated legacy class retained for compatibility."
+        "reasons": [
+          "`HashMap` is the current `java.util` map, and `Hashtable` is the legacy synchronized class, not a concurrent-package type.",
+          "The usual defaults are capacity 16 and load factor 0.75 for `HashMap`, and capacity 11 and load factor 0.75 for `Hashtable`.",
+          "Both maps provide fail-fast iterators, so `Hashtable` does not ignore structural changes and `HashMap` can be iterated."
+        ],
+        "variants": [
+          "`Hashtable` is part of modern `java.util.concurrent`; `HashMap` is a deprecated legacy class retained for compatibility.",
+          "`HashMap` defaults to a capacity of 11, and `Hashtable` defaults to a capacity of 16 with a load factor of exactly 1.",
+          "`Hashtable` iterators skip structural-modification checks, while `HashMap` exposes no iterator and cannot walk its entries."
+        ]
       },
       {
         "id": "D",
-        "text": "`HashMap` is unsynchronized and permits one `null` key and multiple `null` values; `Hashtable` is synchronized and rejects all `null`s."
+        "variants": [
+          "`HashMap` is unsynchronized and permits one `null` key and multiple `null` values; `Hashtable` is synchronized and rejects all `null`s.",
+          "`HashMap` is unsynchronized, allows one `null` key and many `null` values, and `Hashtable` is synchronized and rejects all `null`s.",
+          "One `null` key and multiple `null` values are allowed in unsynchronized `HashMap`, while synchronized `Hashtable` rejects every `null`."
+        ]
       }
     ],
     "correct": [
@@ -1187,23 +2299,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Iterators in `ConcurrentHashMap` are weakly consistent, reflecting map state at or since creation without throwing `ConcurrentModificationException`."
+        "variants": [
+          "Iterators in `ConcurrentHashMap` are weakly consistent, reflecting map state at or since creation without throwing `ConcurrentModificationException`.",
+          "`ConcurrentHashMap` iterators are weakly consistent for state at or after creation, and they skip `ConcurrentModificationException`.",
+          "A `ConcurrentHashMap` iterator is weakly consistent with state at or since creation and never throws `ConcurrentModificationException`."
+        ]
       },
       {
         "id": "B",
-        "text": "`ConcurrentHashMap` permits `null` keys and `null` values to maintain compatibility with standard `HashMap` semantics."
+        "reasons": [
+          "`ConcurrentHashMap` rejects `null` keys and `null` values, so it does not copy `HashMap` null semantics.",
+          "Readers are not stalled until a resizing writer completes, and `get` proceeds without taking a whole-map lock.",
+          "A concurrent `get` overlapping `put` does not throw `ConcurrentModificationException` on `ConcurrentHashMap`."
+        ],
+        "variants": [
+          "`ConcurrentHashMap` permits `null` keys and `null` values to maintain compatibility with standard `HashMap` semantics.",
+          "`ConcurrentHashMap` blocks each reader for the whole resize and lets them continue only after that resizing writer finishes the resize.",
+          "`ConcurrentHashMap` throws `ConcurrentModificationException` whenever `get` overlaps a `put` that updates the same hash bin."
+        ]
       },
       {
         "id": "C",
-        "text": "`ConcurrentHashMap` uses lock-free CAS and bucket-level locking, avoiding whole-map locks during concurrent reads and writes."
+        "variants": [
+          "`ConcurrentHashMap` uses lock-free CAS and bucket-level locking, avoiding whole-map locks during concurrent reads and writes.",
+          "`ConcurrentHashMap` uses lock-free CAS and bucket-level locks, so concurrent reads and writes avoid a lock on the whole map.",
+          "Whole-map locks are avoided because `ConcurrentHashMap` combines lock-free CAS with locking at the individual bucket."
+        ]
       },
       {
         "id": "D",
-        "text": "`Collections.synchronizedMap` provides lock-free non-blocking read access by utilizing copy-on-write table arrays."
+        "reasons": [
+          "`Collections.synchronizedMap` locks the whole map on access and does not serve lock-free reads from a copy-on-write array.",
+          "The wrapper uses one mutex for the map, so writers on different keys still block each other.",
+          "A `null` key is allowed when the wrapped map allows it, such as a `HashMap`, and it is not limited to `TreeMap`."
+        ],
+        "variants": [
+          "`Collections.synchronizedMap` provides lock-free non-blocking read access by utilizing copy-on-write table arrays.",
+          "`Collections.synchronizedMap` stripes one lock per key hash, so writers that update different keys do not block each other.",
+          "`Collections.synchronizedMap` permits a `null` key only when the map wrapped by that call is specifically a `TreeMap`."
+        ]
       },
       {
         "id": "E",
-        "text": "`Collections.synchronizedMap` and `Hashtable` lock the entire backing map object on every method invocation via a single monitor."
+        "variants": [
+          "`Collections.synchronizedMap` and `Hashtable` lock the entire backing map object on every method invocation via a single monitor.",
+          "`Collections.synchronizedMap` and `Hashtable` both lock the entire backing map on every method call through one monitor.",
+          "Every method on `Hashtable` and on `Collections.synchronizedMap` acquires a single monitor on the whole backing map."
+        ]
       }
     ],
     "correct": [
@@ -1221,19 +2363,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It creates a full copy-on-write clone of the entire internal node table array on every put, replace, and delete invocation."
+        "reasons": [
+          "Updates do not clone the whole node table on each `put`, `replace`, or `remove`, because only the affected bin is updated.",
+          "`get` does not take the map's intrinsic lock, and readers do not spin until writers release such a lock.",
+          "Resize keeps the table a hash array of bins and does not replace those bins with a `TreeMap` until `clear`."
+        ],
+        "variants": [
+          "It creates a full copy-on-write clone of the entire internal node table array on every put, replace, and delete invocation.",
+          "Every `get` acquires the map's intrinsic lock, and the reader keeps retrying until writers have released that lock.",
+          "Resizing copies each bin into a `TreeMap`, and later lookups read only that tree until the map itself is cleared."
+        ]
       },
       {
         "id": "B",
-        "text": "It synchronizes exclusively on the first head node of an occupied bin during contended hash bucket insertion and update operations."
+        "variants": [
+          "It synchronizes exclusively on the first head node of an occupied bin during contended hash bucket insertion and update operations.",
+          "During a contended insert or update of an occupied bin, synchronization is taken only on that bin's first head node.",
+          "A contended insertion or update locks exclusively the first head node of the occupied bin and does not lock any other node."
+        ]
       },
       {
         "id": "C",
-        "text": "It uses lock-free atomic CAS instructions to populate empty bucket bins without acquiring intrinsic monitor locks."
+        "variants": [
+          "It uses lock-free atomic CAS instructions to populate empty bucket bins without acquiring intrinsic monitor locks.",
+          "Empty bins are filled with a lock-free atomic CAS, so that update does not take an intrinsic monitor lock.",
+          "It can install a node in an empty bin with lock-free CAS and does not acquire an intrinsic monitor lock to do it."
+        ]
       },
       {
         "id": "D",
-        "text": "It partitions the hash table into sixteen fixed `Segment` arrays, where each segment acquires an independent `ReentrantLock`."
+        "reasons": [
+          "Java 8 removed fixed `Segment` arrays, so the table is not split into sixteen segments that each take a `ReentrantLock`.",
+          "There is no global resize mutex that every bin update must acquire before the bin can change.",
+          "Bin reads do not take a per-bucket `ReentrantReadWriteLock`, because empty bins use CAS and occupied bins lock the head node."
+        ],
+        "variants": [
+          "It partitions the hash table into sixteen fixed `Segment` arrays, where each segment acquires an independent `ReentrantLock`.",
+          "Java 8 `ConcurrentHashMap` takes one table-wide resize lock before any bin is permitted to accept a concurrent update at all.",
+          "Each bucket stores a `ReentrantReadWriteLock`, and a reader must keep the read lock while walking that whole chain."
+        ]
       }
     ],
     "correct": [
@@ -1250,19 +2418,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Average time complexity is O(1); worst-case is O(log n) due to bucket treeification when many keys collide in a single bin."
+        "variants": [
+          "Average time complexity is O(1); worst-case is O(log n) due to bucket treeification when many keys collide in a single bin.",
+          "Average `HashMap.get` time is O(1), and the worst case is O(log n) after a bin with many colliding keys is treeified.",
+          "Treeification of a bin where many keys collide makes worst-case `get` O(log n), while average time stays O(1)."
+        ]
       },
       {
         "id": "B",
-        "text": "Average time complexity is O(1); worst-case is strictly O(1) guaranteed by cryptographic murmur hashing algorithms."
+        "reasons": [
+          "The worst case is not strict O(1), and murmur hashing does not remove collision chains or tree bins.",
+          "Bins start as lists and treeify only after enough collisions, so the average `get` is not O(log n) from the first insert.",
+          "A collision does not sort the entire table, and that story is not the average or worst-case cost of `get`."
+        ],
+        "variants": [
+          "Average time complexity is O(1); worst-case is strictly O(1) guaranteed by cryptographic murmur hashing algorithms.",
+          "Average time is O(log n) and worst-case time is O(log n), because every bin is a balanced tree from the first insert.",
+          "Average time is O(n) and worst-case time is O(n log n), because one collision sorts the whole table before keys are compared."
+        ]
       },
       {
         "id": "C",
-        "text": "Average time complexity is O(n); worst-case is O(n^2) when hash codes are distributed uniformly across all buckets."
+        "reasons": [
+          "Uniform hash codes make the average O(1), and they do not produce an O(n) average or an O(n^2) worst case.",
+          "`get` hashes to a bucket instead of binary-searching the entry array, so those bounds do not describe it.",
+          "A collision does not rehash every key, and `get` is not O(n^2) on average or O(n^3) at worst."
+        ],
+        "variants": [
+          "Average time complexity is O(n); worst-case is O(n^2) when hash codes are distributed uniformly across all buckets.",
+          "Average time is O(n log n) and worst-case time is O(n), because `get` binary-searches the entry array on every call.",
+          "Average time is O(n^2) and worst-case time is O(n^3), because each collision rehashes every key already stored in the map."
+        ]
       },
       {
         "id": "D",
-        "text": "Average time complexity is O(log n); worst-case is O(n) because of dynamic array resizing and rehashing overhead."
+        "reasons": [
+          "Resize cost is not the complexity of `get`, whose average is O(1) and whose treeified worst case is O(log n).",
+          "`get` does not scan the whole table, and the load factor is not driven down as part of a lookup.",
+          "Resize rehashes bins into a larger array and does not sort colliding keys to produce those bounds for `get`."
+        ],
+        "variants": [
+          "Average time complexity is O(log n); worst-case is O(n) because of dynamic array resizing and rehashing overhead.",
+          "Average time is O(n) and worst-case time is O(1), because `get` scans the table until the load factor drops below 0.5.",
+          "Average time is O(n^2) and worst-case time is O(log n), because a resize sorts the colliding keys before lookup continues."
+        ]
       }
     ],
     "correct": [
@@ -1278,19 +2477,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Deque` is an immutable sorted collection; standard implementations include `TreeDeque` and `ConcurrentSkipListDeque`."
+        "reasons": [
+          "`Deque` is not an immutable sorted collection, and the JDK does not provide `TreeDeque` or `ConcurrentSkipListDeque`.",
+          "`PriorityQueue` implements a heap-ordered queue, and it is not the standard implementation of `Deque`.",
+          "A `Deque` supports insertion and removal at both ends, so it is not limited to tail insertion and head removal."
+        ],
+        "variants": [
+          "`Deque` is an immutable sorted collection; standard implementations include `TreeDeque` and `ConcurrentSkipListDeque`.",
+          "`Deque` is a priority queue ordered by a `Comparator`, and its standard implementation is `PriorityQueue`.",
+          "`Deque` allows insertion only at the tail and removal only at the head, matching a plain single-ended `Queue`."
+        ]
       },
       {
         "id": "B",
-        "text": "`Deque` is a double-ended queue supporting insertion/removal at both ends; standard implementations include `ArrayDeque` and `LinkedList`."
+        "variants": [
+          "`Deque` is a double-ended queue supporting insertion/removal at both ends; standard implementations include `ArrayDeque` and `LinkedList`.",
+          "`Deque` is a double-ended queue with insertion and removal at both ends, and `ArrayDeque` and `LinkedList` are standard implementations.",
+          "Standard implementations of `Deque` include `ArrayDeque` and `LinkedList`, and the interface adds and removes elements at both ends."
+        ]
       },
       {
         "id": "C",
-        "text": "`Deque` is a blocking-only concurrency interface designed exclusively for thread-to-thread message exchange in executors."
+        "reasons": [
+          "`Deque` is a general double-ended queue, not a blocking-only interface reserved for executor handoff.",
+          "`Deque` holds single elements, and `EnumMap` and `WeakHashMap` are `Map` implementations rather than deques.",
+          "`Deque` is not a random-access list, and `ArrayList` and `CopyOnWriteArrayList` do not implement it."
+        ],
+        "variants": [
+          "`Deque` is a blocking-only concurrency interface designed exclusively for thread-to-thread message exchange in executors.",
+          "`Deque` stores key-value entries rather than plain elements, and the JDK implements it with `EnumMap` and `WeakHashMap`.",
+          "`Deque` is a random-access list indexed like an array, and its implementations are `ArrayList` and `CopyOnWriteArrayList` in `java.util`."
+        ]
       },
       {
         "id": "D",
-        "text": "`Deque` requires elements to implement `Comparable` and is implemented solely by the legacy `java.util.Stack` class."
+        "reasons": [
+          "`Deque` does not require `Comparable`, and `java.util.Stack` is not its sole implementation.",
+          "Several `Deque` implementations allow duplicates, and `TreeSet` is a `NavigableSet` rather than the only deque.",
+          "`Serializable` is not required of deque elements, and `Vector` does not implement `Deque`."
+        ],
+        "variants": [
+          "`Deque` requires elements to implement `Comparable` and is implemented solely by the legacy `java.util.Stack` class.",
+          "`Deque` forbids `null` and duplicate elements, and `TreeSet` is its only implementation in the JDK.",
+          "`Deque` requires every element to be `Serializable`, and it is implemented only by the legacy `Vector` class."
+        ]
       }
     ],
     "correct": [
@@ -1306,19 +2536,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`package` uploads the artifact to the remote repository, and `install` only compiles sources into `target/classes`."
+        "reasons": [
+          "`package` writes the artifact under `target` and does not upload it, while `install` does more than compile classes.",
+          "Unit tests run in the `test` phase, and `install` copies the packaged artifact into the local repository.",
+          "`deploy` uploads to a remote repository, and `package` leaves the artifact in `target` rather than deleting that directory."
+        ],
+        "variants": [
+          "`package` uploads the artifact to the remote repository, and `install` only compiles sources into `target/classes`.",
+          "`package` runs the unit tests, and `install` only checks the POM without writing a build artifact.",
+          "`deploy` copies the jar into `src/main/resources`, and `package` deletes the `target` directory after a successful build."
+        ]
       },
       {
         "id": "B",
-        "text": "`deploy` writes the jar into `target`, and `install` is only another name for the `package` phase rather than a copy into the local repository."
+        "reasons": [
+          "`deploy` uploads an already packaged artifact, and `install` is a distinct phase that copies it into the local repository.",
+          "Publishing to a remote repository is `deploy`, and `package` creates the artifact rather than updating `.m2` checksums.",
+          "`deploy` does not compile sources, and `install` copies the main artifact into the local repository."
+        ],
+        "variants": [
+          "`deploy` writes the jar into `target`, and `install` is only another name for the `package` phase rather than a copy into the local repository.",
+          "`install` publishes a snapshot build out to the remote Maven repository, while `package` only refreshes checksum files in the local `.m2` store.",
+          "`deploy` is what compiles the project sources, and `install` merely attaches a javadoc jar without storing the main artifact anywhere."
+        ]
       },
       {
         "id": "C",
-        "text": "`package` writes the artifact into `target`, `install` copies it to the local repository, and `deploy` uploads it to a remote repository."
+        "variants": [
+          "`package` writes the artifact into `target`, `install` copies it to the local repository, and `deploy` uploads it to a remote repository.",
+          "`package` writes the artifact into `target`, `install` copies it into the local repository, and `deploy` uploads it to a remote repository.",
+          "The artifact is placed in `target` by `package`, copied to the local repository by `install`, and uploaded to a remote repository by `deploy`."
+        ]
       },
       {
         "id": "D",
-        "text": "`install` publishes the artifact to the remote repository, and `deploy` only updates the local `.m2` repository."
+        "reasons": [
+          "`install` copies the artifact into the local repository, and `deploy` is what uploads it to a remote repository.",
+          "`package` builds the artifact locally, and `install` does not call `deploy` only for versions that end in `-SNAPSHOT`.",
+          "`deploy` uploads to a remote repository, and `package` writes the artifact under `target` rather than installing a JDK extension."
+        ],
+        "variants": [
+          "`install` publishes the artifact to the remote repository, and `deploy` only updates the local `.m2` repository.",
+          "`package` uploads sources to the remote repository, and `install` runs `deploy` only for a version ending in `-SNAPSHOT`.",
+          "`deploy` writes the artifact into the module `src` tree, and `package` installs that artifact as a JDK extension."
+        ]
       }
     ],
     "correct": [
@@ -1334,23 +2595,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Arrays provide built-in type-safe resizing methods; `ArrayList` requires manual array allocation to expand capacity."
+        "reasons": [
+          "Arrays have a fixed length and no built-in resize method, while `ArrayList` grows its own backing array.",
+          "An array's component type is fixed at creation, and an `ArrayList`'s compile-time element type does not change later either.",
+          "`ArrayList.equals` compares contents, while `==` on arrays compares references and does not treat equal contents as the same array."
+        ],
+        "variants": [
+          "Arrays provide built-in type-safe resizing methods; `ArrayList` requires manual array allocation to expand capacity.",
+          "An array can change its component type after it is created, while an `ArrayList` freezes its element type for the object's lifetime.",
+          "`ArrayList` compares elements by reference, while two arrays with equal contents always compare as true under `==`."
+        ]
       },
       {
         "id": "B",
-        "text": "Arrays can store both primitive types and object references directly; `ArrayList` can store only object references (primitives are autoboxed)."
+        "variants": [
+          "Arrays can store both primitive types and object references directly; `ArrayList` can store only object references (primitives are autoboxed).",
+          "Arrays store primitive values and object references directly, while `ArrayList` stores only references and autoboxes primitives.",
+          "`ArrayList` stores only object references and autoboxes primitives, while arrays store primitives and references directly."
+        ]
       },
       {
         "id": "C",
-        "text": "Arrays have a fixed size established at instantiation; `ArrayList` dynamically resizes its backing array as elements are added."
+        "variants": [
+          "Arrays have a fixed size established at instantiation; `ArrayList` dynamically resizes its backing array as elements are added.",
+          "An array has a fixed size chosen at instantiation, while `ArrayList` resizes its backing array as elements are added.",
+          "`ArrayList` grows its backing array as elements are added, whereas an array's length is fixed when the array is created."
+        ]
       },
       {
         "id": "D",
-        "text": "Arrays implement `Collection` and `Iterable`, allowing native array instances to invoke stream collectors directly."
+        "reasons": [
+          "Arrays do not implement `Collection` or `Iterable`, so an array does not itself invoke stream collectors.",
+          "Arrays are reified and `ArrayList` generics are not, so those two types do not share one runtime component type.",
+          "`java.util.Arrays` is a utility class, not a superclass of `ArrayList` or of native arrays, so that cast is illegal."
+        ],
+        "variants": [
+          "Arrays implement `Collection` and `Iterable`, allowing native array instances to invoke stream collectors directly.",
+          "Arrays are generic types, so a `String[]` and an `ArrayList<String>` have the same reified component type at runtime.",
+          "An `ArrayList` can be cast to a native array type because both types extend the class `java.util.Arrays`."
+        ]
       },
       {
         "id": "E",
-        "text": "Arrays support covariant typing (`String[]` can be assigned to `Object[]`), whereas generic `ArrayList<String>` is invariant."
+        "variants": [
+          "Arrays support covariant typing (`String[]` can be assigned to `Object[]`), whereas generic `ArrayList<String>` is invariant.",
+          "Arrays are covariant, so a `String[]` may be assigned to an `Object[]`, whereas a generic `ArrayList<String>` is invariant.",
+          "A generic `ArrayList<String>` is invariant, while arrays are covariant and allow a `String[]` to be assigned to an `Object[]`."
+        ]
       }
     ],
     "correct": [
@@ -1368,19 +2659,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Map` stores data exclusively in disk-backed hash files, whereas `Collection` stores data exclusively in JVM RAM."
+        "reasons": [
+          "`Map` and `Collection` are both in-memory interfaces, and `Map` is not defined as storage in disk-backed hash files.",
+          "Map keys are unique regardless of the values, and a `Collection` such as a `List` is allowed to contain duplicates.",
+          "`Map` does not extend `List`, and an entry is not represented as two adjacent list elements."
+        ],
+        "variants": [
+          "`Map` stores data exclusively in disk-backed hash files, whereas `Collection` stores data exclusively in JVM RAM.",
+          "`Map` allows duplicate keys whenever the mapped values differ, while each `Collection` rejects an element already present at all.",
+          "`Map` is a subinterface of `List` that stores every entry as two consecutive elements inside the backing list."
+        ]
       },
       {
         "id": "B",
-        "text": "`Map` can only be traversed using legacy `Enumeration` cursors rather than modern iterator or stream pipelines."
+        "reasons": [
+          "`Map` supports iterators and streams through its views, and traversal is not limited to legacy `Enumeration` cursors.",
+          "Iteration order is not sorted for every `Map`, and `HashMap` in particular does not iterate keys in sorted order.",
+          "`Map` provides `entrySet()`, so callers can traverse entries without first copying them into a `List`."
+        ],
+        "variants": [
+          "`Map` can only be traversed using legacy `Enumeration` cursors rather than modern iterator or stream pipelines.",
+          "Every `Map`, including `HashMap`, iterates its entries in sorted key order on each traversal of the map.",
+          "A `Map` exposes no entry `Set`, so the only way to walk its pairs is to copy those pairs into a `List` first."
+        ]
       },
       {
         "id": "C",
-        "text": "`Map` is an implementation class of `Collection` that restricts keys and values to identical generic types."
+        "reasons": [
+          "`Map` is not a class that implements `Collection`, and it does not force the key type and the value type to be identical.",
+          "`Map.get` looks up a value by key, and `Collection` has no general operation that returns an index for an element.",
+          "`Map` and `Collection` are peer hierarchies, and a map does not replace `Collection` for ordinary element storage."
+        ],
+        "variants": [
+          "`Map` is an implementation class of `Collection` that restricts keys and values to identical generic types.",
+          "`Map` lookup returns the key for a supplied value, and `Collection` lookup returns the index of a supplied element.",
+          "`Map` replaced `Collection` in the redesign, so new code should avoid `Collection` when a map type is available."
+        ]
       },
       {
         "id": "D",
-        "text": "`Map` represents key-value associations where keys are unique, and its dual-value design does not conform to the single-element `Collection` contract."
+        "variants": [
+          "`Map` represents key-value associations where keys are unique, and its dual-value design does not conform to the single-element `Collection` contract.",
+          "`Map` holds unique-key pairs, and that two-part shape does not conform to the single-element contract of `Collection` in the JDK.",
+          "A `Map` binds unique keys to values, so its pair-shaped contract differs from the single-element contract of `Collection` itself."
+        ]
       }
     ],
     "correct": [
@@ -1396,23 +2718,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Threads never share memory, which prevents data races and eliminates the possibility of deadlocks in multi-threaded programs."
+        "reasons": [
+          "Threads of one process share heap memory, so shared data can race and lock ordering can still deadlock.",
+          "Threads of a process share the process file-descriptor table, so one thread can read a file another thread opened.",
+          "A platform Java thread is backed by an operating-system thread and is scheduled by the operating system."
+        ],
+        "variants": [
+          "Threads never share memory, which prevents data races and eliminates the possibility of deadlocks in multi-threaded programs.",
+          "Threads inside one process cannot share file descriptors, so each thread must open the same file again before it can read that file.",
+          "A Java thread is scheduled only inside the interpreter loop and never exists as a schedulable entity of the operating system."
+        ]
       },
       {
         "id": "B",
-        "text": "Context switching between threads within the same process is generally faster and less resource-intensive than inter-process switching."
+        "variants": [
+          "Context switching between threads within the same process is generally faster and less resource-intensive than inter-process switching.",
+          "Switching between threads of the same process is generally faster and cheaper than switching from one process to another.",
+          "A context switch between processes generally costs more than a switch between threads that belong to the same process."
+        ]
       },
       {
         "id": "C",
-        "text": "A process possesses its own isolated virtual address space; threads within the same process share heap memory and resources."
+        "variants": [
+          "A process possesses its own isolated virtual address space; threads within the same process share heap memory and resources.",
+          "A process owns an isolated virtual address space, while threads in that process share the heap and other process resources.",
+          "Threads within one process share heap memory and resources, whereas the process keeps its own isolated virtual address space."
+        ]
       },
       {
         "id": "D",
-        "text": "Each Java thread has its own private call stack to manage local variables, partial results, and method invocation frames."
+        "variants": [
+          "Each Java thread has its own private call stack to manage local variables, partial results, and method invocation frames.",
+          "Each Java thread has a private call stack that holds local variables, partial results, and method invocation frames.",
+          "Local variables, partial results, and method invocation frames are kept on the private call stack of each Java thread."
+        ]
       },
       {
         "id": "E",
-        "text": "Terminating a thread immediately destroys the parent process and releases all operating system file descriptor handles."
+        "reasons": [
+          "Ending one thread does not destroy the process, and it does not close every file descriptor the process holds.",
+          "`Thread.stop()` does not roll back that thread's writes, and other threads can already have observed them.",
+          "The JVM exits when no non-daemon threads remain, and daemon threads do not keep the process running."
+        ],
+        "variants": [
+          "Terminating a thread immediately destroys the parent process and releases all operating system file descriptor handles.",
+          "Calling `Thread.stop()` rolls back the writes of that thread and leaves every other thread's memory unchanged.",
+          "After the last non-daemon thread returns, the JVM stays alive until every daemon thread returns as well."
+        ]
       }
     ],
     "correct": [
@@ -1430,23 +2782,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Forced Preemption: the operating system forcibly reclaims resources held by threads whenever contention is detected."
+        "reasons": [
+          "Deadlock requires the absence of preemption, where a holder is not forced to give up a resource, rather than forced reclaim on contention.",
+          "Spurious wakeup is a `wait`/`notify` hazard, and it is not one of the Coffman conditions required for deadlock.",
+          "Lock fairness is not a Coffman condition, and a circular wait can form under an unfair scheduler."
+        ],
+        "variants": [
+          "Forced Preemption: the operating system forcibly reclaims resources held by threads whenever contention is detected.",
+          "Spurious Wakeup: a deadlock requires that a waiting thread can return from `wait` even when no other thread has signaled it.",
+          "Fair Scheduling: a deadlock requires locks to be granted in FIFO order, because otherwise a waiting cycle cannot form."
+        ]
       },
       {
         "id": "B",
-        "text": "Active Livelock: all threads continuously modify their internal states in response to each other without blocking."
+        "reasons": [
+          "Livelock is threads staying active without progress, and it is not one of the Coffman conditions for deadlock.",
+          "Priority inversion can delay a thread, but deadlock does not require a low-priority holder and a higher-priority waiter.",
+          "Nested `wait` on an owned monitor is a separate locking bug, and deadlock does not require that pattern on every thread."
+        ],
+        "variants": [
+          "Active Livelock: all threads continuously modify their internal states in response to each other without blocking.",
+          "Priority Inversion: deadlock requires a low-priority thread to hold a lock while a higher-priority thread is runnable.",
+          "Nested Monitor Lockout: deadlock requires every blocked thread to call `wait` on a monitor that it already owns."
+        ]
       },
       {
         "id": "C",
-        "text": "Circular Wait: a closed chain of threads exists such that each thread holds a resource needed by the subsequent thread."
+        "variants": [
+          "Circular Wait: a closed chain of threads exists such that each thread holds a resource needed by the subsequent thread.",
+          "Circular Wait is a closed chain of threads in which each thread holds a resource that the next thread needs.",
+          "A cycle where each thread holds a resource requested by the following thread is the Circular Wait condition."
+        ]
       },
       {
         "id": "D",
-        "text": "Mutual Exclusion: at least one shared resource must be held in a non-shareable mode by an active thread."
+        "variants": [
+          "Mutual Exclusion: at least one shared resource must be held in a non-shareable mode by an active thread.",
+          "Mutual Exclusion means at least one shared resource is held by a thread in a mode that other threads cannot share.",
+          "At least one resource must be held in a non-shareable mode by an active thread, which is Mutual Exclusion."
+        ]
       },
       {
         "id": "E",
-        "text": "Hold and Wait: a thread currently holding at least one resource must be waiting to acquire additional busy resources."
+        "variants": [
+          "Hold and Wait: a thread currently holding at least one resource must be waiting to acquire additional busy resources.",
+          "Hold and Wait means a thread that already holds some resource is waiting to acquire more resources that are still busy.",
+          "A thread that keeps at least one resource while waiting for additional busy resources is in Hold and Wait."
+        ]
       }
     ],
     "correct": [
@@ -1464,19 +2846,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It consists of three separate operations (read, modify, write) that can be interleaved by other threads, leading to lost updates."
+        "variants": [
+          "It consists of three separate operations (read, modify, write) that can be interleaved by other threads, leading to lost updates.",
+          "`count++` performs a read, a modify, and a write, and other threads can interleave those steps so that updates are lost.",
+          "Updates are lost because `count++` is three separate steps, read then modify then write, which other threads may interleave."
+        ]
       },
       {
         "id": "B",
-        "text": "The compiler automatically caches incremented variables in local CPU registers and never writes them back to main memory."
+        "reasons": [
+          "The compiler does write incremented fields back to memory, so the failure of `count++` is not a register that is never stored.",
+          "The `iinc` or load-add-store sequence for an `int` uses 32-bit integer arithmetic, not a 64-bit `long` add.",
+          "`count++` stores the new value once in the read-modify-write sequence and does not then publish the old value through another barrier."
+        ],
+        "variants": [
+          "The compiler automatically caches incremented variables in local CPU registers and never writes them back to main memory.",
+          "`count++` is unsafe because the bytecode performs a 64-bit `long` add even when the variable `count` is an `int`.",
+          "The increment writes the previous value after the new value, so `count++` publishes a stale result through a second memory barrier."
+        ]
       },
       {
         "id": "C",
-        "text": "Integer primitive types in Java do not support two's complement arithmetic when modified concurrently across threads."
+        "reasons": [
+          "Java `int` values keep two's complement arithmetic under concurrency, and the race is the non-atomic read-modify-write.",
+          "Overflow of an `int` wraps in two's complement on every thread, and a concurrent `count++` does not throw instead.",
+          "A plain `int` read or write is atomic, so the race in `count++` is the compound update, not a torn word."
+        ],
+        "variants": [
+          "Integer primitive types in Java do not support two's complement arithmetic when modified concurrently across threads.",
+          "A shared `int` wraps around on a single thread, but a concurrent overflow of `count++` throws an exception instead of wrapping.",
+          "The increment is unsafe because a racy write of an `int` can tear and expose a half-updated word to another thread on a typical JVM."
+        ]
       },
       {
         "id": "D",
-        "text": "The JVM converts the increment instruction into a hardware floating-point instruction that disables atomic memory synchronization."
+        "reasons": [
+          "The increment stays an integer read-modify-write, and it is not rewritten as a floating-point instruction that turns off atomicity.",
+          "A plain `count++` does not compile to `compareAndSet`, so it does not retry when another thread wrote the same number.",
+          "The JIT does not drop a live increment merely because `count` is not `volatile`, and the race remains a non-atomic update."
+        ],
+        "variants": [
+          "The JVM converts the increment instruction into a hardware floating-point instruction that disables atomic memory synchronization.",
+          "`count++` compiles to a `compareAndSet` loop in bytecode that retries forever once another thread has stored that same integer value.",
+          "The JIT deletes the increment during compilation whenever it cannot prove that the shared field `count` has been declared `volatile`."
+        ]
       }
     ],
     "correct": [
@@ -1492,19 +2905,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A class is guaranteed thread-safe if all of its instance methods execute asynchronously on background daemon threads."
+        "reasons": [
+          "Running methods on daemon threads does not make a class thread-safe, because those calls can still race on shared state.",
+          "Private methods can still run concurrently on shared state, so privacy alone does not establish thread safety.",
+          "Starting and joining a thread per call is not what thread safety means, and it does not by itself protect shared fields."
+        ],
+        "variants": [
+          "A class is guaranteed thread-safe if all of its instance methods execute asynchronously on background daemon threads.",
+          "Declaring every method `private` makes a class thread-safe, because no outside caller can enter those methods at the same time.",
+          "Thread safety means the class starts a new `Thread` for each method call and joins that thread before the call returns."
+        ]
       },
       {
         "id": "B",
-        "text": "Thread safety can be established via immutability, thread confinement, explicit locks, or non-blocking atomic classes."
+        "variants": [
+          "Thread safety can be established via immutability, thread confinement, explicit locks, or non-blocking atomic classes.",
+          "Thread safety can be obtained through immutability, thread confinement, explicit locks, or non-blocking atomic classes.",
+          "Immutability, confinement to one thread, explicit locks, or non-blocking atomics are all ways to establish thread safety."
+        ]
       },
       {
         "id": "C",
-        "text": "A class is thread-safe if it behaves correctly when accessed by concurrent threads without extra caller synchronization."
+        "variants": [
+          "A class is thread-safe if it behaves correctly when accessed by concurrent threads without extra caller synchronization.",
+          "A class is thread-safe when concurrent threads still see correct behavior without the caller adding further synchronization.",
+          "Thread safety means the class behaves correctly under concurrent access even when the caller adds no extra synchronization."
+        ]
       },
       {
         "id": "D",
-        "text": "Thread safety requires that all class fields be declared `volatile` and accessed exclusively through static methods."
+        "reasons": [
+          "Thread safety does not require every field to be `volatile` or every access to go through a static method.",
+          "Shared fields may be read by several threads when access is properly synchronized, and `synchronized` on every method is not the only valid design.",
+          "Extending `Thread` and starting in the constructor does not make the object's state safe for concurrent callers."
+        ],
+        "variants": [
+          "Thread safety requires that all class fields be declared `volatile` and accessed exclusively through static methods.",
+          "Thread safety requires every method to be `synchronized` and forbids reading any field from more than one thread.",
+          "A class is thread-safe only when it subclasses `Thread` and starts itself from inside its constructor."
+        ]
       }
     ],
     "correct": [
@@ -1521,23 +2960,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Annotating a private helper method with `@Async` without configuring a Spring task executor bean."
+        "reasons": [
+          "Annotating a private helper with `@Async` does not start concurrent work when no task executor bean is configured, because the call never reaches an async proxy.",
+          "Constructing a `Thread` with `new` only creates the object, and the task stays unscheduled until `start()` is called.",
+          "A `synchronized` method runs on the caller thread and only takes a monitor, so callers do not each receive an OS thread."
+        ],
+        "variants": [
+          "Annotating a private helper method with `@Async` without configuring a Spring task executor bean.",
+          "Constructing a `Thread` with `new` schedules its task at once, so a later `start()` call is unnecessary.",
+          "A `synchronized` method body runs on its own OS thread, so concurrent callers execute that body in parallel."
+        ]
       },
       {
         "id": "B",
-        "text": "Invoking `start()` on a `Thread` instance to create and register a new native OS thread with the scheduler."
+        "variants": [
+          "Invoking `start()` on a `Thread` instance to create and register a new native OS thread with the scheduler.",
+          "Calling `start()` creates that `Thread`'s new native OS thread and registers it with the scheduler.",
+          "When `start()` is invoked on a `Thread`, a new native OS thread is created and registered with the scheduler."
+        ]
       },
       {
         "id": "C",
-        "text": "Subclassing `Thread`, overriding its `run()` method, and invoking `start()` on the resulting instance."
+        "variants": [
+          "Subclassing `Thread`, overriding its `run()` method, and invoking `start()` on the resulting instance.",
+          "Subclass `Thread`, override `run()`, and invoke `start()` on that instance to run the work concurrently.",
+          "Concurrent work starts when a `Thread` subclass overrides `run()` and `start()` is invoked on that instance."
+        ]
       },
       {
         "id": "D",
-        "text": "Submitting a `Runnable` or `Callable` task to an `ExecutorService` thread pool for managed execution."
+        "variants": [
+          "Submitting a `Runnable` or `Callable` task to an `ExecutorService` thread pool for managed execution.",
+          "Managed execution follows when a `Runnable` or `Callable` is submitted to an `ExecutorService` pool.",
+          "An `ExecutorService` thread pool manages execution of a `Runnable` or `Callable` once you submit that task."
+        ]
       },
       {
         "id": "E",
-        "text": "Invoking `run()` directly on a `Runnable` instance to launch a separate background OS worker thread."
+        "reasons": [
+          "Calling `run()` directly runs the body on the current thread and does not create a background OS worker.",
+          "`completedFuture` returns an already finished future and does not schedule asynchronous work on `ForkJoinPool.commonPool()`.",
+          "`Thread.yield()` only hints that the current thread may pause, and the rest of the method stays on that same thread."
+        ],
+        "variants": [
+          "Invoking `run()` directly on a `Runnable` instance to launch a separate background OS worker thread.",
+          "`CompletableFuture.completedFuture` executes its argument as asynchronous work on `ForkJoinPool.commonPool()`.",
+          "Calling `Thread.yield()` moves the rest of the current method onto a different worker thread."
+        ]
       }
     ],
     "correct": [
@@ -1555,19 +3024,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "To reuse existing worker threads, avoiding the steep operating system allocation and teardown costs of native threads."
+        "variants": [
+          "To reuse existing worker threads, avoiding the steep operating system allocation and teardown costs of native threads.",
+          "Existing worker threads are reused because native-thread allocation and teardown are steep operating-system costs.",
+          "Workers already on hand are reused, avoiding steep operating-system allocation and teardown costs of native threads."
+        ]
       },
       {
         "id": "B",
-        "text": "To eliminate the possibility of thread race conditions on shared unsynchronized mutable heap variables."
+        "reasons": [
+          "A thread pool does not remove race conditions, and tasks that share unsynchronized mutable heap state can still race.",
+          "Pooled tasks still share the process static fields, and the pool does not give each task a private copy of them.",
+          "A general pool does not run every task on one worker in submission order, so a later task need not see every earlier write."
+        ],
+        "variants": [
+          "To eliminate the possibility of thread race conditions on shared unsynchronized mutable heap variables.",
+          "Each submitted task is given a private copy of static fields, so it cannot observe writes performed by any other task.",
+          "Submitted tasks share one worker and run in submission order, so a later task sees every earlier write."
+        ]
       },
       {
         "id": "C",
-        "text": "To guarantee that all submitted tasks run with elevated operating system kernel priorities across CPU cores."
+        "reasons": [
+          "A pool does not raise tasks to elevated kernel priority and does not guarantee they run across every CPU core.",
+          "After `shutdown()` the pool rejects new work, so a later `submit` cannot reuse those workers.",
+          "The default rejection policy throws `RejectedExecutionException`, so a full pool does not drop the task with no error."
+        ],
+        "variants": [
+          "To guarantee that all submitted tasks run with elevated operating system kernel priorities across CPU cores.",
+          "Those workers are expected to remain after `shutdown()`, so a later `submit` can reuse the same threads again.",
+          "A saturated pool discards rejected tasks without an error, so the caller never sees that capacity was exhausted."
+        ]
       },
       {
         "id": "D",
-        "text": "To bound concurrent resource consumption, preventing `OutOfMemoryError` caused by uncontrolled thread creation."
+        "variants": [
+          "To bound concurrent resource consumption, preventing `OutOfMemoryError` caused by uncontrolled thread creation.",
+          "An upper bound on concurrent resource consumption stops uncontrolled thread creation from causing `OutOfMemoryError`.",
+          "Limiting concurrent resource consumption prevents the `OutOfMemoryError` that uncontrolled thread creation causes."
+        ]
       }
     ],
     "correct": [
@@ -1584,19 +3079,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Runnable` can only be executed by raw `Thread` instances; `Callable` can only be invoked within Spring transactions."
+        "reasons": [
+          "`Runnable` is not limited to raw `Thread` instances, and `Callable` is not limited to Spring transactions.",
+          "Neither type must extend `Thread` or `FutureTask`, because both are interfaces an ordinary class can implement.",
+          "`Runnable` may block outside `synchronized`, and `Callable.call()` is allowed to block."
+        ],
+        "variants": [
+          "`Runnable` can only be executed by raw `Thread` instances; `Callable` can only be invoked within Spring transactions.",
+          "`Callable` must extend `Thread`, and `Runnable` must extend `FutureTask`, before either type can be executed.",
+          "`Runnable` may block only inside `synchronized`, and `Callable.call()` is not permitted to block at all."
+        ]
       },
       {
         "id": "B",
-        "text": "`Callable.call()` can throw checked exceptions directly, whereas `Runnable.run()` cannot declare checked exceptions."
+        "variants": [
+          "`Callable.call()` can throw checked exceptions directly, whereas `Runnable.run()` cannot declare checked exceptions.",
+          "`Runnable.run()` cannot declare a checked exception, unlike `Callable.call()`, which may throw one directly.",
+          "Checked exceptions may leave `Callable.call()` directly, but `Runnable.run()` cannot declare checked exceptions."
+        ]
       },
       {
         "id": "C",
-        "text": "`Runnable.run()` returns `void`, whereas `Callable.call()` returns a parameterized generic result value `V`."
+        "variants": [
+          "`Runnable.run()` returns `void`, whereas `Callable.call()` returns a parameterized generic result value `V`.",
+          "Nothing comes back from `Runnable.run()` (`void`), while `Callable.call()` returns parameterized generic `V`.",
+          "What `Callable.call()` hands back is a parameterized generic value `V`, while `Runnable.run()` hands back `void`."
+        ]
       },
       {
         "id": "D",
-        "text": "`Runnable` tasks execute asynchronously on background threads; `Callable` tasks execute strictly on the caller thread."
+        "reasons": [
+          "Either interface can run on the caller thread or a background thread, because the executor chooses that, not the type.",
+          "A `Callable` that returns null completes normally, and a `Runnable` that finishes normally is not cancelled.",
+          "Both `newCachedThreadPool` and `newFixedThreadPool` accept a `Runnable` and a `Callable`."
+        ],
+        "variants": [
+          "`Runnable` tasks execute asynchronously on background threads; `Callable` tasks execute strictly on the caller thread.",
+          "A `Callable` that returns null counts as a failed task, and a `Runnable` that finishes normally counts as cancelled.",
+          "`submit` takes a `Callable` only from `newCachedThreadPool` and a `Runnable` only from `newFixedThreadPool`."
+        ]
       }
     ],
     "correct": [
@@ -1613,19 +3134,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "An asynchronous I/O channel designed exclusively for streaming binary network packets across sockets."
+        "reasons": [
+          "A `Stream` is not an asynchronous I/O channel and is not limited to binary packets on sockets.",
+          "A stream does not store its elements, and it cannot restart at the first element after a terminal operation.",
+          "Adding an intermediate operation does not mutate the source collection in place."
+        ],
+        "variants": [
+          "An asynchronous I/O channel designed exclusively for streaming binary network packets across sockets.",
+          "A stream stores every element and can restart at the first element after a terminal operation has already run.",
+          "A stream mutates its source collection in place as each intermediate operation is added to the pipeline."
+        ]
       },
       {
         "id": "B",
-        "text": "A sequence of elements supporting sequential and parallel aggregate operations that does not store data itself."
+        "variants": [
+          "A sequence of elements supporting sequential and parallel aggregate operations that does not store data itself.",
+          "The stream stores no data itself; it is a sequence of elements with sequential and parallel aggregate operations.",
+          "Sequential and parallel aggregate operations apply to a sequence of elements that does not store the data itself."
+        ]
       },
       {
         "id": "C",
-        "text": "A persistent database transaction cursor that automatically synchronizes entity changes with SQL tables."
+        "reasons": [
+          "A stream is not a database cursor and does not synchronize entity changes with SQL tables.",
+          "A stream has no index lookup, and `collect` does not reject a value merely because it was already seen.",
+          "After one terminal operation the same stream cannot be consumed by another terminal operation."
+        ],
+        "variants": [
+          "A persistent database transaction cursor that automatically synchronizes entity changes with SQL tables.",
+          "Index lookup is allowed on a stream, and terminal `collect` rejects an element that duplicates a value already seen.",
+          "The same stream instance can run several terminal operations when its source collection has not changed."
+        ]
       },
       {
         "id": "D",
-        "text": "A specialized high-throughput concurrent collection that replaces `Vector` and `CopyOnWriteArrayList`."
+        "reasons": [
+          "A stream is not a concurrent collection and does not replace `Vector` or `CopyOnWriteArrayList`.",
+          "A stream is not a pull iterator limited to `hasNext`, and it does support intermediate operations.",
+          "A stream is not a concurrent map, and it does not replace `ConcurrentHashMap` with `putIfAbsent`."
+        ],
+        "variants": [
+          "A specialized high-throughput concurrent collection that replaces `Vector` and `CopyOnWriteArrayList`.",
+          "A stream is a pull iterator that yields values only from `hasNext` and cannot express intermediate operations.",
+          "A stream is a concurrent map offering `putIfAbsent` and intended to replace `ConcurrentHashMap`."
+        ]
       }
     ],
     "correct": [
@@ -1641,19 +3193,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`map` produces a one-to-one mapping, transforming each stream element into a single output value."
+        "variants": [
+          "`map` produces a one-to-one mapping, transforming each stream element into a single output value.",
+          "Each element goes in and a single output value comes out, which is the one-to-one mapping `map` produces.",
+          "Each stream element is turned by `map` into a single output value, which is a one-to-one mapping."
+        ]
       },
       {
         "id": "B",
-        "text": "`map` executes sequentially on the caller thread; `flatMap` executes concurrently across the `ForkJoinPool`."
+        "reasons": [
+          "Neither `map` nor `flatMap` chooses the caller thread versus the `ForkJoinPool`, because parallelism comes from the stream.",
+          "`map` can change the element type when the function returns a non-collection, and `flatMap` can change the type too.",
+          "Pipeline order decides which operation runs first, and `flatMap` is not required to precede `map`."
+        ],
+        "variants": [
+          "`map` executes sequentially on the caller thread; `flatMap` executes concurrently across the `ForkJoinPool`.",
+          "`map` changes the element type only when the lambda returns a collection, and `flatMap` cannot change that type.",
+          "When both are present, `flatMap` always runs before `map`, because flattening is defined to precede a one-to-one transform."
+        ]
       },
       {
         "id": "C",
-        "text": "`map` filters out null elements automatically; `flatMap` throws a runtime `NullPointerException` on empty collections."
+        "reasons": [
+          "`map` does not drop nulls on its own, and `flatMap` does not throw `NullPointerException` merely because a collection is empty.",
+          "Both `map` and `flatMap` are intermediate, so `map` does not start execution and `flatMap` may follow other intermediate steps.",
+          "`flatMap` must return a `Stream`, while `map` returns the mapped value rather than a `Stream`."
+        ],
+        "variants": [
+          "`map` filters out null elements automatically; `flatMap` throws a runtime `NullPointerException` on empty collections.",
+          "`map` is a terminal operation that starts execution, and `flatMap` is illegal after any other intermediate operation.",
+          "`flatMap` requires the mapper to return a `Collection`, and `map` requires the mapper to return a `Stream`."
+        ]
       },
       {
         "id": "D",
-        "text": "`flatMap` produces a one-to-many mapping, transforming each element into a stream and flattening the results."
+        "variants": [
+          "`flatMap` produces a one-to-many mapping, transforming each element into a stream and flattening the results.",
+          "Because each element is turned into a stream, `flatMap` must flatten those streams, and the mapping is one-to-many.",
+          "Each element is transformed into a stream by `flatMap`, and flattening those streams produces a one-to-many mapping."
+        ]
       }
     ],
     "correct": [
@@ -1670,19 +3248,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It automatically synchronizes access to shared mutable collection accumulators used inside stream lambda operations."
+        "reasons": [
+          "`parallelStream()` does not synchronize shared mutable accumulators inside lambdas, so those updates can still race.",
+          "The source is not made immutable for the pipeline, and a concurrent add or remove is not a compile-time error.",
+          "Capturing a local variable, even a primitive counter, does not force the pipeline to run sequentially."
+        ],
+        "variants": [
+          "It automatically synchronizes access to shared mutable collection accumulators used inside stream lambda operations.",
+          "The source collection is treated as immutable for the whole pipeline, and a concurrent add or remove is a compile-time error.",
+          "It switches to a sequential pipeline whenever a lambda captures a local variable, even a primitive counter."
+        ]
       },
       {
         "id": "B",
-        "text": "It is always faster than a sequential stream regardless of dataset size or underlying collection splittability."
+        "reasons": [
+          "A parallel stream is not always faster, because a small or hard-to-split source can be slower than a sequential stream.",
+          "Parallel `forEach` does not keep encounter order and does not wait to rebuild that order.",
+          "An `ArrayList` is a valid source, and a non-array collection is not rejected with `IllegalStateException`."
+        ],
+        "variants": [
+          "It is always faster than a sequential stream regardless of dataset size or underlying collection splittability.",
+          "It preserves `forEach` encounter order and waits at the terminal operation until that order has been rebuilt.",
+          "Sources other than arrays are rejected, and using an `ArrayList` as the source throws `IllegalStateException`."
+        ]
       },
       {
         "id": "C",
-        "text": "It executes tasks across the common shared `ForkJoinPool`, meaning blocking I/O inside the pipeline can starve other workloads."
+        "variants": [
+          "It executes tasks across the common shared `ForkJoinPool`, meaning blocking I/O inside the pipeline can starve other workloads.",
+          "Other workloads can starve if the pipeline does blocking I/O, because tasks run on the common shared `ForkJoinPool`.",
+          "Blocking I/O inside the pipeline can starve other workloads because execution uses the common shared `ForkJoinPool`."
+        ]
       },
       {
         "id": "D",
-        "text": "It benefits CPU-intensive workloads operating on large, easily splittable in-memory data structures like arrays or `ArrayList`."
+        "variants": [
+          "It benefits CPU-intensive workloads operating on large, easily splittable in-memory data structures like arrays or `ArrayList`.",
+          "Large, easily splittable in-memory structures such as arrays or `ArrayList` are where CPU-intensive workloads benefit.",
+          "CPU-intensive work over large, easily splittable in-memory data such as arrays or `ArrayList` is where it helps."
+        ]
       }
     ],
     "correct": [
@@ -1699,23 +3303,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Pure functions with no side effects make software easier to reason about, refactor, and verify with automated unit tests."
+        "variants": [
+          "Pure functions with no side effects make software easier to reason about, refactor, and verify with automated unit tests.",
+          "It is easier to reason about, refactor, and verify with automated unit tests when functions are pure and side-effect free.",
+          "Reasoning, refactoring, and verification with automated unit tests are easier for pure functions that have no side effects."
+        ]
       },
       {
         "id": "B",
-        "text": "Immutable instances can be safely shared across concurrent threads and cached globally without making defensive copies."
+        "variants": [
+          "Immutable instances can be safely shared across concurrent threads and cached globally without making defensive copies.",
+          "Sharing an immutable instance safely across concurrent threads, or caching it globally, does not require a defensive copy.",
+          "Concurrent threads can share an immutable instance, and it can be cached globally, without defensive copies."
+        ]
       },
       {
         "id": "C",
-        "text": "Immutable objects eliminate shared mutable state, preventing data races without requiring explicit lock synchronization."
+        "variants": [
+          "Immutable objects eliminate shared mutable state, preventing data races without requiring explicit lock synchronization.",
+          "Once shared mutable state is gone, immutable objects prevent data races and explicit lock synchronization is unnecessary.",
+          "Data races are prevented without explicit lock synchronization because immutable objects remove shared mutable state."
+        ]
       },
       {
         "id": "D",
-        "text": "Immutable objects bypass JVM garbage collection entirely by pinning memory blocks directly into CPU register caches."
+        "reasons": [
+          "Immutable objects remain ordinary heap objects and are not pinned into CPU registers to bypass garbage collection.",
+          "Immutability does not intern every instance, so two equal values can still be different objects.",
+          "An immutable class is not automatically `Serializable`, and the JVM does not ship its instances to another process by itself."
+        ],
+        "variants": [
+          "Immutable objects bypass JVM garbage collection entirely by pinning memory blocks directly into CPU register caches.",
+          "Immutability causes the JVM to intern every instance, so equal values of that type always share one heap identity.",
+          "Every immutable class implements `Serializable`, so the JVM can send those instances to another process with no further code."
+        ]
       },
       {
         "id": "E",
-        "text": "Functional stream pipelines guarantee zero runtime memory allocation overhead regardless of collection sizes."
+        "reasons": [
+          "Stream pipelines allocate intermediate structures, so they do not guarantee zero allocation for every collection size.",
+          "An immutable list can be passed into a function without a full copy on every read.",
+          "Returning a new object does not make a function impure, and functional code is not limited to methods that return `void`."
+        ],
+        "variants": [
+          "Functional stream pipelines guarantee zero runtime memory allocation overhead regardless of collection sizes.",
+          "Immutability forces a full copy on every read, so a shared list cannot be passed to a function without being duplicated.",
+          "Returning a new object makes a function impure, so functional code may use only methods that return `void`."
+        ]
       }
     ],
     "correct": [
@@ -1733,19 +3367,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`mvn package` runs only the `package` phase, so `compile` and `test` are skipped unless those phases are named as well."
+        "reasons": [
+          "`mvn package` does not run only the `package` phase, because earlier phases such as `compile` and `test` run as well.",
+          "`verify` comes after `package`, so an integration-test failure is not what stops `mvn package` from building the archive.",
+          "`mvn package` does not run the `clean` lifecycle and does not delete `target` before `validate`."
+        ],
+        "variants": [
+          "`mvn package` runs only the `package` phase, so `compile` and `test` are skipped unless those phases are named as well.",
+          "`mvn package` runs `verify` before it builds the archive, so an integration-test failure prevents the artifact from being packaged.",
+          "`mvn package` runs the `clean` lifecycle first and deletes `target` before the `validate` phase starts."
+        ]
       },
       {
         "id": "B",
-        "text": "`mvn package` continues through `install` and `deploy`, because a build is not finished until a repository receives the artifact."
+        "reasons": [
+          "`mvn package` stops at `package` and does not continue through `install` and `deploy`.",
+          "`mvn package` does not run `install`, so the artifact is not placed in the local repository.",
+          "A version ending in `-SNAPSHOT` does not make `mvn package` deploy, and release versions are not the only ones written under `target`."
+        ],
+        "variants": [
+          "`mvn package` continues through `install` and `deploy`, because a build is not finished until a repository receives the artifact.",
+          "`mvn package` installs the artifact into the local repository and then stops, so a remote `deploy` never runs from that build.",
+          "`mvn package` deploys the artifact when the version ends in `-SNAPSHOT`, while a release version is only written under `target`."
+        ]
       },
       {
         "id": "C",
-        "text": "`mvn package` runs every default-lifecycle phase up through `package`, including `validate`, `compile`, `test`, and `package`."
+        "variants": [
+          "`mvn package` runs every default-lifecycle phase up through `package`, including `validate`, `compile`, `test`, and `package`.",
+          "Including `validate`, `compile`, `test`, and `package`, `mvn package` walks every default-lifecycle phase up through `package`.",
+          "From the start of the default lifecycle through `package`, `mvn package` executes `validate`, `compile`, `test`, and `package`."
+        ]
       },
       {
         "id": "D",
-        "text": "`mvn package` stops at `package`, so it does not run `install` or `deploy` and does not publish the artifact to a repository."
+        "variants": [
+          "`mvn package` stops at `package`, so it does not run `install` or `deploy` and does not publish the artifact to a repository.",
+          "`mvn package` stops at `package`, so `install` and `deploy` do not run and the artifact is not published to a repository.",
+          "The artifact is not published to a repository because `mvn package` stops at `package` and does not run `install` or `deploy`."
+        ]
       }
     ],
     "correct": [
@@ -1762,19 +3422,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`build.gradle` code runs only for the task written next to it, and naming a different task leaves that script unexecuted."
+        "reasons": [
+          "Code in `build.gradle` is still configured when you name a different task, so the script is not left unexecuted.",
+          "`register` configures the task lazily, while `create` configures it immediately rather than only when the task is named.",
+          "A `buildscript` block runs while the build is configured, not after the task graph has already been built."
+        ],
+        "variants": [
+          "`build.gradle` code runs only for the task written next to it, and naming a different task leaves that script unexecuted.",
+          "A task created with `register` is configured immediately, while `create` configures that task only if it is named on the command line.",
+          "Statements in a `buildscript` block run during task execution, after the task graph has already been built."
+        ]
       },
       {
         "id": "B",
-        "text": "A `doLast` action runs while Gradle configures the task graph, and that action is what decides which tasks are required."
+        "reasons": [
+          "A `doLast` action runs at execution time and does not decide which tasks the graph requires.",
+          "A `doFirst` action runs before `doLast` actions, not after them.",
+          "Up-to-date checking uses inputs and outputs, not a thrown `doLast`, and a successful action is skipped when the task is up to date."
+        ],
+        "variants": [
+          "A `doLast` action runs while Gradle configures the task graph, and that action is what decides which tasks are required.",
+          "A `doFirst` action runs after every `doLast` action, because Gradle executes registered actions in reverse order.",
+          "A task becomes up to date only when its `doLast` action throws, and a successful action is always rerun on the next build."
+        ]
       },
       {
         "id": "C",
-        "text": "Build script statements run during configuration, before task actions, and they run even for tasks that will not execute."
+        "variants": [
+          "Build script statements run during configuration, before task actions, and they run even for tasks that will not execute.",
+          "Before task actions, configuration still evaluates build script statements, including those of tasks that will not execute.",
+          "Even a task that will not execute still has its build script statements run during configuration, before task actions."
+        ]
       },
       {
         "id": "D",
-        "text": "A `doLast` action runs during execution, and only for a selected task that Gradle does not treat as up to date."
+        "variants": [
+          "A `doLast` action runs during execution, and only for a selected task that Gradle does not treat as up to date.",
+          "During the execution phase, a `doLast` action runs only if its task was selected and Gradle does not consider it up to date.",
+          "During execution, Gradle runs a `doLast` action only for a selected task that is not treated as up to date."
+        ]
       }
     ],
     "correct": [
@@ -1791,23 +3477,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Heap stores all class instances and arrays; Stack stores method frames, local primitives, and reference pointers."
+        "variants": [
+          "Heap stores all class instances and arrays; Stack stores method frames, local primitives, and reference pointers.",
+          "All class instances and arrays live on the heap; method frames, local primitives, and reference pointers live on the stack.",
+          "The stack keeps method frames, local primitives, and reference pointers, and the heap keeps all class instances and arrays."
+        ]
       },
       {
         "id": "B",
-        "text": "Heap objects are deallocated by the garbage collector; Stack frames are popped and reclaimed immediately upon method return."
+        "variants": [
+          "Heap objects are deallocated by the garbage collector; Stack frames are popped and reclaimed immediately upon method return.",
+          "Heap objects are deallocated by the garbage collector, while method return pops and reclaims the stack frame immediately.",
+          "On method return the stack frame is popped and reclaimed immediately, and the garbage collector frees heap objects."
+        ]
       },
       {
         "id": "C",
-        "text": "Heap memory is shared among all threads in the JVM; Stack memory is private to each individual thread."
+        "variants": [
+          "Heap memory is shared among all threads in the JVM; Stack memory is private to each individual thread.",
+          "The heap is common to every thread in the JVM, whereas each individual thread keeps its stack memory private.",
+          "Each thread has private stack memory, while heap memory is shared among all threads in the JVM."
+        ]
       },
       {
         "id": "D",
-        "text": "Heap memory allocation is configured via `-Xss`; Stack memory allocation is configured via the `-Xmx` startup flag."
+        "reasons": [
+          "`-Xss` sizes the stack and `-Xmx` sizes the heap, so those flags are not assigned in the opposite way.",
+          "Arrays of primitives are allocated on the heap, not on the allocating thread's stack.",
+          "Local reference variables live in the stack frame, and the stack does not store the method bytecode."
+        ],
+        "variants": [
+          "Heap memory allocation is configured via `-Xss`; Stack memory allocation is configured via the `-Xmx` startup flag.",
+          "Primitive arrays stay on the allocating thread's stack, while the heap stores only arrays whose elements are object references.",
+          "Local reference variables reside on the heap, and the stack holds only the bytecode of the method currently running."
+        ]
       },
       {
         "id": "E",
-        "text": "Stack memory access is managed by the generational garbage collector using Mark-Sweep-Compact algorithms."
+        "reasons": [
+          "Stack frames are popped on method return and are not reclaimed by a generational mark-sweep-compact collector.",
+          "Escape analysis does not move every heap object to the stack, and a cache that escapes is not freed when the method returns.",
+          "Stack frames are not promoted into the old generation, and a deep call chain does not start a major collection."
+        ],
+        "variants": [
+          "Stack memory access is managed by the generational garbage collector using Mark-Sweep-Compact algorithms.",
+          "Escape analysis moves every heap object onto the stack, so a cache created in a method dies when that method returns.",
+          "As the call chain deepens, stack frames are promoted into the old generation and a major collection can start."
+        ]
       }
     ],
     "correct": [
@@ -1825,19 +3541,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "When the object is no longer reachable from any active GC root via an unbroken chain of strong references."
+        "variants": [
+          "When the object is no longer reachable from any active GC root via an unbroken chain of strong references.",
+          "An object becomes eligible once no active GC root can reach it by an unbroken chain of strong references.",
+          "Eligibility begins when every unbroken chain of strong references from an active GC root to the object is broken."
+        ]
       },
       {
         "id": "B",
-        "text": "Immediately when an object's internal state fields are assigned to `null` or when its constructor finishes."
+        "reasons": [
+          "Assigning an object's fields to `null`, or finishing its constructor, does not by itself make that object eligible.",
+          "The return of `System.gc()` does not mean the requested collection finished, and it does not make a reachable object eligible.",
+          "The class of an object is not unloaded when the creating method returns, so that return does not make the object eligible."
+        ],
+        "variants": [
+          "Immediately when an object's internal state fields are assigned to `null` or when its constructor finishes.",
+          "An object becomes eligible when `System.gc()` returns, because that return means the requested collection has finished.",
+          "An object becomes eligible when its class is unloaded, and that unloading happens when the creating method returns."
+        ]
       },
       {
         "id": "C",
-        "text": "When an object's identity hash code integer value is reset to zero by the Just-In-Time bytecode compiler."
+        "reasons": [
+          "The JIT does not reset an identity hash code to zero, and that integer does not decide eligibility.",
+          "Adding a weak reference does not make an object eligible while a local variable still points to it strongly.",
+          "Tenuring moves still-reachable objects into the old generation, so promotion does not mean the collector found the object unused."
+        ],
+        "variants": [
+          "When an object's identity hash code integer value is reset to zero by the Just-In-Time bytecode compiler.",
+          "Creating any weak reference makes the object eligible at once, even if a local variable still points to it strongly.",
+          "Tenuring the object into the old generation makes it eligible, because promotion means the collector found it unused."
+        ]
       },
       {
         "id": "D",
-        "text": "Isolated islands of unreachable objects that reference each other in cycles are eligible for collection."
+        "variants": [
+          "Isolated islands of unreachable objects that reference each other in cycles are eligible for collection.",
+          "Isolated cycles of objects that reference each other, and that no GC root can reach, are eligible for collection.",
+          "An unreachable island of objects that reference only each other in a cycle remains eligible for collection."
+        ]
       }
     ],
     "correct": [
@@ -1854,19 +3596,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Yes, calling `Runtime.getRuntime().freeMemory()` forces the JVM to collect all unreachable young generation objects."
+        "reasons": [
+          "Calling `freeMemory` only reports a size and does not force collection of unreachable young-generation objects.",
+          "Reading `totalMemory` reports committed memory and does not force a young-generation collection when the figure looks small.",
+          "`Thread.yield()` does not collect garbage before the calling thread runs again."
+        ],
+        "variants": [
+          "Yes, calling `Runtime.getRuntime().freeMemory()` forces the JVM to collect all unreachable young generation objects.",
+          "Yes, reading `Runtime.getRuntime().totalMemory()` forces a young-generation collection when that reported size looks too small.",
+          "Yes, `Thread.yield()` is specified to collect garbage on the calling thread before that thread runs again."
+        ]
       },
       {
         "id": "B",
-        "text": "Yes, `System.gc()` guarantees an immediate synchronous Stop-The-World full garbage collection before returning."
+        "reasons": [
+          "`System.gc()` does not guarantee an immediate stop-the-world full collection before it returns.",
+          "Calling `halt` stops the process at once and does not run a full collection or finalizers first.",
+          "`-XX:+DisableExplicitGC` makes `System.gc()` a no-op rather than a guaranteed full collection."
+        ],
+        "variants": [
+          "Yes, `System.gc()` guarantees an immediate synchronous Stop-The-World full garbage collection before returning.",
+          "Yes, `Runtime.getRuntime().halt()` runs a full collection and finalizers before the process terminates.",
+          "Yes, `-XX:+DisableExplicitGC` makes `System.gc()` a guaranteed full collection rather than a request the JVM may ignore."
+        ]
       },
       {
         "id": "C",
-        "text": "No, `System.gc()` is merely an advisory hint; the JVM is free to ignore the request and timing remains non-deterministic."
+        "variants": [
+          "No, `System.gc()` is merely an advisory hint; the JVM is free to ignore the request and timing remains non-deterministic.",
+          "No, `System.gc()` is an advisory hint the JVM may ignore, so the timing of collection stays non-deterministic.",
+          "No, collection timing remains non-deterministic because `System.gc()` is an advisory hint that the JVM may ignore."
+        ]
       },
       {
         "id": "D",
-        "text": "No, because the garbage collector only runs when an application explicitly encounters an `OutOfMemoryError`."
+        "reasons": [
+          "The collector also runs as part of normal allocation, not only after an `OutOfMemoryError`.",
+          "A collection is not attempted only when a thread blocks on a contended `synchronized` method.",
+          "Collection keeps running after the first application thread starts and is not disabled for the rest of the process."
+        ],
+        "variants": [
+          "No, because the garbage collector only runs when an application explicitly encounters an `OutOfMemoryError`.",
+          "No, a collection is attempted only when a thread blocks entering a contended `synchronized` method.",
+          "No, collection stays disabled for the rest of the process after the first application thread starts."
+        ]
       }
     ],
     "correct": [
@@ -1882,19 +3655,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "An `object` declaration allocates a fresh instance on every single use, and a `companion object` compiles to a Java `static` method on the enclosing class."
+        "reasons": [
+          "An `object` declaration is one shared instance rather than a fresh instance on every use, and a `companion object` is not compiled to a Java `static` method.",
+          "An `object` declaration is not instantiated once per referring class, and a `companion object` is visible outside its source file.",
+          "A `companion object` does not receive the enclosing constructor arguments, and an `object` declaration may implement an interface."
+        ],
+        "variants": [
+          "An `object` declaration allocates a fresh instance on every single use, and a `companion object` compiles to a Java `static` method on the enclosing class.",
+          "Referring to an `object` declaration from several classes creates a distinct instance for each class, and a `companion object` is invisible outside its source file.",
+          "A `companion object` receives the enclosing class constructor arguments at construction time, and an `object` declaration is not allowed to implement an interface."
+        ]
       },
       {
         "id": "B",
-        "text": "A `companion object` is inherited and overridden by each subclass, and an `object` declaration cannot represent a single shared instance."
+        "reasons": [
+          "A `companion object` is not inherited and overridden by each subclass, and an `object` declaration does represent one shared instance.",
+          "An `object` declaration cannot be subclassed, and a `companion object` is not chosen by virtual dispatch on an enclosing instance.",
+          "An `object` declaration needs no handwritten `getInstance` method, and Java can reach the companion by the name `Companion`."
+        ],
+        "variants": [
+          "A `companion object` is inherited and overridden by each subclass, and an `object` declaration cannot represent a single shared instance.",
+          "An `object` declaration can be subclassed, and a `companion object` is chosen by virtual dispatch on an enclosing-class instance.",
+          "An `object` declaration requires a handwritten `getInstance` method, and Java cannot access a `companion object` by the name `Companion`."
+        ]
       },
       {
         "id": "C",
-        "text": "Both forms become package-level functions with no storage, so neither one can hold properties of its own."
+        "reasons": [
+          "Neither form becomes a package-level function with no storage, and both can hold properties.",
+          "An `object` declaration is not compiled as an open class, and a `companion object` is not compiled as a Java interface.",
+          "A `companion object` outlives a single function call, and an `object` declaration is not allocated on the caller stack."
+        ],
+        "variants": [
+          "Both forms become package-level functions with no storage, so neither one can hold properties of its own.",
+          "An `object` declaration is compiled as an open class, and a `companion object` is compiled as a Java interface.",
+          "A `companion object` exists only during a call, and an `object` declaration is allocated on the caller stack."
+        ]
       },
       {
         "id": "D",
-        "text": "An `object` declaration is one shared instance, and a `companion object` holds members you call on the class name rather than as a Java `static` method."
+        "variants": [
+          "An `object` declaration is one shared instance, and a `companion object` holds members you call on the class name rather than as a Java `static` method.",
+          "One shared instance is all an `object` declaration creates, and a `companion object` keeps members invoked on the class name rather than as a Java `static` method.",
+          "A `companion object` holds members invoked on the class name rather than as a Java `static` method, and an `object` declaration is one shared instance."
+        ]
       }
     ],
     "correct": [
@@ -1910,23 +3714,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Ephemeral Reference Collector, which completely eliminates pauses by writing allocations directly to flash storage."
+        "reasons": [
+          "HotSpot has no Ephemeral Reference Collector that removes pauses by writing allocations to flash storage.",
+          "Epsilon does not compact the heap and is not a production low-pause collector for request-serving workloads.",
+          "The Serial collector is not the only production collector allowed above a 4 GB heap on Java 17, and Parallel is not disabled there."
+        ],
+        "variants": [
+          "Ephemeral Reference Collector, which completely eliminates pauses by writing allocations directly to flash storage.",
+          "Epsilon is a production low-pause collector that compacts regions concurrently and is suited to request-serving workloads.",
+          "The Serial collector is the only production collector allowed above a 4 GB heap on Java 17, and Parallel is disabled there."
+        ]
       },
       {
         "id": "B",
-        "text": "Parallel Collector, which optimizes multi-threaded throughput for batch processing workloads."
+        "variants": [
+          "Parallel Collector, which optimizes multi-threaded throughput for batch processing workloads.",
+          "Multi-threaded throughput is what the Parallel Collector optimizes for batch processing workloads.",
+          "Batch workloads fit the Parallel Collector because it optimizes multi-threaded throughput."
+        ]
       },
       {
         "id": "C",
-        "text": "G1 (Garbage-First) Collector, which operates as the default generational, region-based collector."
+        "variants": [
+          "G1 (Garbage-First) Collector, which operates as the default generational, region-based collector.",
+          "G1 (Garbage-First) is the default collector, and it is both generational and region-based.",
+          "The default generational, region-based collector is G1, the Garbage-First collector."
+        ]
       },
       {
         "id": "D",
-        "text": "Concurrent Mark Sweep (CMS) Collector, which remains the mandatory default collector in Java 21 LTS."
+        "reasons": [
+          "CMS was removed before Java 21 and is not the mandatory default collector in that LTS release.",
+          "G1 can be selected on Java 17, and CMS did not replace it for later LTS releases.",
+          "ZGC is a 64-bit collector and is included in the Java 17 server distribution."
+        ],
+        "variants": [
+          "Concurrent Mark Sweep (CMS) Collector, which remains the mandatory default collector in Java 21 LTS.",
+          "G1 cannot be selected on Java 17, because CMS replaced it for every LTS release after Java 11.",
+          "ZGC is shipped only in 32-bit HotSpot builds and is absent from the Java 17 server distribution."
+        ]
       },
       {
         "id": "E",
-        "text": "ZGC (Z Garbage Collector), an ultra-low latency collector engineered for sub-millisecond maximum pause times."
+        "variants": [
+          "ZGC (Z Garbage Collector), an ultra-low latency collector engineered for sub-millisecond maximum pause times.",
+          "Maximum pause times in the sub-millisecond range are the target of ZGC, an ultra-low latency Z Garbage Collector.",
+          "Sub-millisecond maximum pause times are what ZGC, the ultra-low latency Z Garbage Collector, is engineered to provide."
+        ]
       }
     ],
     "correct": [
@@ -1944,23 +3778,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The replica applies the commit before the primary acknowledges the client, so any following read on a replica sees that write."
+        "reasons": [
+          "An asynchronous replica does not apply the commit before the primary acknowledges the client, so a later replica read can miss the write.",
+          "Asynchronous replication does not block the client until a replica applies the write, so any replica can still miss it.",
+          "The primary acknowledges the client without waiting for a later replica read to return the new row."
+        ],
+        "variants": [
+          "The replica applies the commit before the primary acknowledges the client, so any following read on a replica sees that write.",
+          "A client can always read its own write from any replica, because asynchronous replication blocks until that replica applies the write.",
+          "The primary acknowledges the client only after a subsequent replica read has already returned the newly written row."
+        ]
       },
       {
         "id": "B",
-        "text": "An asynchronous replica can lag, so a read right after a write on the primary may miss that write."
+        "variants": [
+          "An asynchronous replica can lag, so a read right after a write on the primary may miss that write.",
+          "Lag on an asynchronous replica can hide a primary write from the read that follows it immediately.",
+          "A write on the primary may be missing from the next read when the asynchronous replica is still lagging."
+        ]
       },
       {
         "id": "C",
-        "text": "A client that must see its own write reads the primary, or waits until the replica has caught up, instead of always reading a replica."
+        "variants": [
+          "A client that must see its own write reads the primary, or waits until the replica has caught up, instead of always reading a replica.",
+          "Seeing its own write means the client reads the primary or waits for the replica to catch up, rather than always reading a replica.",
+          "Instead of always reading a replica, a client that must see its own write reads the primary or waits until the replica has caught up."
+        ]
       },
       {
         "id": "D",
-        "text": "Lag affects schema changes only, and ordinary row updates are visible on every replica before the primary responds to the client."
+        "reasons": [
+          "Lag is not limited to schema changes, and ordinary row updates can still be missing on a replica after the primary has responded.",
+          "Pinning a client to one replica does not update that replica synchronously for the pinned session.",
+          "A primary acknowledgment does not guarantee that every asynchronous replica returns that row on its next read."
+        ],
+        "variants": [
+          "Lag affects schema changes only, and ordinary row updates are visible on every replica before the primary responds to the client.",
+          "Sticking a client to one replica removes lag for that client, because that replica is updated synchronously for the pinned session.",
+          "After the primary acknowledges a write, every asynchronous replica is guaranteed to return that row on its next read."
+        ]
       },
       {
         "id": "E",
-        "text": "Replicas exist to take read traffic off the primary, and that offload is what opens the window where a read can be stale."
+        "variants": [
+          "Replicas exist to take read traffic off the primary, and that offload is what opens the window where a read can be stale.",
+          "The offload of read traffic from the primary is why replicas exist, and that same offload is what allows a read to be stale.",
+          "A read can be stale because replicas exist to take read traffic off the primary, and that offload opens the window."
+        ]
       }
     ],
     "correct": [
@@ -1978,23 +3842,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Soft references are retained by the JVM until memory pressure threatens an `OutOfMemoryError`, making them useful for caches."
+        "variants": [
+          "Soft references are retained by the JVM until memory pressure threatens an `OutOfMemoryError`, making them useful for caches.",
+          "Caches suit soft references because the JVM keeps them until memory pressure threatens an `OutOfMemoryError`.",
+          "The JVM keeps soft references until memory pressure threatens an `OutOfMemoryError`, which suits them to caches."
+        ]
       },
       {
         "id": "B",
-        "text": "Phantom references prevent objects from being finalized and allow restoring reclaimed instances back into active heap memory."
+        "reasons": [
+          "A phantom reference cannot restore a reclaimed instance to the heap, and it does not do so by preventing finalization.",
+          "A soft reference can survive a minor collection when memory is plentiful, and it is not always cleared on the first young-generation cycle.",
+          "A strong reference is not cleared on a full collection just because a soft reference to the same object also exists."
+        ],
+        "variants": [
+          "Phantom references prevent objects from being finalized and allow restoring reclaimed instances back into active heap memory.",
+          "A soft reference is cleared on the first minor collection and is not retained past that young-generation cycle.",
+          "A strong reference is cleared on a full collection whenever a soft reference to the same object is also present."
+        ]
       },
       {
         "id": "C",
-        "text": "All four reference types behave identically and differ only in the specific CPU cache tier where reference pointers reside."
+        "reasons": [
+          "The four reference strengths do not behave the same way, and they are not separated by CPU cache tier.",
+          "Strong references are not what a `ReferenceQueue` receives, while soft, weak, and phantom references can be enqueued.",
+          "`equals` does not depend on reference strength, so a weakly referenced object can still match a strongly referenced one."
+        ],
+        "variants": [
+          "All four reference types behave identically and differ only in the specific CPU cache tier where reference pointers reside.",
+          "Only strong references are placed on a `ReferenceQueue`, and soft, weak, and phantom references cannot be enqueued.",
+          "`equals` succeeds only when both sides are referenced with the same strength, so a weak reference never matches a strong one."
+        ]
       },
       {
         "id": "D",
-        "text": "Strong references represent ordinary object assignments and prevent garbage collection while reachable from roots."
+        "variants": [
+          "Strong references represent ordinary object assignments and prevent garbage collection while reachable from roots.",
+          "Reachability from a root, through an ordinary assignment, is what lets a strong reference prevent garbage collection.",
+          "An ordinary assignment is a strong reference and prevents garbage collection while roots can still reach the object."
+        ]
       },
       {
         "id": "E",
-        "text": "Weak references do not prevent collection and are reclaimed on the subsequent garbage collection cycle once strongly unreachable."
+        "variants": [
+          "Weak references do not prevent collection and are reclaimed on the subsequent garbage collection cycle once strongly unreachable.",
+          "Once strongly unreachable, weak references do not prevent collection and are reclaimed on the next garbage-collection cycle.",
+          "Once an object is strongly unreachable, a weak reference does not keep it, and the next collection cycle reclaims it."
+        ]
       }
     ],
     "correct": [
@@ -2012,19 +3906,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Map values are stored as weak references, causing values to be reclaimed while keys remain permanently pinned."
+        "reasons": [
+          "Keys are wrapped weakly, so values are not reclaimed while keys stay pinned, and keys themselves are not permanently pinned.",
+          "A collected key does not wait for `size`, because an ordinary `get` also expunges stale entries.",
+          "Values are not held in `PhantomReference` objects, and a value cannot be read after its storage has been reused."
+        ],
+        "variants": [
+          "Map values are stored as weak references, causing values to be reclaimed while keys remain permanently pinned.",
+          "A collected key stays in its bucket until `size` runs, and an ordinary `get` never expunges that stale entry.",
+          "Values are held in `PhantomReference` objects, so a value remains readable after its storage has been reused."
+        ]
       },
       {
         "id": "B",
-        "text": "When a key is garbage-collected, its weak reference is enqueued, allowing the map to purge the corresponding value entry."
+        "variants": [
+          "When a key is garbage-collected, its weak reference is enqueued, allowing the map to purge the corresponding value entry.",
+          "Enqueueing the weak reference of a garbage-collected key lets the map purge the corresponding value entry.",
+          "The map purges the value entry for a key after that key is garbage-collected and its weak reference is enqueued."
+        ]
       },
       {
         "id": "C",
-        "text": "Map keys are wrapped in `WeakReference` objects pointing to a private internal `ReferenceQueue`."
+        "variants": [
+          "Map keys are wrapped in `WeakReference` objects pointing to a private internal `ReferenceQueue`.",
+          "Wrapping each map key produces a `WeakReference` that points at a private internal `ReferenceQueue`.",
+          "The private internal `ReferenceQueue` is the target of the `WeakReference` objects that wrap the map keys."
+        ]
       },
       {
         "id": "D",
-        "text": "`WeakHashMap` synchronizes all read and write methods, providing thread-safe access across concurrent threads."
+        "reasons": [
+          "`WeakHashMap` does not synchronize every read and write, so it does not provide thread-safe concurrent access.",
+          "`WeakHashMap` does not take striped locks like `ConcurrentHashMap`, and concurrent `put` calls on different keys are not safe.",
+          "Its iterators are not stable snapshots, and a concurrent `put` during iteration is not guaranteed to avoid failure."
+        ],
+        "variants": [
+          "`WeakHashMap` synchronizes all read and write methods, providing thread-safe access across concurrent threads.",
+          "`WeakHashMap` uses striped locks like `ConcurrentHashMap`, so `put` calls on different keys do not block one another.",
+          "Iterators are stable snapshots, so a concurrent `put` during iteration is guaranteed not to throw."
+        ]
       }
     ],
     "correct": [
@@ -2041,19 +3961,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A design principle where object lifecycle and dependency assembly are managed by the container rather than by manual instantiation."
+        "variants": [
+          "A design principle where object lifecycle and dependency assembly are managed by the container rather than by manual instantiation.",
+          "As a design principle, the container manages object lifecycle and dependency assembly, not manual instantiation.",
+          "Under this design principle the container, not manual instantiation, handles object lifecycle and dependency assembly."
+        ]
       },
       {
         "id": "B",
-        "text": "A compiler transformation that converts private instance fields into public static accessible properties."
+        "reasons": [
+          "Inversion of control is not a compiler rewrite that turns private instance fields into public static properties.",
+          "The container does not replace each interface with the first concrete class found while scanning the classpath.",
+          "Component scanning does not reject a dependency unless that dependency's type lives in a higher package."
+        ],
+        "variants": [
+          "A compiler transformation that converts private instance fields into public static accessible properties.",
+          "Each interface is replaced by the first concrete class that component scanning finds on the classpath.",
+          "Beans may depend only on types located in a higher package, and component scanning rejects any other dependency."
+        ]
       },
       {
         "id": "C",
-        "text": "A pattern where HTTP client requests are inverted into asynchronous server-side websocket push events."
+        "reasons": [
+          "Inversion of control does not turn HTTP client requests into asynchronous websocket push events.",
+          "Writing `new` in each client so the client picks its dependencies is the opposite of letting the container assemble them.",
+          "Beans are not created only from static initializers, and instance constructors remain allowed."
+        ],
+        "variants": [
+          "A pattern where HTTP client requests are inverted into asynchronous server-side websocket push events.",
+          "Each client writes `new` itself so that the client chooses its dependencies instead of receiving them.",
+          "Beans are created only inside static initializers, and instance constructors are disallowed."
+        ]
       },
       {
         "id": "D",
-        "text": "A database optimization where relational foreign keys are inverted to point from parent tables to child tables."
+        "reasons": [
+          "Inversion of control does not reverse foreign keys so that parent tables point at child tables.",
+          "Commit control is not handed to the servlet container, and a transaction does not commit only when the HTTP session expires.",
+          "The name does not mean aspect order, and the aspect declared last is not the one that runs first."
+        ],
+        "variants": [
+          "A database optimization where relational foreign keys are inverted to point from parent tables to child tables.",
+          "Commit control is given to the servlet container, and the transaction commits only when the caller's HTTP session expires.",
+          "The name refers to aspect order, in which the aspect declared last is the aspect that runs first."
+        ]
       }
     ],
     "correct": [
@@ -2069,19 +4020,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It allows simple instantiation and unit testing of components using plain `new` without requiring Spring test containers."
+        "variants": [
+          "It allows simple instantiation and unit testing of components using plain `new` without requiring Spring test containers.",
+          "Components can be instantiated and unit tested with plain `new`, without requiring a Spring test container.",
+          "A unit test instantiates the component with plain `new` and does not need any Spring test container at all."
+        ]
       },
       {
         "id": "B",
-        "text": "It allows circular bean dependencies to be resolved automatically at runtime without throwing any startup exceptions."
+        "reasons": [
+          "Constructor injection does not clear circular bean dependencies, and a constructor cycle still fails startup.",
+          "Constructor arguments are required by default, so a missing bean is not injected as null and startup does not succeed.",
+          "Constructor injection does not wait for the first request, and field injection is not what forces creation at startup."
+        ],
+        "variants": [
+          "It allows circular bean dependencies to be resolved automatically at runtime without throwing any startup exceptions.",
+          "Constructor arguments are optional by default, so a missing bean is injected as null and startup still succeeds.",
+          "Construction waits until the first request, while field injection always instantiates the bean during startup."
+        ]
       },
       {
         "id": "C",
-        "text": "It enables declaring dependent collaborator fields as `final`, promoting immutability and preventing uninitialized state."
+        "variants": [
+          "It enables declaring dependent collaborator fields as `final`, promoting immutability and preventing uninitialized state.",
+          "Collaborator fields can be declared `final`, which promotes immutability and prevents uninitialized state.",
+          "Declaring collaborators `final` promotes immutability and keeps the object from observing uninitialized state."
+        ]
       },
       {
         "id": "D",
-        "text": "It forces all dependent Spring beans to be created as prototypes, reducing heap memory consumption during startup."
+        "reasons": [
+          "Constructor injection does not force dependent beans to be prototypes, and it does not reduce startup heap that way.",
+          "The component does not become request-scoped automatically, so each HTTP request does not get its own instance.",
+          "Collaborators are received as constructor parameters, and the constructor does not have to call `getBean`."
+        ],
+        "variants": [
+          "It forces all dependent Spring beans to be created as prototypes, reducing heap memory consumption during startup.",
+          "The component becomes request-scoped automatically, so each HTTP request receives a separate instance.",
+          "Each collaborator must be fetched with `ApplicationContext.getBean` from inside the constructor body."
+        ]
       }
     ],
     "correct": [
@@ -2098,23 +4075,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`cluster` (synchronizes a shared bean instance across disparate JVM machines using distributed shared memory)."
+        "reasons": [
+          "Spring has no `cluster` scope that shares one bean across JVMs through distributed shared memory.",
+          "There is no `jvm` scope that shares one bean among every `ApplicationContext` in the process.",
+          "There is no `batch` scope that creates a bean per running thread and applies it to every `@Scheduled` method."
+        ],
+        "variants": [
+          "`cluster` (synchronizes a shared bean instance across disparate JVM machines using distributed shared memory).",
+          "The `jvm` scope shares one bean instance among every `ApplicationContext` in the same process.",
+          "`batch` creates one bean for each running thread and is applied automatically to every `@Scheduled` method."
+        ]
       },
       {
         "id": "B",
-        "text": "`request` (creates a single bean instance per HTTP request lifecycle in web-aware Spring applications)."
+        "variants": [
+          "`request` (creates a single bean instance per HTTP request lifecycle in web-aware Spring applications).",
+          "Web-aware Spring applications get one bean per HTTP request lifecycle from the `request` scope.",
+          "A web-aware Spring application uses `request` to create one bean instance for each HTTP request lifecycle."
+        ]
       },
       {
         "id": "C",
-        "text": "`thread` (creates a new bean instance per OS native thread, enabled by default across all Spring MVC controllers)."
+        "reasons": [
+          "Spring has no default `thread` scope that creates a bean per native thread for every MVC controller.",
+          "There is no `socket` scope that creates a bean per TCP connection or that defaults `@RestController`.",
+          "There is no `method` scope that creates a bean on every invocation, and `@Transactional` does not require one."
+        ],
+        "variants": [
+          "`thread` (creates a new bean instance per OS native thread, enabled by default across all Spring MVC controllers).",
+          "`socket` creates one bean instance for each open TCP connection and is the default scope of `@RestController`.",
+          "`method` creates a new bean on every method invocation and is required on types annotated with `@Transactional`."
+        ]
       },
       {
         "id": "D",
-        "text": "`singleton` (the default scope, where a single shared bean instance exists per `ApplicationContext`)."
+        "variants": [
+          "`singleton` (the default scope, where a single shared bean instance exists per `ApplicationContext`).",
+          "The default scope is `singleton`: each `ApplicationContext` holds one shared instance of the bean.",
+          "One shared bean instance exists per `ApplicationContext` under `singleton`, which is the default scope."
+        ]
       },
       {
         "id": "E",
-        "text": "`prototype` (a new bean instance is created every time the bean is requested from the container)."
+        "variants": [
+          "`prototype` (a new bean instance is created every time the bean is requested from the container).",
+          "Every request the container receives for that bean creates another instance when the scope is `prototype`.",
+          "Each time the container is asked for a `prototype` bean, a new instance of that bean is created."
+        ]
       }
     ],
     "correct": [
@@ -2132,19 +4139,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Immediately after the JVM garbage collector performs its initial minor collection cycle on startup."
+        "reasons": [
+          "Singleton creation is not scheduled for the moment after the first minor collection at startup.",
+          "Singletons are not created while `application.properties` is parsed, before bean definitions exist.",
+          "Initializing the bean class does not run the singleton constructor."
+        ],
+        "variants": [
+          "Immediately after the JVM garbage collector performs its initial minor collection cycle on startup.",
+          "They are created while `application.properties` is parsed, before any bean definition has been registered.",
+          "Class initialization creates them, because loading the bean class runs each singleton constructor."
+        ]
       },
       {
         "id": "B",
-        "text": "Eagerly during application startup when the context refreshes, unless explicitly configured as `@Lazy`."
+        "variants": [
+          "Eagerly during application startup when the context refreshes, unless explicitly configured as `@Lazy`.",
+          "They are created eagerly at startup when the context refreshes, unless the bean is explicitly `@Lazy`.",
+          "Unless the bean is marked `@Lazy`, it is created eagerly when the context refreshes during startup."
+        ]
       },
       {
         "id": "C",
-        "text": "Only when an active database connection is opened within an enclosing `@Transactional` boundary."
+        "reasons": [
+          "A singleton is not created only when a `@Transactional` method opens a database connection.",
+          "Creation is not postponed until the first `@Cacheable` call and the presence of a cache manager.",
+          "Implementing `DisposableBean` is not the condition that causes the singleton to be created."
+        ],
+        "variants": [
+          "Only when an active database connection is opened within an enclosing `@Transactional` boundary.",
+          "They are created on the first call to a `@Cacheable` method, and only after a cache manager is present.",
+          "Only a bean that implements `DisposableBean` is created, so initialization stays paired with destruction."
+        ]
       },
       {
         "id": "D",
-        "text": "Lazily upon the first method invocation or HTTP request directed to that specific bean instance."
+        "reasons": [
+          "A default singleton is created when the context refreshes, not lazily on the first method call or HTTP request.",
+          "Refresh creates the singleton even when no other constructor calls `getBean` for it.",
+          "The first refresh creates the instance, and creation does not wait for the context to shut down and start again."
+        ],
+        "variants": [
+          "Lazily upon the first method invocation or HTTP request directed to that specific bean instance.",
+          "They are created only when another singleton constructor calls `getBean` for that bean.",
+          "They are created after the context shuts down and restarts, because the first refresh only stores definitions."
+        ]
       }
     ],
     "correct": [
@@ -2160,19 +4198,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "An entity that was instantiated using `new` and has never been persisted to the database or assigned an identifier."
+        "reasons": [
+          "An object created with `new` that was never persisted is transient, not detached, because detached instances already have a database identifier.",
+          "An instance still managed by an open persistence context is not detached, and its changes can flush without `merge()`.",
+          "A projection with no identifier is not detached, and the surrounding commit does not insert it on its own."
+        ],
+        "variants": [
+          "An entity that was instantiated using `new` and has never been persisted to the database or assigned an identifier.",
+          "It is still managed by an open persistence context, so changed fields flush on commit and `merge()` is unnecessary.",
+          "It is an identifier-free projection that Hibernate inserts on its own when the surrounding transaction commits."
+        ]
       },
       {
         "id": "B",
-        "text": "An entity that is permanently pinned in the Hibernate second-level cache across multiple application instances."
+        "reasons": [
+          "Detached does not mean the entity is pinned in the second-level cache across application instances.",
+          "Calling `persist()` on an instance that already matches a row is not the detached state, and Hibernate does not update that row in place for that reason.",
+          "Field changes on an unmanaged instance are not flushed at commit unless `merge()` brings the state back."
+        ],
+        "variants": [
+          "An entity that is permanently pinned in the Hibernate second-level cache across multiple application instances.",
+          "It was passed to `persist()` while already matching a database row, and Hibernate updates that row in place.",
+          "Its changed fields are flushed automatically at commit even though the instance is no longer managed."
+        ]
       },
       {
         "id": "C",
-        "text": "An entity with a database identifier that is no longer associated with an active `EntityManager`; changes require `merge()` to persist."
+        "variants": [
+          "An entity with a database identifier that is no longer associated with an active `EntityManager`; changes require `merge()` to persist.",
+          "An entity that has a database identifier but no active `EntityManager` requires `merge()` before its changes persist.",
+          "You persist those changes by calling `merge()` when the entity has a database identifier and no active `EntityManager`."
+        ]
       },
       {
         "id": "D",
-        "text": "An entity whose database row has been permanently removed by a SQL `DELETE` statement inside the active transaction."
+        "reasons": [
+          "A row removed by `DELETE` in the active transaction is removed, not detached.",
+          "An instance that is still in an open persistence context is managed, so lazy navigation after commit is not what detached means.",
+          "`detach()` does not copy the entity onto a new identifier, and the commit does not insert a second row because of that call."
+        ],
+        "variants": [
+          "An entity whose database row has been permanently removed by a SQL `DELETE` statement inside the active transaction.",
+          "It remains in an open persistence context, so its lazy associations can still be navigated after the transaction commits.",
+          "`detach()` copies it onto a new database identifier, and the following commit inserts a second row."
+        ]
       }
     ],
     "correct": [
@@ -2188,19 +4257,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Spring `@Transactional` modifies the JVM bytecode instruction pointer to execute transaction commits at the OS level."
+        "reasons": [
+          "`@Transactional` does not move the bytecode instruction pointer or commit the transaction at the operating-system level.",
+          "The transaction begins for the invocation itself, not only when the method throws, and a normal return does not leave the connection in autocommit.",
+          "Returning an entity or null does not choose commit versus rollback."
+        ],
+        "variants": [
+          "Spring `@Transactional` modifies the JVM bytecode instruction pointer to execute transaction commits at the OS level.",
+          "`@Transactional` starts a transaction only if the method throws, and a normal return leaves the connection in autocommit mode.",
+          "The return value selects the outcome, so a returned entity is committed and a returned null rolls the work back."
+        ]
       },
       {
         "id": "B",
-        "text": "Self-invocation bypasses can be resolved only by converting the target Spring bean into an unmanaged prototype bean."
+        "reasons": [
+          "Converting the bean to an unmanaged prototype does not make a self-call go through the transactional proxy.",
+          "A `final` method cannot be advised by the usual proxy, so `final` does not preserve `@Transactional` on a self-call.",
+          "When the proxy is exposed, `currentProxy()` returns that proxy and can apply transactional advice instead of bypassing it."
+        ],
+        "variants": [
+          "Self-invocation bypasses can be resolved only by converting the target Spring bean into an unmanaged prototype bean.",
+          "A self-call keeps `@Transactional` when the method is `final`, because the proxy is allowed to override `final` methods.",
+          "`AopContext.currentProxy()` still bypasses transactional advice, so that lookup cannot send the call through the proxy."
+        ]
       },
       {
         "id": "C",
-        "text": "Invoking an annotated method from within the same class (`this.method()`) bypasses the proxy, causing `@Transactional` to be ignored."
+        "variants": [
+          "Invoking an annotated method from within the same class (`this.method()`) bypasses the proxy, causing `@Transactional` to be ignored.",
+          "Calling an annotated method via `this.method()` in the same class bypasses the proxy, so `@Transactional` is ignored.",
+          "A same-class call written as `this.method()` bypasses the proxy, and the method's `@Transactional` annotation is ignored."
+        ]
       },
       {
         "id": "D",
-        "text": "Spring wraps the target bean in an AOP proxy that intercepts external method calls to manage transaction lifecycles."
+        "variants": [
+          "Spring wraps the target bean in an AOP proxy that intercepts external method calls to manage transaction lifecycles.",
+          "An AOP proxy around the target bean intercepts external method calls so it can manage transaction lifecycles.",
+          "External method calls are intercepted by the AOP proxy that wraps the target bean and manages transaction lifecycles."
+        ]
       }
     ],
     "correct": [
@@ -2217,19 +4312,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The `@ManyToOne` side is typically the owning side of the association that holds the physical database foreign key column."
+        "variants": [
+          "The `@ManyToOne` side is typically the owning side of the association that holds the physical database foreign key column.",
+          "Typically ownership of the association, including its physical database foreign-key column, sits on `@ManyToOne`.",
+          "Typically the owning side is `@ManyToOne`, and that side holds the physical database foreign-key column."
+        ]
       },
       {
         "id": "B",
-        "text": "The `@ManyToOne` annotation must always be configured with `fetch = FetchType.EAGER` by mandatory JPA specification rules."
+        "reasons": [
+          "The specification does not force `@ManyToOne` to be set to `FetchType.EAGER`, and a lazy fetch type is allowed.",
+          "`FetchType.EAGER` is allowed on `@OneToMany`, and that side is not required to remain lazy.",
+          "Cascade types on `@ManyToOne` still apply when `@OneToMany` does not repeat them in the same order."
+        ],
+        "variants": [
+          "The `@ManyToOne` annotation must always be configured with `fetch = FetchType.EAGER` by mandatory JPA specification rules.",
+          "The specification forbids `FetchType.EAGER` on `@OneToMany` and requires that association to remain lazy.",
+          "Cascade settings on `@ManyToOne` are ignored unless `@OneToMany` lists the same cascade types in the same order."
+        ]
       },
       {
         "id": "C",
-        "text": "Both sides of the association must omit `mappedBy` to instruct Hibernate to automatically maintain join table integrity."
+        "reasons": [
+          "Omitting `mappedBy` on both sides maps two associations, and it does not make Hibernate maintain one join table.",
+          "The `@ManyToOne` side typically owns the foreign key, and that mapping is not ignored when both sides are present.",
+          "`@JoinColumn` is allowed on a bidirectional association, so the child does not have to map the foreign key with `@JoinTable`."
+        ],
+        "variants": [
+          "Both sides of the association must omit `mappedBy` to instruct Hibernate to automatically maintain join table integrity.",
+          "The `@OneToMany` side owns the foreign key, and a `@ManyToOne` on the child is ignored when both sides are present.",
+          "`@JoinColumn` cannot be used on a bidirectional association, so the child must map the foreign key with `@JoinTable`."
+        ]
       },
       {
         "id": "D",
-        "text": "The `@OneToMany` side specifies `mappedBy` referencing the field name on the child entity, acting as the inverse collection side."
+        "variants": [
+          "The `@OneToMany` side specifies `mappedBy` referencing the field name on the child entity, acting as the inverse collection side.",
+          "The inverse `@OneToMany` collection sets `mappedBy` to the association field name declared on the child entity.",
+          "The child entity's field name is what `@OneToMany` puts in `mappedBy`, marking the collection as the inverse side."
+        ]
       }
     ],
     "correct": [
@@ -2246,23 +4367,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`@Entity` to register managed Spring singleton service beans for automatic classpath component scanning."
+        "reasons": [
+          "`@Entity` marks a JPA type and does not register a Spring singleton service for classpath component scanning.",
+          "`@ComponentScan` selects where to scan and does not mark one class as the web, service, and repository stereotype together.",
+          "`@Bean` registers a factory method result and does not make classpath scanning treat a persistence class as a controller."
+        ],
+        "variants": [
+          "`@Entity` to register managed Spring singleton service beans for automatic classpath component scanning.",
+          "`@ComponentScan` on one service class marks that class as the web, service, and repository stereotype at once.",
+          "`@Bean` on a persistence class causes classpath scanning to register that class as a controller."
+        ]
       },
       {
         "id": "B",
-        "text": "`@Repository` to encapsulate data access and enable automatic persistence exception translation into Spring hierarchies."
+        "variants": [
+          "`@Repository` to encapsulate data access and enable automatic persistence exception translation into Spring hierarchies.",
+          "`@Repository` encapsulates data access and translates persistence exceptions into Spring's exception hierarchy.",
+          "Persistence exception translation into Spring's hierarchy is enabled when `@Repository` encapsulates data access."
+        ]
       },
       {
         "id": "C",
-        "text": "`@Controller` or `@RestController` to handle incoming HTTP requests and coordinate presentation layer responses."
+        "variants": [
+          "`@Controller` or `@RestController` to handle incoming HTTP requests and coordinate presentation layer responses.",
+          "Incoming HTTP requests and presentation-layer coordination belong to `@Controller` or `@RestController`.",
+          "Presentation-layer responses get coordinated and HTTP requests get handled by `@Controller` or `@RestController`."
+        ]
       },
       {
         "id": "D",
-        "text": "`@Service` to designate beans encapsulating domain business logic and workflow transaction boundaries."
+        "variants": [
+          "`@Service` to designate beans encapsulating domain business logic and workflow transaction boundaries.",
+          "Domain business logic and workflow transaction boundaries are what `@Service` designates that bean to encapsulate.",
+          "Domain business logic and workflow transaction boundaries belong on a bean designated with `@Service`."
+        ]
       },
       {
         "id": "E",
-        "text": "`@Configuration` to designate database table schema definitions that map directly onto relational database rows."
+        "reasons": [
+          "`@Configuration` declares `@Bean` methods and does not define table schemas mapped onto relational rows.",
+          "`@Scheduled` runs a method on a schedule and does not designate the repository layer or turn persistence exceptions into HTTP responses.",
+          "`@EventListener` handles application events and does not map incoming request bodies onto relational table rows."
+        ],
+        "variants": [
+          "`@Configuration` to designate database table schema definitions that map directly onto relational database rows.",
+          "`@Scheduled` designates the repository layer and translates persistence exceptions into HTTP responses for callers.",
+          "`@EventListener` designates a controller that maps incoming request bodies onto relational table rows."
+        ]
       }
     ],
     "correct": [
@@ -2280,23 +4431,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Client-Server separation: user interface concerns are separated from data storage concerns to improve portability and scalability."
+        "variants": [
+          "Client-Server separation: user interface concerns are separated from data storage concerns to improve portability and scalability.",
+          "Client-server separation keeps user-interface concerns apart from data-storage concerns, improving portability and scalability.",
+          "Client-server separation isolates user-interface concerns from data-storage concerns, improving portability and scalability."
+        ]
       },
       {
         "id": "B",
-        "text": "Cacheability: responses must explicitly or implicitly designate themselves as cacheable or non-cacheable to improve efficiency."
+        "variants": [
+          "Cacheability: responses must explicitly or implicitly designate themselves as cacheable or non-cacheable to improve efficiency.",
+          "Cacheability requires each response to mark itself explicitly or implicitly as cacheable or non-cacheable, improving efficiency.",
+          "To improve efficiency, each response must mark itself explicitly or implicitly as either cacheable or non-cacheable."
+        ]
       },
       {
         "id": "C",
-        "text": "Statelessness: each request from client to server must contain all of the contextual information necessary to understand it."
+        "variants": [
+          "Statelessness: each request from client to server must contain all of the contextual information necessary to understand it.",
+          "Statelessness requires each request from the client to the server to carry all contextual information needed to understand it.",
+          "Each client request to the server must carry all of the contextual information necessary to understand that request."
+        ]
       },
       {
         "id": "D",
-        "text": "Stateful Session Affinity: servers must store client conversation state in memory across subsequent HTTP connections."
+        "reasons": [
+          "Stateful session affinity is not a REST constraint, because the server is not required to store client conversation state across HTTP connections.",
+          "REST allows intermediaries under the layered-system constraint, so clients are not required to connect directly to the origin.",
+          "The uniform interface is required in REST, so a service may not replace resource identification with private operation names."
+        ],
+        "variants": [
+          "Stateful Session Affinity: servers must store client conversation state in memory across subsequent HTTP connections.",
+          "Clients must connect directly to the origin server, because REST forbids proxies, gateways, and any other intermediary layer.",
+          "The uniform interface is optional, so each service may publish private operation names instead of identifying resources uniformly."
+        ]
       },
       {
         "id": "E",
-        "text": "Strict Schema Serialization: all messages must be formatted as binary protocol buffers validated against central schemas."
+        "reasons": [
+          "REST does not require messages to be binary protocol buffers validated against a central schema.",
+          "Code-on-demand is optional in REST, not a rule that every response must carry executable client code.",
+          "REST does not require resource identifiers to be database keys, and it does not require servers to reject redirected requests."
+        ],
+        "variants": [
+          "Strict Schema Serialization: all messages must be formatted as binary protocol buffers validated against central schemas.",
+          "Code-on-demand is mandatory, so every response must include executable client code that the recipient is required to run.",
+          "Resource identifiers must be permanent database keys, and the server must reject any request that arrived by following a redirect."
+        ]
       }
     ],
     "correct": [
@@ -2314,19 +4495,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The View communicates directly with the database engine to execute high-throughput relational SQL queries."
+        "reasons": [
+          "The View does not execute SQL against the database engine; data access is outside the presentation component.",
+          "The Model does not select response templates or write the presentation markup.",
+          "The View does not commit domain transactions or enforce business invariants."
+        ],
+        "variants": [
+          "The View communicates directly with the database engine to execute high-throughput relational SQL queries.",
+          "The Model chooses the response template and writes the presentation markup before the Controller handles the request.",
+          "The View commits domain transactions and enforces business invariants while it prepares what the user will see."
+        ]
       },
       {
         "id": "B",
-        "text": "The Model encapsulates application state, domain entities, and core business logic independent of presentation format."
+        "variants": [
+          "The Model encapsulates application state, domain entities, and core business logic independent of presentation format.",
+          "The Model holds application state, domain entities, and core business logic independent of the presentation format.",
+          "Application state, domain entities, and core business logic live in the Model, kept independent of presentation format."
+        ]
       },
       {
         "id": "C",
-        "text": "The Controller stores user session tokens inside operating system kernel memory to ensure cross-process isolation."
+        "reasons": [
+          "The Controller does not store user session tokens in operating-system kernel memory to isolate processes.",
+          "MVC does not require the Controller to be a singleton sharing one mutable request object among concurrent users.",
+          "The View is not supposed to skip the Controller and invoke the Model through static global methods."
+        ],
+        "variants": [
+          "The Controller stores user session tokens inside operating system kernel memory to ensure cross-process isolation.",
+          "The Controller must be one shared singleton that reuses a single mutable request object across every concurrent user request.",
+          "The View is required to call Model operations through static global methods and to bypass the Controller completely."
+        ]
       },
       {
         "id": "D",
-        "text": "The Controller interprets incoming user requests, invokes operations on the Model, and selects the appropriate View to render."
+        "variants": [
+          "The Controller interprets incoming user requests, invokes operations on the Model, and selects the appropriate View to render.",
+          "The Controller interprets each incoming user request, invokes operations on the Model, and selects the View to render.",
+          "Incoming user requests are interpreted by the Controller, which calls Model operations and chooses the appropriate View."
+        ]
       }
     ],
     "correct": [
@@ -2343,23 +4550,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`POST` is defined as strictly idempotent because repeating a request never creates duplicate records on the server."
+        "reasons": [
+          "`POST` is not defined as strictly idempotent, and repeating the request can create additional records on the server.",
+          "`HEAD` is a safe method, and it must not delete the resource after returning headers.",
+          "`OPTIONS` is idempotent, and listing allowed methods does not rewrite metadata stored on the resource."
+        ],
+        "variants": [
+          "`POST` is defined as strictly idempotent because repeating a request never creates duplicate records on the server.",
+          "`HEAD` is classified as unsafe because a conforming server must delete the target resource after it returns the headers.",
+          "`OPTIONS` is defined as non-idempotent because advertising the allowed methods rewrites metadata stored on the resource."
+        ]
       },
       {
         "id": "B",
-        "text": "`GET` is intended for safe, read-only retrieval of resources without modifying server-side state."
+        "variants": [
+          "`GET` is intended for safe, read-only retrieval of resources without modifying server-side state.",
+          "`GET` is meant for safe, read-only retrieval of a resource and is not intended to modify server-side state.",
+          "Safe, read-only retrieval that does not modify server-side state is what `GET` is intended to perform."
+        ]
       },
       {
         "id": "C",
-        "text": "`PUT` is used to create or replace the entire target resource at a specific URI and is defined as idempotent."
+        "variants": [
+          "`PUT` is used to create or replace the entire target resource at a specific URI and is defined as idempotent.",
+          "`PUT` creates or replaces the entire target resource at a specific URI, and the method is defined as idempotent.",
+          "Creating or fully replacing the resource at a given URI is what `PUT` does, and that use is defined as idempotent."
+        ]
       },
       {
         "id": "D",
-        "text": "`PUT` requests are safe methods that must never produce any state side effects on the origin server."
+        "reasons": [
+          "`PUT` is not a safe method, because creating or replacing a resource produces state changes on the origin server.",
+          "`DELETE` is not a safe method, even when the resource is already absent and a repeat appears to change nothing.",
+          "A `200 OK` response without a `Location` header does not make `POST` safe, because `POST` can still change server state."
+        ],
+        "variants": [
+          "`PUT` requests are safe methods that must never produce any state side effects on the origin server.",
+          "`DELETE` counts as safe once the target resource is already gone, because repeating the call changes nothing.",
+          "`POST` counts as safe when the server responds `200 OK` and omits a `Location` header."
+        ]
       },
       {
         "id": "E",
-        "text": "`DELETE` removes the specified resource at the target URI and is defined as idempotent on repeated calls."
+        "variants": [
+          "`DELETE` removes the specified resource at the target URI and is defined as idempotent on repeated calls.",
+          "`DELETE` removes the resource at the target URI and is defined as idempotent when that same call is repeated.",
+          "Repeating `DELETE` is idempotent, and the method removes the specified resource located at the target URI."
+        ]
       }
     ],
     "correct": [
@@ -2377,19 +4614,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`GET`, intended exclusively for information retrieval without altering origin server state."
+        "variants": [
+          "`GET`, intended exclusively for information retrieval without altering origin server state.",
+          "`GET` is intended only for information retrieval and does not alter state on the origin server.",
+          "Information retrieval without altering origin-server state is the exclusive purpose of `GET`."
+        ]
       },
       {
         "id": "B",
-        "text": "`POST`, which is safe because clients can submit arbitrary JSON payloads without modifying database schemas."
+        "reasons": [
+          "`POST` is not a safe method, and a JSON payload can modify server state even when the database schema stays the same.",
+          "`PUT` is not safe, including when the submitted representation happens to match the bytes already stored.",
+          "`PATCH` is not a safe method, and an empty patch document does not put it in the safe category."
+        ],
+        "variants": [
+          "`POST`, which is safe because clients can submit arbitrary JSON payloads without modifying database schemas.",
+          "`PUT` is safe when the representation sent already matches the stored bytes, because the server content does not change.",
+          "`PATCH` is safe when the patch document is empty, because an empty patch is required to leave server state untouched."
+        ]
       },
       {
         "id": "C",
-        "text": "`HEAD`, which is identical to `GET` except that the server must not return a message-body in the response."
+        "variants": [
+          "`HEAD`, which is identical to `GET` except that the server must not return a message-body in the response.",
+          "`HEAD` is identical to `GET` except that the server must not return a message-body in the response.",
+          "Except that the server must not return a message-body, `HEAD` is otherwise identical to `GET`."
+        ]
       },
       {
         "id": "D",
-        "text": "`DELETE`, which is safe because deleting a resource leaves the server in a clean, pristine operating condition."
+        "reasons": [
+          "`DELETE` is not a safe method, because removing a resource alters server state rather than leaving it pristine.",
+          "`POST` is not safe merely because the subordinate resource already exists; the method can still change state.",
+          "`CONNECT` is not one of the methods RFC 7231 designates as safe."
+        ],
+        "variants": [
+          "`DELETE`, which is safe because deleting a resource leaves the server in a clean, pristine operating condition.",
+          "`POST` is safe when the subordinate resource already exists, because the request does not need to create anything.",
+          "`CONNECT` is designated safe because opening a tunnel is defined never to change resource state on the origin server."
+        ]
       }
     ],
     "correct": [
@@ -2406,23 +4669,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`DELETE` (deleting a resource repeatedly leaves the resource removed, producing the same net state change)."
+        "variants": [
+          "`DELETE` (deleting a resource repeatedly leaves the resource removed, producing the same net state change).",
+          "Repeating `DELETE` leaves the resource removed, so the net state change matches a single deletion.",
+          "`DELETE` is idempotent because further identical calls keep the resource removed and add no further state change."
+        ]
       },
       {
         "id": "B",
-        "text": "`PUT` (replacing a resource repeatedly with the same payload results in the identical final server state)."
+        "variants": [
+          "`PUT` (replacing a resource repeatedly with the same payload results in the identical final server state).",
+          "Replacing a resource again with the same `PUT` payload leaves the server in that identical final state.",
+          "`PUT` is idempotent because a repeated replacement that carries the same payload yields the same final server state."
+        ]
       },
       {
         "id": "C",
-        "text": "`POST` (submitting an order creation form repeatedly creates exactly one unique database entity record)."
+        "reasons": [
+          "`POST` is not idempotent, so submitting an order-creation form repeatedly can insert more than one record.",
+          "`HEAD` is idempotent and is not defined as a method that increments a retrieval counter on the resource.",
+          "Setting a field to a fixed value can be idempotent, so the name `PATCH` alone does not make that call non-idempotent."
+        ],
+        "variants": [
+          "`POST` (submitting an order creation form repeatedly creates exactly one unique database entity record).",
+          "`HEAD` is non-idempotent because each request is required to increment a retrieval counter stored on the resource.",
+          "A `PATCH` that sets one field to a fixed value is non-idempotent solely because the method is named `PATCH`."
+        ]
       },
       {
         "id": "D",
-        "text": "`GET` (retrieving a resource repeatedly produces no cumulative state mutations on the origin server)."
+        "variants": [
+          "`GET` (retrieving a resource repeatedly produces no cumulative state mutations on the origin server).",
+          "Repeating `GET` produces no cumulative state mutations on the origin server, so the retrieval is idempotent.",
+          "`GET` is idempotent because identical retrievals repeated later add no cumulative mutations on the origin server."
+        ]
       },
       {
         "id": "E",
-        "text": "`PATCH` (applying relative mathematical increment deltas repeatedly produces the exact same final state)."
+        "reasons": [
+          "A `PATCH` that applies a relative increment changes the value again on each call, so that update is not idempotent.",
+          "HTTP does not define `POST` as idempotent, even when the client repeats the same URI and the same body.",
+          "`CONNECT` is not defined as an idempotent HTTP method."
+        ],
+        "variants": [
+          "`PATCH` (applying relative mathematical increment deltas repeatedly produces the exact same final state).",
+          "HTTP defines `POST` as idempotent whenever the client repeats the identical request URI together with the same raw body.",
+          "`CONNECT` is idempotent because repeating the tunnel request is defined to leave the resource state unchanged."
+        ]
       }
     ],
     "correct": [
@@ -2440,19 +4733,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Query string parameters appended to the URL (such as `?status=shipped&page=2`) for filtering, sorting, and pagination."
+        "variants": [
+          "Query string parameters appended to the URL (such as `?status=shipped&page=2`) for filtering, sorting, and pagination.",
+          "Query-string parameters on the URL, such as `?status=shipped&page=2`, carry filtering, sorting, and pagination.",
+          "Filtering, sorting, and pagination use query-string parameters on the URL, such as `?status=shipped&page=2`."
+        ]
       },
       {
         "id": "B",
-        "text": "Path variables embedded within the URL path hierarchy (such as `/api/v1/orders/1024`) to identify specific resources."
+        "variants": [
+          "Path variables embedded within the URL path hierarchy (such as `/api/v1/orders/1024`) to identify specific resources.",
+          "Path variables set in the URL hierarchy, such as `/api/v1/orders/1024`, identify one specific resource.",
+          "A specific resource is identified by path variables embedded in the URL, such as `/api/v1/orders/1024`."
+        ]
       },
       {
         "id": "C",
-        "text": "Enclosing large nested JSON document payloads directly within the HTTP GET request message-body stream."
+        "reasons": [
+          "A nested JSON document in the `GET` message-body is not a standard way to transmit request parameters.",
+          "The fragment after `#` is not sent to the origin server, so it cannot carry `GET` filter parameters.",
+          "Matrix parameters are not required for `GET`, and the query string is an allowed channel for parameters."
+        ],
+        "variants": [
+          "Enclosing large nested JSON document payloads directly within the HTTP GET request message-body stream.",
+          "`GET` filters must sit in the fragment after `#`, and that fragment is defined to be sent through to the origin.",
+          "Semicolon matrix parameters are required on every `GET`, and the query string is disallowed as a parameter channel."
+        ]
       },
       {
         "id": "D",
-        "text": "Injecting binary parameter byte arrays directly into custom TCP transport segment header options."
+        "reasons": [
+          "Custom TCP segment header options are not a standard HTTP mechanism for transmitting `GET` parameters.",
+          "The `Cookie` header is not the standard substitute for the query string when a `GET` carries filters and page numbers.",
+          "The `Authorization` header carries credentials, not the standard filter and pagination parameters of a `GET`."
+        ],
+        "variants": [
+          "Injecting binary parameter byte arrays directly into custom TCP transport segment header options.",
+          "`GET` filters and page numbers are supposed to travel in the `Cookie` header instead of a query string.",
+          "The standard place for `GET` filters and page numbers is an opaque blob in the `Authorization` header."
+        ]
       }
     ],
     "correct": [
@@ -2469,19 +4788,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`@RestController`, `@GetMapping`, `@PostMapping`, `@PathVariable`, and `@RequestParam`."
+        "reasons": [
+          "Those mapping annotations belong to Spring MVC, not to the JAX-RS specification.",
+          "Servlet annotations such as `@WebServlet` and `@WebFilter` are not the core JAX-RS set.",
+          "Bean Validation annotations such as `@NotNull` and `@Size` are not JAX-RS resource annotations."
+        ],
+        "variants": [
+          "`@RestController`, `@GetMapping`, `@PostMapping`, `@PathVariable`, and `@RequestParam`.",
+          "These are `@WebServlet`, `@WebFilter`, `@WebListener`, `@MultipartConfig`, and `@ServletSecurity`.",
+          "Use `@NotNull`, `@NotBlank`, `@Size`, `@Email`, `@Valid`, `@Min`, and `@Max`."
+        ]
       },
       {
         "id": "B",
-        "text": "`@Entity`, `@Table`, `@Column`, `@Id`, `@GeneratedValue`, and `@NamedQuery`."
+        "reasons": [
+          "Persistence annotations such as `@Entity` and `@Table` are not part of JAX-RS.",
+          "CDI annotations such as `@Inject` and `@Named` do not define JAX-RS resources.",
+          "JAX-WS annotations such as `@WebService` and `@WebMethod` describe SOAP endpoints, not JAX-RS resources."
+        ],
+        "variants": [
+          "`@Entity`, `@Table`, `@Column`, `@Id`, `@GeneratedValue`, and `@NamedQuery`.",
+          "`@Inject`, `@Named`, `@Qualifier`, `@ApplicationScoped`, and `@RequestScoped`.",
+          "`@WebService`, `@WebMethod`, `@SOAPBinding`, `@WebParam`, and `@WebResult`."
+        ]
       },
       {
         "id": "C",
-        "text": "`@BeforeEach`, `@AfterEach`, `@Test`, `@ParameterizedTest`, and `@Disabled`."
+        "reasons": [
+          "JUnit Jupiter annotations such as `@Test` and `@BeforeEach` are not part of JAX-RS.",
+          "JPA lifecycle callbacks such as `@PrePersist` and `@PostLoad` are not JAX-RS annotations.",
+          "EJB component annotations such as `@Stateless` and `@MessageDriven` are not the JAX-RS core."
+        ],
+        "variants": [
+          "`@BeforeEach`, `@AfterEach`, `@Test`, `@ParameterizedTest`, and `@Disabled`.",
+          "`@PrePersist`, `@PostLoad`, `@PreUpdate`, `@PreRemove`, and `@PostPersist`.",
+          "`@Stateless`, `@Stateful`, `@Singleton`, `@MessageDriven`, and `@TransactionAttribute`."
+        ]
       },
       {
         "id": "D",
-        "text": "`@Path`, `@GET`/`@POST`/`@PUT`/`@DELETE`, `@PathParam`, `@QueryParam`, `@Produces`, and `@Consumes`."
+        "variants": [
+          "`@Path`, `@GET`/`@POST`/`@PUT`/`@DELETE`, `@PathParam`, `@QueryParam`, `@Produces`, and `@Consumes`.",
+          "`@Path`, `@GET`/`@POST`/`@PUT`/`@DELETE`, `@PathParam`, `@QueryParam`, `@Produces`, `@Consumes`.",
+          "`@Produces`, `@Consumes`, `@PathParam`, `@QueryParam`, `@Path`, `@GET`/`@POST`/`@PUT`/`@DELETE`."
+        ]
       }
     ],
     "correct": [
@@ -2497,19 +4847,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A delegated authorization framework that grants third-party applications scoped access to APIs without sharing passwords."
+        "variants": [
+          "A delegated authorization framework that grants third-party applications scoped access to APIs without sharing passwords.",
+          "It is a delegated authorization framework granting third-party applications scoped API access without sharing passwords.",
+          "Third-party applications get scoped API access without the user's password, under this delegated authorization framework."
+        ]
       },
       {
         "id": "B",
-        "text": "A symmetric encryption protocol designed to replace Transport Layer Security (`TLS`) across distributed databases."
+        "reasons": [
+          "OAuth 2.0 is not a symmetric encryption protocol and it is not a replacement for Transport Layer Security.",
+          "OAuth 2.0 does not exist only to issue SAML assertions for browser single sign-on.",
+          "OAuth 2.0 is not a password-hashing specification and it does not replace credentials with bcrypt hashes on the resource server."
+        ],
+        "variants": [
+          "A symmetric encryption protocol designed to replace Transport Layer Security (`TLS`) across distributed databases.",
+          "It is an identity-federation protocol whose only result is SAML assertions used for browser single sign-on.",
+          "It is a password-storage specification that replaces user credentials with bcrypt hashes stored on the resource server itself."
+        ]
       },
       {
         "id": "C",
-        "text": "A database access control model that enforces table-level row security within relational database engines."
+        "reasons": [
+          "OAuth 2.0 is not a database engine feature for enforcing row security on relational tables.",
+          "OAuth 2.0 is not defined as a mutual-TLS profile that replaces access tokens with cluster certificates.",
+          "OAuth 2.0 is not a rate-limiting gateway that authorizes callers by source address instead of scoped access."
+        ],
+        "variants": [
+          "A database access control model that enforces table-level row security within relational database engines.",
+          "It is a mutual-TLS profile that requires every client to present a cluster certificate instead of an access token.",
+          "It is a gateway product that authorizes callers by source address and rate limit and does not grant scoped API access."
+        ]
       },
       {
         "id": "D",
-        "text": "A session clustering algorithm that synchronizes HTTP cookie states across disparate microservice JVM instances."
+        "reasons": [
+          "OAuth 2.0 is not a session-clustering algorithm that synchronizes HTTP cookie state across JVM instances.",
+          "OAuth 2.0 does not issue client certificates so that APIs can skip authorization checks.",
+          "Refresh tokens are not a store of the user's password, and clients do not mint tokens by bypassing the authorization server that way."
+        ],
+        "variants": [
+          "A session clustering algorithm that synchronizes HTTP cookie states across disparate microservice JVM instances.",
+          "It is a certificate scheme that issues long-lived client certificates so APIs can skip authorization checks entirely.",
+          "It is a refresh-token vault that stores the user's password so clients mint tokens with no authorization server involved."
+        ]
       }
     ],
     "correct": [
@@ -2525,23 +4906,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Availability: every read or write request receives a non-error response without requiring active quorum consensus."
+        "reasons": [
+          "Availability, including a non-error response without quorum, is a CAP concern and is not an ACID guarantee.",
+          "ACID does not promise that every transaction will commit inside a fixed time limit on the primary.",
+          "ACID does not require a transaction to hold exclusive table locks for its entire lifetime."
+        ],
+        "variants": [
+          "Availability: every read or write request receives a non-error response without requiring active quorum consensus.",
+          "ACID includes a latency bound, so every transaction must commit within a fixed time limit on the primary node of the cluster.",
+          "ACID requires every transaction to hold exclusive table locks for its entire lifetime so no other writer can interleave at all."
+        ]
       },
       {
         "id": "B",
-        "text": "Consistency: transactions ensure that data transitions strictly from one valid state to another, satisfying all database constraints."
+        "variants": [
+          "Consistency: transactions ensure that data transitions strictly from one valid state to another, satisfying all database constraints.",
+          "Consistency means a transaction moves data from one valid state to another while satisfying all database constraints.",
+          "A transaction is consistent when data goes only from one valid state to another that meets every database constraint."
+        ]
       },
       {
         "id": "C",
-        "text": "Partition Tolerance: database nodes continue operating normally during arbitrary network communication partitions."
+        "reasons": [
+          "Partition tolerance is a CAP property and is not a guarantee ACID makes about network splits.",
+          "ACID does not require the engine to add shards automatically as a transaction's working set grows.",
+          "Who may read a transaction's rows is access control, not an ACID property."
+        ],
+        "variants": [
+          "Partition Tolerance: database nodes continue operating normally during arbitrary network communication partitions.",
+          "ACID includes elasticity, so the engine must create new shards automatically whenever one transaction's working set grows larger.",
+          "ACID includes authorization, so only the transaction's owner is permitted to read the rows that transaction has written."
+        ]
       },
       {
         "id": "D",
-        "text": "Durability: once a transaction is committed, its updates survive subsequent power failures, system crashes, or restarts."
+        "variants": [
+          "Durability: once a transaction is committed, its updates survive subsequent power failures, system crashes, or restarts.",
+          "Durability means that after a transaction commits, its updates survive a later power failure, crash, or restart.",
+          "Once a transaction is committed, durability keeps its updates intact across power failures, system crashes, and restarts."
+        ]
       },
       {
         "id": "E",
-        "text": "Atomicity: all statements within a transaction succeed completely or the entire transaction is rolled back with no effect."
+        "variants": [
+          "Atomicity: all statements within a transaction succeed completely or the entire transaction is rolled back with no effect.",
+          "Atomicity means every statement in the transaction succeeds, or the entire transaction rolls back and leaves no effect.",
+          "Either all statements inside the transaction complete, or atomicity rolls the whole transaction back with no effect."
+        ]
       }
     ],
     "correct": [
@@ -2559,19 +4970,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A 'Phantom Read' occurs when a transaction rolls back automatically because another session deleted an index."
+        "reasons": [
+          "A phantom read is not an automatic rollback triggered because another session deleted an index.",
+          "Seeing one's own insert through both an index and the heap is not a phantom read.",
+          "A transaction observing its own uncommitted insert is not a non-repeatable read."
+        ],
+        "variants": [
+          "A 'Phantom Read' occurs when a transaction rolls back automatically because another session deleted an index.",
+          "A phantom read occurs when a transaction sees its own insert twice because the scan visits both an index and the heap.",
+          "A non-repeatable read occurs when a transaction notices its own uncommitted insert and the statement then fails."
+        ]
       },
       {
         "id": "B",
-        "text": "A 'Non-Repeatable Read' occurs when re-reading a row retrieves different data because another transaction committed an update."
+        "variants": [
+          "A 'Non-Repeatable Read' occurs when re-reading a row retrieves different data because another transaction committed an update.",
+          "A non-repeatable read is a later read of the same row that differs because another transaction committed an update.",
+          "A later read of a row that differs because another transaction committed an update is a non-repeatable read."
+        ]
       },
       {
         "id": "C",
-        "text": "A 'Dirty Read' occurs when a transaction reads uncommitted modifications made by another concurrent transaction."
+        "variants": [
+          "A 'Dirty Read' occurs when a transaction reads uncommitted modifications made by another concurrent transaction.",
+          "A dirty read is when a transaction reads modifications another concurrent transaction has not yet committed.",
+          "Reading uncommitted modifications written by another concurrent transaction is what a dirty read refers to."
+        ]
       },
       {
         "id": "D",
-        "text": "`READ UNCOMMITTED` is the strictest isolation level and prevents all phantom reads and serialization failures."
+        "reasons": [
+          "`READ UNCOMMITTED` is the weakest isolation level, and it does not prevent phantom reads or serialization anomalies.",
+          "`SERIALIZABLE` does not allow dirty reads, with or without a shared lock on the system catalog.",
+          "In ANSI SQL, `REPEATABLE READ` prevents a repeated read from changing and still allows phantoms, so both halves of this claim are reversed."
+        ],
+        "variants": [
+          "`READ UNCOMMITTED` is the strictest isolation level and prevents all phantom reads and serialization failures.",
+          "`SERIALIZABLE` still permits dirty reads whenever each transaction holds a shared lock on the database system catalog.",
+          "`REPEATABLE READ` allows a second read of a row to change and is the level defined to forbid phantom rows."
+        ]
       }
     ],
     "correct": [
@@ -2588,19 +5025,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A table becomes corrupted when two transactions write to the same column; the RDBMS locks the table permanently."
+        "reasons": [
+          "Two transactions writing the same column do not define a deadlock, and the RDBMS does not lock that table permanently.",
+          "A unique-key collision is a constraint failure, not a deadlock, and the engine does not merge the transactions into one commit.",
+          "A full redo log is not a deadlock, and truncating it does not commit both transactions as the resolution."
+        ],
+        "variants": [
+          "A table becomes corrupted when two transactions write to the same column; the RDBMS locks the table permanently.",
+          "A deadlock is a unique-key collision, and the engine merges the two transactions into a single committed unit.",
+          "A deadlock means the redo log has filled, so the engine truncates that log and then commits both transactions."
+        ]
       },
       {
         "id": "B",
-        "text": "Two transactions hold locks that the other requires to proceed; the RDBMS detects the cycle and aborts one transaction as victim."
+        "variants": [
+          "Two transactions hold locks that the other requires to proceed; the RDBMS detects the cycle and aborts one transaction as victim.",
+          "Two transactions each hold a lock the other needs; the RDBMS detects the cycle and aborts one of them as the victim.",
+          "Each transaction holds a lock the other needs, so the RDBMS finds that cycle and rolls one transaction back as victim."
+        ]
       },
       {
         "id": "C",
-        "text": "An uncommitted transaction commits automatically when a secondary transaction issues a `SELECT` statement."
+        "reasons": [
+          "Another session's `SELECT` does not automatically commit a different transaction that is still uncommitted.",
+          "A backup overlapping a checkpoint is not a deadlock, and waiting for the snapshot is not deadlock resolution.",
+          "Deadlock handling does not promote both transactions to database-level locks and then let both commit."
+        ],
+        "variants": [
+          "An uncommitted transaction commits automatically when a secondary transaction issues a `SELECT` statement.",
+          "A deadlock is a backup that overlaps a checkpoint, and writers wait until that snapshot copy has finished.",
+          "The engine resolves a deadlock by upgrading both transactions to database-level locks so that both are allowed to commit."
+        ]
       },
       {
         "id": "D",
-        "text": "A query scans an unindexed table exceeding the connection pool timeout; the RDBMS restarts the entire database service."
+        "reasons": [
+          "A scan of an unindexed table that passes a pool timeout is not a deadlock, and the RDBMS does not restart the whole database service for it.",
+          "Two readers of one committed snapshot are not in a deadlock, and closing the connection pool is not the remedy.",
+          "The RDBMS does not clear a deadlock by replaying both transactions on a replica and committing the faster one."
+        ],
+        "variants": [
+          "A query scans an unindexed table exceeding the connection pool timeout; the RDBMS restarts the entire database service.",
+          "Two sessions reading the same committed snapshot are treated as deadlocked, and the engine then closes the entire connection pool.",
+          "The engine resolves the deadlock by replaying both transactions on a replica and committing whichever one finishes first."
+        ]
       }
     ],
     "correct": [
@@ -2616,19 +5084,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It converts relational tables into in-memory key-value stores to guarantee single-digit microsecond responses."
+        "reasons": [
+          "An index does not convert relational tables into in-memory key-value stores or guarantee microsecond responses.",
+          "A B-tree exists so equality lookups can use it, not so the planner must ignore it and scan the heap.",
+          "An index does not delete the column from the heap or leave the values only in the write-ahead log."
+        ],
+        "variants": [
+          "It converts relational tables into in-memory key-value stores to guarantee single-digit microsecond responses.",
+          "A B-tree index tells the planner to ignore that index for equality lookups and to scan the table heap instead.",
+          "Adding the index removes the indexed column from the table heap and keeps those values only in the write-ahead log."
+        ]
       },
       {
         "id": "B",
-        "text": "It compresses table data on disk to eliminate memory consumption during complex full table scans."
+        "reasons": [
+          "An index does not compress table data in order to eliminate memory use during a full table scan.",
+          "Maintaining an index does not speed inserts by skipping data-type checks on the indexed columns.",
+          "An index is not a standby copy of the table that replaces the heap after a crash."
+        ],
+        "variants": [
+          "It compresses table data on disk to eliminate memory consumption during complex full table scans.",
+          "An index makes inserts faster because the engine stops checking data types on the columns that were indexed.",
+          "The index is a crash-recovery copy of the table, and the engine restores that copy over the heap."
+        ]
       },
       {
         "id": "C",
-        "text": "It accelerates query lookups, filters, and joins at the cost of additional storage space and slower write operations."
+        "variants": [
+          "It accelerates query lookups, filters, and joins at the cost of additional storage space and slower write operations.",
+          "An index speeds query lookups, filters, and joins, at the cost of extra storage and slower write operations.",
+          "Lookups, filters, and joins become faster with an index, while storage grows and write operations get slower."
+        ]
       },
       {
         "id": "D",
-        "text": "It enforces unique constraints on columns while eliminating the need for foreign key constraints across tables."
+        "reasons": [
+          "An index does not remove the need for foreign keys, even when it also enforces uniqueness on a column.",
+          "An index does not cache earlier result rows so later statements can skip parsing.",
+          "A table can have more than one B-tree, and creating an index does not replace the primary key on every column."
+        ],
+        "variants": [
+          "It enforces unique constraints on columns while eliminating the need for foreign key constraints across tables.",
+          "The index stores rows returned by earlier statements, so later SQL can skip parsing and hand those rows back directly.",
+          "A table may have only one B-tree index, and that index replaces the primary key for every column in the table."
+        ]
       }
     ],
     "correct": [
@@ -2644,23 +5143,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`WHERE` filters individual rows before grouping; `HAVING` filters aggregated group records produced by `GROUP BY`."
+        "variants": [
+          "`WHERE` filters individual rows before grouping; `HAVING` filters aggregated group records produced by `GROUP BY`.",
+          "`WHERE` filters individual rows before grouping, and `HAVING` filters the aggregate groups that `GROUP BY` produces.",
+          "Individual rows are filtered by `WHERE` before grouping; `HAVING` then filters the group records created by `GROUP BY`."
+        ]
       },
       {
         "id": "B",
-        "text": "`GROUP BY` automatically sorts all output rows in descending order based on the primary key column."
+        "reasons": [
+          "`GROUP BY` does not automatically sort the output in descending order by the primary key.",
+          "`ORDER BY` is not required to precede `WHERE`, and its sort expression does not filter rows out.",
+          "Standard SQL does not make a `SELECT`-list alias visible to `WHERE` in the same query level."
+        ],
+        "variants": [
+          "`GROUP BY` automatically sorts all output rows in descending order based on the primary key column.",
+          "`ORDER BY` must be written before `WHERE`, and the sort expression is what removes rows from the result.",
+          "A `SELECT`-list alias must be visible to `WHERE` in the same query, where it acts as a filter."
+        ]
       },
       {
         "id": "C",
-        "text": "`INNER JOIN` returns only rows with matches in both tables; `LEFT JOIN` returns all left rows, populating missing right attributes with `NULL`."
+        "variants": [
+          "`INNER JOIN` returns only rows with matches in both tables; `LEFT JOIN` returns all left rows, populating missing right attributes with `NULL`.",
+          "`INNER JOIN` returns only rows matched in both tables; `LEFT JOIN` returns all left rows with `NULL` for missing right values.",
+          "`LEFT JOIN` returns all left rows with `NULL` on a missing right side; `INNER JOIN` returns only rows matched in both tables."
+        ]
       },
       {
         "id": "D",
-        "text": "`UNION` combines results and removes duplicate rows; `UNION ALL` concatenates result sets while preserving duplicate rows."
+        "variants": [
+          "`UNION` combines results and removes duplicate rows; `UNION ALL` concatenates result sets while preserving duplicate rows.",
+          "`UNION` combines result sets and removes duplicate rows; `UNION ALL` concatenates result sets and keeps duplicate rows.",
+          "Duplicate rows are dropped when `UNION` combines results, while `UNION ALL` preserves duplicates as it concatenates."
+        ]
       },
       {
         "id": "E",
-        "text": "`RIGHT JOIN` is semantically equivalent to `CROSS JOIN`, generating a complete Cartesian product of both tables."
+        "reasons": [
+          "`RIGHT JOIN` is not semantically the same as `CROSS JOIN`, and it does not by itself produce the Cartesian product of both tables.",
+          "`FULL OUTER JOIN` retains unmatched rows from both sides, so it does not keep only the rows that match.",
+          "`CROSS JOIN` produces a Cartesian product of both tables, rather than returning only left rows with `NULL` on the right."
+        ],
+        "variants": [
+          "`RIGHT JOIN` is semantically equivalent to `CROSS JOIN`, generating a complete Cartesian product of both tables.",
+          "`FULL OUTER JOIN` keeps only two-sided matches and discards each unmatched row from the left table and from the right table too.",
+          "`CROSS JOIN` returns only the left-table rows and sets each right-table column to `NULL`, not a Cartesian product of the tables."
+        ]
       }
     ],
     "correct": [
@@ -2678,19 +5207,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Adapter wraps multiple subsystems behind a unified facade; Proxy clones existing prototype instances."
+        "reasons": [
+          "Adapter is not a facade over multiple subsystems, and Proxy is not a prototype that clones existing instances.",
+          "Selecting an algorithm at call time is Strategy, and constructing object families is Abstract Factory, not the Adapter versus Proxy distinction.",
+          "Notifying dependents is Observer behavior, and packaging a request to queue it is Command, not Adapter versus Proxy."
+        ],
+        "variants": [
+          "Adapter wraps multiple subsystems behind a unified facade; Proxy clones existing prototype instances.",
+          "Adapter picks an algorithm when the call runs, while Proxy builds a family of related objects.",
+          "Adapter notifies dependents on state changes, while Proxy packages a request so it can be queued."
+        ]
       },
       {
         "id": "B",
-        "text": "Adapter can only be implemented using multiple inheritance; Proxy requires static class initialization."
+        "reasons": [
+          "Adapter is not restricted to multiple inheritance, and Proxy does not depend on static class initialization.",
+          "Neither pattern is defined as compiler output at each call site or as a post-release deployment descriptor.",
+          "Adapter is not a replay log of calls, and Proxy is not a rule that the real object is constructed exactly once."
+        ],
+        "variants": [
+          "Adapter can only be implemented using multiple inheritance; Proxy requires static class initialization.",
+          "Adapter must be generated by the compiler at each call site, while Proxy is only a deployment descriptor.",
+          "Adapter stores every call so the sequence can be replayed, while Proxy insists the real object is constructed once."
+        ]
       },
       {
         "id": "C",
-        "text": "Adapter is an architectural behavioral pattern; Proxy is exclusively a creational factory pattern."
+        "reasons": [
+          "Adapter is structural rather than behavioral, and Proxy is structural rather than a creational factory.",
+          "Adapter does not clone the adaptee, and Proxy does not interpret a grammar.",
+          "Hiding a subsystem behind one entry is Facade, and choosing a subclass from a family is Factory Method, not Proxy."
+        ],
+        "variants": [
+          "Adapter is an architectural behavioral pattern; Proxy is exclusively a creational factory pattern.",
+          "Adapter is creational and clones the adaptee, while Proxy is behavioral and interprets a grammar.",
+          "Adapter hides a subsystem behind one entry, while Proxy picks a subclass from a related family."
+        ]
       },
       {
         "id": "D",
-        "text": "Adapter translates between two incompatible interfaces; Proxy implements the same interface to control or augment access."
+        "variants": [
+          "Adapter translates between two incompatible interfaces; Proxy implements the same interface to control or augment access.",
+          "Adapter translates two incompatible interfaces; Proxy uses the same interface to control or augment access.",
+          "Incompatible interfaces are translated by Adapter; Proxy keeps that same interface to control or augment access."
+        ]
       }
     ],
     "correct": [
@@ -2706,23 +5266,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A Fake is an uncompiled source file used exclusively for compile-time syntax verification in IDEs."
+        "reasons": [
+          "A Fake is not an uncompiled source file kept only for compile-time syntax checks inside an IDE.",
+          "A Fake is not required to use the production database, and tests are not required to match production row for row.",
+          "A Stub is not required to execute the real collaborator, and final is not the only kind of method it may replace."
+        ],
+        "variants": [
+          "A Fake is an uncompiled source file used exclusively for compile-time syntax verification in IDEs.",
+          "A Fake must share the production database so that each test result is required to match production row for row.",
+          "A Stub must call the real production collaborator, and it may override only the methods that are marked final."
+        ]
       },
       {
         "id": "B",
-        "text": "A Mock verifies interaction behavior by asserting that expected methods were called with specific parameters."
+        "variants": [
+          "A Mock verifies interaction behavior by asserting that expected methods were called with specific parameters.",
+          "A Mock verifies interactions by asserting that the expected methods were called with specific parameters.",
+          "A Mock asserts that the expected methods were called and that those calls used specific parameters."
+        ]
       },
       {
         "id": "C",
-        "text": "A Dummy executes production SQL database transactions on an isolated background worker thread."
+        "reasons": [
+          "A Dummy does not execute production SQL transactions on a background worker thread.",
+          "A Dummy does not have to commit the subject's writes into the production schema before assertions.",
+          "A Fake is an implementation of the dependency, not a type forbidden from implementing that interface."
+        ],
+        "variants": [
+          "A Dummy executes production SQL database transactions on an isolated background worker thread.",
+          "A Dummy must commit the subject's writes into the production schema before assertions run.",
+          "A Fake cannot implement the dependency interface and may only extend a generated test base class."
+        ]
       },
       {
         "id": "D",
-        "text": "A Spy wraps a real object to record invocations while allowing real methods to execute unless explicitly stubbed."
+        "variants": [
+          "A Spy wraps a real object to record invocations while allowing real methods to execute unless explicitly stubbed.",
+          "A Spy wraps a real object, records calls, and runs real methods unless one is explicitly stubbed.",
+          "A Spy records calls around a real object and runs real methods unless an explicit stub replaces them."
+        ]
       },
       {
         "id": "E",
-        "text": "A Stub provides pre-programmed canned answers to method calls made during test execution."
+        "variants": [
+          "A Stub provides pre-programmed canned answers to method calls made during test execution.",
+          "A Stub supplies pre-programmed canned answers to the method calls that occur during the test.",
+          "Calls during the test receive canned answers programmed into the Stub ahead of time."
+        ]
       }
     ],
     "correct": [
@@ -2740,19 +5330,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Red (write a failing test), Green (write minimal code to pass the test), and Refactor (clean code without changing behavior)."
+        "variants": [
+          "Red (write a failing test), Green (write minimal code to pass the test), and Refactor (clean code without changing behavior).",
+          "Red writes a failing test, Green writes minimal code to pass, and Refactor cleans up without changing behavior.",
+          "The cycle is a failing test (Red), the smallest passing code (Green), then cleanup that preserves behavior (Refactor)."
+        ]
       },
       {
         "id": "B",
-        "text": "Analyze (profile memory heap dumps), Optimize (tune garbage collector flags), and Benchmark (run load tests)."
+        "reasons": [
+          "Heap profiling, garbage-collector tuning, and load benchmarks are not the three iterative phases of TDD.",
+          "Writing the design document, implementing the whole feature, and adding tests after release is not the TDD cycle.",
+          "A throwaway spike, a design freeze, and certifying the result in a review are not the TDD phases."
+        ],
+        "variants": [
+          "Analyze (profile memory heap dumps), Optimize (tune garbage collector flags), and Benchmark (run load tests).",
+          "The phases are Specify a full design document, Implement the feature completely, and Harden it by adding tests after release.",
+          "The phases are Spike a throwaway prototype, Freeze further design changes, and Certify the result in review."
+        ]
       },
       {
         "id": "C",
-        "text": "Plan (draft comprehensive UML class diagrams), Code (implement all classes), and Test (verify manually in staging)."
+        "reasons": [
+          "Drafting complete UML up front, implementing every class, and testing by hand in staging is not TDD.",
+          "Collecting production defects, shipping a hotfix, and clicking through the live UI is not the TDD cycle.",
+          "Outlining every class, implementing the whole module, and hand-checking in a shared environment is not TDD."
+        ],
+        "variants": [
+          "Plan (draft comprehensive UML class diagrams), Code (implement all classes), and Test (verify manually in staging).",
+          "The phases are Discover production defects, Patch them with a hotfix, and Verify by clicking through the live UI.",
+          "The phases are Outline every class first, Implement the full module, and Hand-check behavior in a shared environment."
+        ]
       },
       {
         "id": "D",
-        "text": "Build (compile application bytecode), Package (assemble deployment container), and Deploy (publish to production)."
+        "reasons": [
+          "Compiling bytecode, assembling a deployment container, and publishing to production is not the TDD cycle.",
+          "An architecture review, sprint scheduling, and a stakeholder demo are not the three TDD phases.",
+          "Estimating a backlog item, coding to that estimate, and accepting it in a review is not TDD."
+        ],
+        "variants": [
+          "Build (compile application bytecode), Package (assemble deployment container), and Deploy (publish to production).",
+          "The phases are Design the change in an architecture review, Schedule it with story points, and Demo the increment to stakeholders.",
+          "The phases are Estimate the backlog item, Implement exactly that estimate, and Accept the result in a stakeholder review."
+        ]
       }
     ],
     "correct": [
@@ -2768,19 +5389,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Configuring the expected exception class in the `pom.xml` Surefire test runner plugin configuration."
+        "reasons": [
+          "Surefire configuration in `pom.xml` is not how a JUnit 5 test asserts that a specific exception was thrown.",
+          "`Assertions.fail` does not accept an exception class and register it as the expected outcome before the call.",
+          "There is no `junit.jupiter.expected` system property that makes JUnit 5 treat a thrown type as a passing assertion."
+        ],
+        "variants": [
+          "Configuring the expected exception class in the `pom.xml` Surefire test runner plugin configuration.",
+          "Declare the expected type by calling `Assertions.fail(ExpectedException.class)` before the method under test.",
+          "Set system property `junit.jupiter.expected` to `ExpectedException` so JUnit 5 treats that throw as success."
+        ]
       },
       {
         "id": "B",
-        "text": "Using `Assertions.assertThrows(ExpectedException.class, () -> objectUnderTest.targetMethod());`."
+        "variants": [
+          "Using `Assertions.assertThrows(ExpectedException.class, () -> objectUnderTest.targetMethod());`.",
+          "Use `Assertions.assertThrows(ExpectedException.class, () -> objectUnderTest.targetMethod());`.",
+          "Assert it with `Assertions.assertThrows(ExpectedException.class, () -> objectUnderTest.targetMethod());`."
+        ]
       },
       {
         "id": "C",
-        "text": "Enclosing the invocation in a `try-catch` block and calling `fail()` inside the `catch` block."
+        "reasons": [
+          "Calling `fail()` inside the `catch` block marks the test failed when the exception is thrown, which inverts the check.",
+          "`@Disabled` skips the test and does not assert that `ExpectedException` was thrown.",
+          "`assertTimeout` checks how long the call takes, not whether it threw `ExpectedException`."
+        ],
+        "variants": [
+          "Enclosing the invocation in a `try-catch` block and calling `fail()` inside the `catch` block.",
+          "Use `@Disabled(ExpectedException.class)` so a thrown exception is scored as a passed JUnit 5 test.",
+          "Use `assertTimeout` and treat a thrown `ExpectedException` as that assertion's successful result."
+        ]
       },
       {
         "id": "D",
-        "text": "Annotating the test method with `@Test(expected = ExpectedException.class)`."
+        "reasons": [
+          "`@Test(expected = ExpectedException.class)` is the JUnit 4 form and is not valid on a JUnit 5 `@Test`.",
+          "`ExpectedException` is not installed with `@ExtendWith` as a JUnit 5 extension that asserts the throw.",
+          "Subclassing `ExpectedException` and registering that subclass with `@ExtendWith` is not how JUnit 5 asserts the exception."
+        ],
+        "variants": [
+          "Annotating the test method with `@Test(expected = ExpectedException.class)`.",
+          "Add `ExpectedException` with `@ExtendWith` as a JUnit 5 extension.",
+          "Subclass `ExpectedException`, then register it using `@ExtendWith`."
+        ]
       }
     ],
     "correct": [
@@ -2796,23 +5448,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`let` and `run` return whatever the lambda itself returns, not the receiver the call started with."
+        "variants": [
+          "`let` and `run` return whatever the lambda itself returns, not the receiver the call started with.",
+          "`let` and `run` return the lambda's own result, not the receiver that the call started from.",
+          "Whatever the lambda returns is what `let` and `run` return, rather than the original receiver."
+        ]
       },
       {
         "id": "B",
-        "text": "`apply` and `also` return the lambda's result, while `let` and `run` return the original receiver."
+        "reasons": [
+          "The return pairing is reversed: `apply` and `also` return the receiver, while `let` and `run` return the lambda result.",
+          "`takeIf` returns the receiver or null, not the lambda result, and `takeUnless` does not return the receiver only when the value is null.",
+          "`with` returns the lambda result rather than the receiver, and it is not the only scope function that can be used with a nullable receiver."
+        ],
+        "variants": [
+          "`apply` and `also` return the lambda's result, while `let` and `run` return the original receiver.",
+          "`takeIf` returns the lambda result on a true predicate, and `takeUnless` returns the receiver only for null.",
+          "`with` returns the receiver, and only `with` accepts a null receiver without using a safe call."
+        ]
       },
       {
         "id": "C",
-        "text": "Every scope function names the receiver `this`, and the name `it` exists only when the receiver is nullable."
+        "reasons": [
+          "Not every scope function names the receiver `this`, and the name `it` is not reserved for nullable receivers.",
+          "`run` names the receiver `this` and `let` names it `it`, so this pairing of names is reversed.",
+          "`also` names the receiver `it` and `apply` names it `this`, so this pairing of names is reversed."
+        ],
+        "variants": [
+          "Every scope function names the receiver `this`, and the name `it` exists only when the receiver is nullable.",
+          "`run` exposes the receiver under the name `it`, while `let` exposes that same receiver under the name `this`.",
+          "`also` exposes the receiver under the name `this`, while `apply` exposes that same receiver under the name `it`."
+        ]
       },
       {
         "id": "D",
-        "text": "`apply` and `also` return the receiver itself rather than the value produced by the lambda."
+        "variants": [
+          "`apply` and `also` return the receiver itself rather than the value produced by the lambda.",
+          "`apply` and `also` return the receiver itself, not the value that the lambda produces.",
+          "The receiver, rather than the lambda's produced value, is what both `apply` and `also` return."
+        ]
       },
       {
         "id": "E",
-        "text": "`let` and `also` name the receiver `it`, while `run` and `apply` name the receiver `this`."
+        "variants": [
+          "`let` and `also` name the receiver `it`, while `run` and `apply` name the receiver `this`.",
+          "`let` and `also` call the receiver `it`, while `run` and `apply` call the receiver `this`.",
+          "The receiver is named `it` for `let` and `also`, and it is named `this` for `run` and `apply`."
+        ]
       }
     ],
     "correct": [
@@ -2830,19 +5512,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Each key lands on a ring, and a new node takes only the keys between itself and the previous node, rather than remapping every key."
+        "variants": [
+          "Each key lands on a ring, and a new node takes only the keys between itself and the previous node, rather than remapping every key.",
+          "Keys are placed on a ring, and a new node takes only the keys between itself and the previous node, rather than remapping every key.",
+          "A new node on the ring receives just the keys that lie between it and the previous node, instead of remapping every stored key."
+        ]
       },
       {
         "id": "B",
-        "text": "The bucket is `hash % nodeCount`, so adding one node changes the modulus and moves nearly every stored key onto some different node."
+        "reasons": [
+          "Using `hash % nodeCount` is ordinary modulo placement, and that is the scheme that moves nearly every key rather than the reason consistent hashing moves fewer.",
+          "A new node does not split every partition in half, and consistent hashing does not in general move about half of all keys.",
+          "Consistent hashing does not re-salt every key when membership changes, and it does not limit movement to cache entries that have already expired."
+        ],
+        "variants": [
+          "The bucket is `hash % nodeCount`, so adding one node changes the modulus and moves nearly every stored key onto some different node.",
+          "Adding a node always relocates about half of the keys, because consistent hashing splits every existing partition in half when membership changes.",
+          "A membership change rehashes every key with a new salt, and only entries that have already expired in cache are the ones that move."
+        ]
       },
       {
         "id": "C",
-        "text": "Every key is stored on every node, so adding a node copies the entire dataset and then leaves the old copies in place."
+        "reasons": [
+          "Keys are not stored on every node, and adding a node does not copy the whole dataset while leaving the old copies in place.",
+          "Keys do not move only on a hash collision with the new node id, and hash width is not what limits the move set.",
+          "The ring is not discarded on every membership change, and clients keeping an old map until restart is not why fewer keys move."
+        ],
+        "variants": [
+          "Every key is stored on every node, so adding a node copies the entire dataset and then leaves the old copies in place.",
+          "A key moves only if its hash collides with the new node id, so a wide hash is what keeps moves near zero.",
+          "On each membership change the ring is thrown away and rebuilt, while clients keep using the previous map until their process restarts."
+        ]
       },
       {
         "id": "D",
-        "text": "Existing keys never move, and a new node serves only the keys that are written after it joins the ring."
+        "reasons": [
+          "Existing keys do move when a node joins; the new node is not limited to keys written only after it arrives.",
+          "Virtual nodes do not freeze each key on one physical server, and a newly added node does receive some existing keys.",
+          "Consistent hashing does not store the owner inside the key or assign responsibility by an address prefix."
+        ],
+        "variants": [
+          "Existing keys never move, and a new node serves only the keys that are written after it joins the ring.",
+          "Virtual nodes pin each key to a fixed server, so a joining server receives none of the stored keys.",
+          "The owner is stored in the key, and a new node serves only keys whose prefix matches its address."
+        ]
       }
     ],
     "correct": [
@@ -2858,19 +5571,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A thread scheduler algorithm that increases thread priority when CPU hardware temperatures exceed safe operating limits."
+        "reasons": [
+          "Back-pressure is not a scheduler policy that raises thread priority when CPU temperature passes a safe limit.",
+          "Dropping elements without signaling the publisher to slow down is an overflow strategy, not back-pressure.",
+          "Growing the worker pool with an unbounded queue does not report consumer capacity upstream and is not back-pressure."
+        ],
+        "variants": [
+          "A thread scheduler algorithm that increases thread priority when CPU hardware temperatures exceed safe operating limits.",
+          "Back-pressure drops every new element once the subscriber buffer is full, and it never tells the publisher to slow its sending rate.",
+          "Back-pressure adds worker threads in proportion to an unbounded input queue so that producers are never asked to slow down."
+        ]
       },
       {
         "id": "B",
-        "text": "A flow-control mechanism where a downstream consumer signals its processing capacity to upstream producers to prevent overload."
+        "variants": [
+          "A flow-control mechanism where a downstream consumer signals its processing capacity to upstream producers to prevent overload.",
+          "A downstream consumer signals how much it can process to upstream producers, which prevents those producers from overloading it.",
+          "It is flow control in which the consumer reports its processing capacity upstream so producers do not overload the consumer."
+        ]
       },
       {
         "id": "C",
-        "text": "A garbage collection optimization that compresses young generation heap space when object allocation rates drop."
+        "reasons": [
+          "Back-pressure is not a garbage-collection tactic that compresses the young generation when allocation rates fall.",
+          "A circuit breaker that rejects events until a timer elapses does not signal the consumer's processing capacity upstream.",
+          "Back-pressure slows producers to the consumer's capacity; it does not force the consumer to read faster by zeroing a send window."
+        ],
+        "variants": [
+          "A garbage collection optimization that compresses young generation heap space when object allocation rates drop.",
+          "Back-pressure is a circuit breaker that opens on consumer failure and rejects events until a timer closes it.",
+          "Back-pressure forces the consumer to read faster by driving the producer's send window to zero until the backlog is gone."
+        ]
       },
       {
         "id": "D",
-        "text": "A database connection pooling technique that automatically cancels slow-running queries during peak traffic spikes."
+        "reasons": [
+          "Canceling slow queries from a connection pool during traffic spikes is not the meaning of back-pressure.",
+          "Removing an async boundary so both sides share one stack is operator fusion, not a capacity signal to producers.",
+          "Increasing batch size when the error rate rises does not tell producers what processing capacity the consumer has."
+        ],
+        "variants": [
+          "A database connection pooling technique that automatically cancels slow-running queries during peak traffic spikes.",
+          "Back-pressure fuses the producer and the consumer onto one call stack by deleting the asynchronous boundary between them.",
+          "Back-pressure sends larger batches to the consumer whenever that consumer's error rate starts to rise."
+        ]
       }
     ],
     "correct": [
@@ -2886,23 +5630,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Independent deployability: services can be built, tested, and deployed to production on separate release cycles."
+        "variants": [
+          "Independent deployability: services can be built, tested, and deployed to production on separate release cycles.",
+          "Independent deployability means each service can be built, tested, and deployed to production on its own release cycle.",
+          "Each service can be built, tested, and deployed to production on its own separate release cycle."
+        ]
       },
       {
         "id": "B",
-        "text": "Guaranteed transactional ACID consistency across all service boundaries without two-phase commit protocols."
+        "reasons": [
+          "Splitting into microservices does not guarantee ACID across service boundaries, and skipping two-phase commit does not create that guarantee.",
+          "Requiring every service to write the same shared tables is not a reason to decompose a monolith.",
+          "Microservices do not supply a cluster-wide mutex that prevents conflicting updates across services."
+        ],
+        "variants": [
+          "Guaranteed transactional ACID consistency across all service boundaries without two-phase commit protocols.",
+          "Every service must write the same shared tables so joins stay in one database and the schemas are not allowed to diverge.",
+          "Microservices provide one cluster-wide mutex so an update that crosses service boundaries cannot commit in conflict."
+        ]
       },
       {
         "id": "C",
-        "text": "Complete elimination of network latency, inter-process serialization overhead, and distributed tracing needs."
+        "reasons": [
+          "Decomposition does not eliminate network latency, serialization overhead, or the need for distributed tracing.",
+          "Splitting into services adds network calls between processes; it does not keep every call on one local stack.",
+          "One shared release schedule is not why teams decompose a monolith into microservices."
+        ],
+        "variants": [
+          "Complete elimination of network latency, inter-process serialization overhead, and distributed tracing needs.",
+          "Breaking the system into services removes network hops and keeps each call on a single local stack inside one process.",
+          "The reason to split is a single pipeline that builds and releases every service on one shared schedule."
+        ]
       },
       {
         "id": "D",
-        "text": "Team autonomy: engineering teams can own domain boundaries end-to-end and adopt tailored technology stacks."
+        "variants": [
+          "Team autonomy: engineering teams can own domain boundaries end-to-end and adopt tailored technology stacks.",
+          "Team autonomy lets a team own a domain boundary end to end and adopt a technology stack fitted to that boundary.",
+          "A team can own its domain from end to end and choose a technology stack tailored to that boundary."
+        ]
       },
       {
         "id": "E",
-        "text": "Fault isolation: failures or resource exhaustion in one service do not automatically bring down unrelated services."
+        "variants": [
+          "Fault isolation: failures or resource exhaustion in one service do not automatically bring down unrelated services.",
+          "A failure or resource exhaustion in one service does not automatically take down unrelated services.",
+          "When one service fails or exhausts its resources, unrelated services are not automatically brought down with it."
+        ]
       }
     ],
     "correct": [
@@ -2920,23 +5694,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Disabling database write-ahead logging (WAL) permanently to eliminate storage subsystem input/output latency."
+        "reasons": [
+          "Disabling write-ahead logging permanently trades away crash durability and is not a standard way to scale the database tier.",
+          "Holding one transaction open for the life of a pooled connection does not scale a relational tier under heavy load.",
+          "Walking relationships with per-row queries increases database load and is not a standard scaling approach."
+        ],
+        "variants": [
+          "Disabling database write-ahead logging (WAL) permanently to eliminate storage subsystem input/output latency.",
+          "Keep one transaction open for the whole life of each pooled connection so later statements can skip begin and commit.",
+          "Replace joins with a loop of single-row queries so the application, rather than the database, walks each relationship."
+        ]
       },
       {
         "id": "B",
-        "text": "Sharding (horizontal partitioning) to distribute data across multiple distinct database instances by partition key."
+        "variants": [
+          "Sharding (horizontal partitioning) to distribute data across multiple distinct database instances by partition key.",
+          "Sharding distributes rows across multiple distinct database instances according to a partition key.",
+          "Horizontal partitioning places the data on separate database instances selected by a partition key."
+        ]
       },
       {
         "id": "C",
-        "text": "Introducing an in-memory caching layer (such as Redis) to serve high-frequency repetitive queries without hitting disk."
+        "variants": [
+          "Introducing an in-memory caching layer (such as Redis) to serve high-frequency repetitive queries without hitting disk.",
+          "An in-memory cache such as Redis serves repeated high-frequency queries without reading those rows from disk.",
+          "A cache like Redis answers frequent repetitive queries from memory so those lookups do not hit the disk."
+        ]
       },
       {
         "id": "D",
-        "text": "Configuring all table columns as unindexed text fields to accelerate write throughput on the primary instance."
+        "reasons": [
+          "Making every column an unindexed text field slows lookups and is not a standard way to scale write throughput.",
+          "Disabling the cost-based planner and freezing nested-loop joins is not a standard scaling strategy.",
+          "A new database process per statement adds overhead and does not scale the relational tier."
+        ],
+        "variants": [
+          "Configuring all table columns as unindexed text fields to accelerate write throughput on the primary instance.",
+          "Turn off the cost-based planner and pin every statement to one nested-loop join that was chosen when the server was installed.",
+          "Start a separate database process for every SQL statement so no execution plan is reused from one call to the next."
+        ]
       },
       {
         "id": "E",
-        "text": "Adding read replicas to offload read-heavy query traffic from the primary write master node."
+        "variants": [
+          "Adding read replicas to offload read-heavy query traffic from the primary write master node.",
+          "Read replicas take read-heavy query traffic off the primary node that performs the writes.",
+          "Read-heavy queries are offloaded to replicas so the primary write node serves fewer of those reads."
+        ]
       }
     ],
     "correct": [
@@ -2954,19 +5758,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Auditing application ORM data-access patterns to detect and eliminate N+1 select query loops using fetch joins."
+        "variants": [
+          "Auditing application ORM data-access patterns to detect and eliminate N+1 select query loops using fetch joins.",
+          "Audit ORM data-access patterns for N+1 select loops and eliminate those loops by using fetch joins.",
+          "Look through ORM data access for N+1 select loops and remove them by switching those reads to fetch joins."
+        ]
       },
       {
         "id": "B",
-        "text": "Immediately increasing the connection pool size to ten thousand to allow queued queries to wait in memory buffers."
+        "reasons": [
+          "Raising the connection pool to ten thousand does not explain a slow query and can increase contention on the database.",
+          "Rewriting a query as `SELECT *` does not reduce the columns the planner must consider, and it is not a diagnostic starting point.",
+          "Wiping statistics and the buffer pool before each run discards useful information and is not a recommended first step."
+        ],
+        "variants": [
+          "Immediately increasing the connection pool size to ten thousand to allow queued queries to wait in memory buffers.",
+          "Rewrite each slow statement as `SELECT *` so the planner has fewer output columns to cost before it chooses a plan.",
+          "Clear table statistics and the buffer pool before every execution so the optimizer must build each plan from an empty cache."
+        ]
       },
       {
         "id": "C",
-        "text": "Inspecting the database query execution plan using `EXPLAIN ANALYZE` to check for unindexed full table scans."
+        "variants": [
+          "Inspecting the database query execution plan using `EXPLAIN ANALYZE` to check for unindexed full table scans.",
+          "Inspect the plan with `EXPLAIN ANALYZE` to see whether the query is doing an unindexed full table scan.",
+          "Use `EXPLAIN ANALYZE` on the slow query and check the plan for a full table scan that lacks an index."
+        ]
       },
       {
         "id": "D",
-        "text": "Disabling relational database transaction logging permanently to eliminate storage subsystem write overhead."
+        "reasons": [
+          "Disabling transaction logging permanently is not a safe or recommended starting point for a slow query.",
+          "Dropping foreign keys and check constraints does not explain the slow plan and is not an initial diagnostic step.",
+          "`READ UNCOMMITTED` does not force every plan into a sequential read, and it is not a recommended first step."
+        ],
+        "variants": [
+          "Disabling relational database transaction logging permanently to eliminate storage subsystem write overhead.",
+          "Drop foreign keys and check constraints before the first `EXPLAIN` so the planner can ignore integrity work in the plan.",
+          "Switch the session to `READ UNCOMMITTED` so row locks vanish and every plan is forced to a sequential read."
+        ]
       }
     ],
     "correct": [
@@ -2983,19 +5813,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Pinning user sessions permanently to specific server instances and storing uploaded files on local container disks."
+        "reasons": [
+          "Pinning each user to one server and storing uploads on that container's local disk keeps later requests from running on other instances.",
+          "Static fields replicated by shipping heap dumps do not let any instance serve the next request for that user.",
+          "A private database in each instance, with shared stores refused, leaves mutable user state stuck on a single machine."
+        ],
+        "variants": [
+          "Pinning user sessions permanently to specific server instances and storing uploaded files on local container disks.",
+          "Keep each user's mutable state in static fields, and copy that state between instances by shipping heap dumps to peers.",
+          "Embed a private database inside every instance and refuse any shared external store for session or other mutable data."
+        ]
       },
       {
         "id": "B",
-        "text": "Configuring all distributed application instances to execute background batch jobs concurrently without distributed locks."
+        "reasons": [
+          "Running the same background batch on every instance without a distributed lock can apply that work more than once.",
+          "Multicasting each write into every heap, with no coordinator, is not a sound way to share mutable state across a stateless tier.",
+          "Directing all traffic to the newest instance until its heap is exhausted does not scale the tier horizontally."
+        ],
+        "variants": [
+          "Configuring all distributed application instances to execute background batch jobs concurrently without distributed locks.",
+          "Broadcast every write into each instance's local heap over multicast, with no coordinator and no shared log behind it.",
+          "Send every request to the newest instance until that instance exhausts its heap, then shift all traffic to the next instance."
+        ]
       },
       {
         "id": "C",
-        "text": "Externalizing user session state and mutable data into centralized distributed stores like Redis or managed databases."
+        "variants": [
+          "Externalizing user session state and mutable data into centralized distributed stores like Redis or managed databases.",
+          "Keep user session state and mutable data in a centralized store such as Redis or a managed database service.",
+          "Session state and other mutable data are externalized to a shared store such as Redis or a managed database."
+        ]
       },
       {
         "id": "D",
-        "text": "Deploying identical container instances behind a layer 7 load balancer using round-robin or least-connections routing."
+        "variants": [
+          "Deploying identical container instances behind a layer 7 load balancer using round-robin or least-connections routing.",
+          "Run identical container instances behind a layer 7 load balancer that routes with round-robin or least-connections.",
+          "Identical containers are deployed behind a layer 7 load balancer using round-robin or least-connections routing."
+        ]
       }
     ],
     "correct": [
@@ -3012,23 +5868,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`compile` (default): available on all classpaths during build, test execution, and packaged into the final artifact."
+        "variants": [
+          "`compile` (default): available on all classpaths during build, test execution, and packaged into the final artifact.",
+          "`compile` (default) is available on all classpaths during the build and tests, and it is packaged into the final artifact.",
+          "The default `compile` scope stays on all classpaths for build and test execution and is packaged into the final artifact."
+        ]
       },
       {
         "id": "B",
-        "text": "`provided`: required for compiling code, but expected to be supplied at runtime by the container (and thus not packaged)."
+        "variants": [
+          "`provided`: required for compiling code, but expected to be supplied at runtime by the container (and thus not packaged).",
+          "`provided` is required while compiling, is expected from the container at runtime, and therefore is not packaged.",
+          "Compilation needs `provided`, but the container supplies that dependency at runtime, so it is not packaged."
+        ]
       },
       {
         "id": "C",
-        "text": "`system`: automatically downloads missing artifact dependencies from remote public artifact repositories on demand."
+        "reasons": [
+          "The `system` scope does not download missing artifacts from remote repositories; it refers to an explicit local path.",
+          "`import` is used for BOM entries in dependency management and does not add a jar to the application's runtime classpath.",
+          "A `system` dependency is not transitive, and it does not override a downstream `compile` dependency with the same coordinates."
+        ],
+        "variants": [
+          "`system`: automatically downloads missing artifact dependencies from remote public artifact repositories on demand.",
+          "`import` places the dependency on the runtime classpath of the packaged application and on the classpath of its tests.",
+          "A `system` dependency is published transitively to downstream consumers and overrides any `compile` dependency sharing coordinates."
+        ]
       },
       {
         "id": "D",
-        "text": "`runtime`: required for compiling production source code, but excluded from test execution and final deployment archives."
+        "reasons": [
+          "`runtime` is not required to compile production sources, and it is not excluded from test execution or from the packaged artifact.",
+          "`runtime` dependencies are hidden from the compiler, and they remain on the test classpath rather than being removed from it.",
+          "An `optional` dependency is not forced onto downstream compile classpaths, and a consumer is allowed to leave it out."
+        ],
+        "variants": [
+          "`runtime`: required for compiling production source code, but excluded from test execution and final deployment archives.",
+          "`runtime` dependencies are visible to the compiler of production sources and are removed only from the test classpath.",
+          "An `optional` dependency is forced onto every downstream compile classpath, and those consumers are not allowed to exclude it."
+        ]
       },
       {
         "id": "E",
-        "text": "`test`: available exclusively for test compilation and test execution, and never packaged into production JAR/WAR archives."
+        "variants": [
+          "`test`: available exclusively for test compilation and test execution, and never packaged into production JAR/WAR archives.",
+          "`test` is available only for test compilation and test execution, and it is never packaged into a production JAR or WAR.",
+          "Dependencies scoped as `test` exist only while tests compile and run, and they are never placed in production JAR or WAR archives."
+        ]
       }
     ],
     "correct": [
@@ -3046,19 +5932,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Transitive dependencies are dependencies required by your direct dependencies, which Maven resolves and includes automatically."
+        "variants": [
+          "Transitive dependencies are dependencies required by your direct dependencies, which Maven resolves and includes automatically.",
+          "Dependencies your direct dependencies require count as transitive, and Maven resolves and includes them automatically.",
+          "The dependencies required by your direct dependencies are transitive ones, which Maven resolves and includes on its own."
+        ]
       },
       {
         "id": "B",
-        "text": "Direct dependencies are explicitly declared in the project's `pom.xml` `<dependencies>` configuration section."
+        "variants": [
+          "Direct dependencies are explicitly declared in the project's `pom.xml` `<dependencies>` configuration section.",
+          "Direct dependencies are the artifacts you explicitly declare in the project's `pom.xml` `<dependencies>` section.",
+          "What you explicitly declare under `<dependencies>` in the project's `pom.xml` is a direct dependency."
+        ]
       },
       {
         "id": "C",
-        "text": "Maven rejects transitive dependencies unless each transitive artifact is also explicitly redeclared in `pom.xml`."
+        "reasons": [
+          "Maven does not reject a transitive dependency that was never redeclared in `pom.xml`, because it resolves and includes that artifact automatically.",
+          "A BOM import does not define a dependency as transitive, and the remaining entries in `pom.xml` are not optional for that reason.",
+          "The scopes `compile`, `runtime`, and `test` do not determine whether a dependency is direct or transitive."
+        ],
+        "variants": [
+          "Maven rejects transitive dependencies unless each transitive artifact is also explicitly redeclared in `pom.xml`.",
+          "A dependency is transitive only when a BOM imports it, and every other entry written in `pom.xml` is treated as optional.",
+          "Maven calls a dependency direct when its scope is `compile`, and transitive when that scope is `runtime` or `test`."
+        ]
       },
       {
         "id": "D",
-        "text": "Direct dependencies are loaded into the JVM heap; transitive dependencies reside exclusively in Metaspace native memory."
+        "reasons": [
+          "Whether a dependency is direct or transitive has nothing to do with the JVM heap versus Metaspace, and transitive artifacts are not stored only in native memory.",
+          "Maven resolves transitive dependencies during the build itself, so the IDE is not the sole tool that can resolve them.",
+          "Declaring `<type>pom</type>` or `<type>jar</type>` does not classify a dependency as transitive or direct."
+        ],
+        "variants": [
+          "Direct dependencies are loaded into the JVM heap; transitive dependencies reside exclusively in Metaspace native memory.",
+          "The reactor compiles only direct dependencies, while transitive dependencies are resolved solely by the IDE and never by Maven itself.",
+          "Transitive dependencies must be declared with `<type>pom</type>`, whereas direct dependencies must be declared with `<type>jar</type>`."
+        ]
       }
     ],
     "correct": [
@@ -3075,19 +5987,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Configuring all distributed microservices to stream unstructured raw text files into a single shared database table."
+        "reasons": [
+          "Streaming unstructured text files into one shared database table is not a standard distributed-tracing mechanism.",
+          "Keeping spans only in a process-local log does not carry one trace from service to service.",
+          "Minting a new Trace ID at every boundary and joining on timestamps does not preserve a single trace across calls."
+        ],
+        "variants": [
+          "Configuring all distributed microservices to stream unstructured raw text files into a single shared database table.",
+          "Each service keeps every span in its own local log file, and nothing propagates a shared trace context to the next hop.",
+          "A fresh Trace ID is created at each service boundary, and calls are matched afterward by comparing timestamps."
+        ]
       },
       {
         "id": "B",
-        "text": "Generating a unique Trace ID at the ingress gateway and propagating it across services via standardized HTTP headers."
+        "variants": [
+          "Generating a unique Trace ID at the ingress gateway and propagating it across services via standardized HTTP headers.",
+          "A unique Trace ID is created at the ingress gateway and propagated across services in standardized HTTP headers.",
+          "Tracing mints one Trace ID at the ingress gateway and carries that same ID onward through standardized HTTP headers."
+        ]
       },
       {
         "id": "C",
-        "text": "Serializing complete JVM thread stack memory dumps into URL query string parameters for every inter-service call."
+        "reasons": [
+          "Serializing a JVM thread stack into a URL query string is not how tracing context moves between services.",
+          "A span name is not a container for the full request body, and that copy does not implement a distributed trace.",
+          "Opening a dedicated TCP port per request is not a standard way to attach or propagate a trace."
+        ],
+        "variants": [
+          "Serializing complete JVM thread stack memory dumps into URL query string parameters for every inter-service call.",
+          "Each hop copies its full request body into the span name so the trace can stand in for the service access log.",
+          "Every service opens a dedicated TCP port for each request and pins that request's trace to the socket."
+        ]
       },
       {
         "id": "D",
-        "text": "Injecting the correlation ID into application logging frameworks (MDC) so log aggregators can correlate service events."
+        "variants": [
+          "Injecting the correlation ID into application logging frameworks (MDC) so log aggregators can correlate service events.",
+          "The correlation ID is placed in the logging framework's `MDC` so aggregators can correlate events from each service.",
+          "Log aggregators correlate service events because the correlation ID is injected into the logging `MDC`."
+        ]
       }
     ],
     "correct": [
@@ -3104,23 +6042,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "During a partition the system can stay strongly consistent and still answer every request, by checking both sides before it responds."
+        "reasons": [
+          "A partitioned system cannot check both sides before every response, so it cannot stay strongly consistent and still answer every request.",
+          "A heartbeat from one replica does not make that replica's data strongly consistent for every request that arrives during the split.",
+          "Retrying until both sides acknowledge the same write does not let a partitioned system stay consistent and answer every request."
+        ],
+        "variants": [
+          "During a partition the system can stay strongly consistent and still answer every request, by checking both sides before it responds.",
+          "During a partition, answering from any replica that still emits a heartbeat keeps every arriving request strongly consistent.",
+          "Clients that retry until both sides acknowledge the same write remain fully consistent and fully available through the partition."
+        ]
       },
       {
         "id": "B",
-        "text": "A partition forces a choice between answering with data that may be stale and refusing requests that cannot be checked with a quorum."
+        "variants": [
+          "A partition forces a choice between answering with data that may be stale and refusing requests that cannot be checked with a quorum.",
+          "Once partitioned, the system must either answer with data that may be stale or refuse requests that a quorum cannot check.",
+          "A partition forces a choice between data that may be stale and a refusal of any request that cannot be checked with a quorum."
+        ]
       },
       {
         "id": "C",
-        "text": "Consistency, availability, and partition tolerance are not all available together while the network is split."
+        "variants": [
+          "Consistency, availability, and partition tolerance are not all available together while the network is split.",
+          "While the network is split, consistency, availability, and partition tolerance cannot all be provided together.",
+          "Consistency, availability, and partition tolerance are not available as a set while the network remains split."
+        ]
       },
       {
         "id": "D",
-        "text": "Partition tolerance is optional on a multi-node system, and the usual fix is to turn partition tolerance off."
+        "reasons": [
+          "Partition tolerance is not optional on a multi-node system, and turning it off is not a usable fix for a network split.",
+          "Partition tolerance does not mean freezing every write until full connectivity returns.",
+          "A refused request is not a successful response, so choosing consistency does not also preserve availability."
+        ],
+        "variants": [
+          "Partition tolerance is optional on a multi-node system, and the usual fix is to turn partition tolerance off.",
+          "Partition tolerance requires every write to pause until each node can once again see every other node.",
+          "Choosing consistency during a split is also available, because a refused request still counts as a successful response."
+        ]
       },
       {
         "id": "E",
-        "text": "One database on one machine is not a counterexample, because the theorem is about what happens when a partition can separate nodes."
+        "variants": [
+          "One database on one machine is not a counterexample, because the theorem is about what happens when a partition can separate nodes.",
+          "A single database on one machine is not a counterexample, since the theorem is about a partition that can separate nodes.",
+          "The theorem concerns what happens when a partition can separate nodes, so one database on one machine is not a counterexample."
+        ]
       }
     ],
     "correct": [
@@ -3138,23 +6106,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`private final` fields for all declared components, ensuring shallow immutability across record instances."
+        "variants": [
+          "`private final` fields for all declared components, ensuring shallow immutability across record instances.",
+          "The compiler adds `private final` fields for every declared component, so record instances are shallowly immutable.",
+          "Each declared component becomes a `private final` field, which gives record instances shallow immutability."
+        ]
       },
       {
         "id": "B",
-        "text": "A default parameterless constructor that initializes all declared primitive record components to `-1`."
+        "reasons": [
+          "The compiler does not add a parameterless constructor that sets primitive record components to `-1`.",
+          "Records do not receive a generated `clone()` that deep-copies every component, including nested mutable objects.",
+          "No automatic `writeObject` hook is generated to persist each component without further serialization code."
+        ],
+        "variants": [
+          "A default parameterless constructor that initializes all declared primitive record components to `-1`.",
+          "A generated `clone()` deep-copies every component, including mutable objects nested inside the record.",
+          "An automatic `writeObject` hook stores each component through serialization without any further code."
+        ]
       },
       {
         "id": "C",
-        "text": "Public JavaBean setter methods prefixed with `set` to allow mutating component fields after initialization."
+        "reasons": [
+          "The compiler does not generate public JavaBean setters prefixed with `set`, and component fields cannot be mutated that way after initialization.",
+          "No `builder()` factory is generated that would let callers change components after the record has been created.",
+          "A record does not automatically implement `Comparable`, and no `compareTo` is generated from component order."
+        ],
+        "variants": [
+          "Public JavaBean setter methods prefixed with `set` to allow mutating component fields after initialization.",
+          "A public `builder()` factory is generated so callers can change component values after that record instance already exists.",
+          "A `compareTo` method generated from component order means every record implements `Comparable` by default."
+        ]
       },
       {
         "id": "D",
-        "text": "A canonical constructor with parameter types and names that match the record header component declaration."
+        "variants": [
+          "A canonical constructor with parameter types and names that match the record header component declaration.",
+          "A canonical constructor is generated whose parameter types and names match the components in the record header.",
+          "Its canonical constructor parameters have types and names that match the record header component declaration."
+        ]
       },
       {
         "id": "E",
-        "text": "Public accessor methods matching component names (`name()`, `age()`) along with value-based `equals()`, `hashCode()`, and `toString()`."
+        "variants": [
+          "Public accessor methods matching component names (`name()`, `age()`) along with value-based `equals()`, `hashCode()`, and `toString()`.",
+          "Public accessors for the components (`name()`, `age()`), plus value-based `equals()`, `hashCode()`, and `toString()`.",
+          "It generates public component accessors (`name()`, `age()`) plus value-based `equals()`, `hashCode()`, and `toString()`."
+        ]
       }
     ],
     "correct": [
@@ -3172,19 +6170,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "They prevent subclasses from declaring any private instance variables or throwing checked exception types."
+        "reasons": [
+          "Sealed classes do not stop subclasses from declaring private instance variables or from throwing checked exceptions.",
+          "Permitted subclasses are not all required to be `final`, and they may still declare their own methods.",
+          "A permitted subtype does not have to live in a different package or use a different class loader from the sealed type."
+        ],
+        "variants": [
+          "They prevent subclasses from declaring any private instance variables or throwing checked exception types.",
+          "They force every permitted subclass to be `final` and forbid those subtypes from declaring any methods of their own.",
+          "Each subtype must reside in another package and be loaded by a class loader other than the sealed type's loader."
+        ]
       },
       {
         "id": "B",
-        "text": "They enable exhaustive pattern matching with `switch`, allowing the compiler to verify that all possible subtypes are handled."
+        "variants": [
+          "They enable exhaustive pattern matching with `switch`, allowing the compiler to verify that all possible subtypes are handled.",
+          "They make pattern matching with `switch` exhaustive, so the compiler can verify that every possible subtype is handled.",
+          "Exhaustive `switch` pattern matching allows the compiler to verify that every possible subtype is fully handled."
+        ]
       },
       {
         "id": "C",
-        "text": "They encrypt compiled class bytecode on disk so that only authorized, cryptographically signed class loaders can read them."
+        "reasons": [
+          "Sealed classes do not encrypt their bytecode, and reading them is not limited to cryptographically signed class loaders.",
+          "Sealing does not turn the type into a package-private class or hide its name from code outside the compilation unit.",
+          "The compiler does not replace inheritance with composition or generate delegation methods for each permitted implementation."
+        ],
+        "variants": [
+          "They encrypt compiled class bytecode on disk so that only authorized, cryptographically signed class loaders can read them.",
+          "They rewrite the sealed type into a package-private class so that code outside the compilation unit can no longer name it.",
+          "They replace inheritance with composition and generate a delegation method for every implementation that `permits` names."
+        ]
       },
       {
         "id": "D",
-        "text": "They restrict which specific subclasses or implementations are permitted to extend or implement them using `permits`."
+        "variants": [
+          "They restrict which specific subclasses or implementations are permitted to extend or implement them using `permits`.",
+          "Using `permits`, they limit which specific subclasses or implementations are allowed to extend or implement them.",
+          "The `permits` clause names the specific subclasses or implementations that may extend or implement the sealed type."
+        ]
       }
     ],
     "correct": [
@@ -3201,19 +6225,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It forces the Java Virtual Machine to retain all generic collection type arguments at runtime, disabling type erasure."
+        "reasons": [
+          "Pattern matching for `instanceof` does not make the JVM retain generic type arguments or disable type erasure.",
+          "A pattern variable is not in scope for a later statement when the `instanceof` check failed.",
+          "`instanceof` patterns do not narrow primitive types, and `instanceof int` is not a way to bind a variable without boxing."
+        ],
+        "variants": [
+          "It forces the Java Virtual Machine to retain all generic collection type arguments at runtime, disabling type erasure.",
+          "The pattern variable can still be read in a later separate statement even when that `instanceof` check did not succeed.",
+          "It also narrows primitives, so a pattern such as `instanceof int` binds a variable without boxing the operand."
+        ]
       },
       {
         "id": "B",
-        "text": "It converts regular expression pattern searches into native machine instructions to optimize string parsing."
+        "reasons": [
+          "This feature does not turn regular-expression searches into native instructions or optimize string parsing that way.",
+          "The pattern is not lowered to a reflective `Class.isInstance` call, and it does not record the class loader name.",
+          "A successful pattern match does not leave the pattern variable in scope for the remainder of the method."
+        ],
+        "variants": [
+          "It converts regular expression pattern searches into native machine instructions to optimize string parsing.",
+          "It rewrites `instanceof` as a reflective `Class.isInstance` call and also stores the name of the class loader.",
+          "Once the check succeeds, the pattern variable remains in scope for the rest of the enclosing method."
+        ]
       },
       {
         "id": "C",
-        "text": "It combines type checking and conditional variable extraction into a single statement (`if (obj instanceof String s)`)."
+        "variants": [
+          "It combines type checking and conditional variable extraction into a single statement (`if (obj instanceof String s)`).",
+          "It performs the type test and the variable binding together in one statement, `if (obj instanceof String s)`.",
+          "A single check, `if (obj instanceof String s)`, both tests the type and extracts the value into a variable."
+        ]
       },
       {
         "id": "D",
-        "text": "It eliminates the boilerplate and potential runtime bugs associated with redundant explicit downcasting operations."
+        "variants": [
+          "It eliminates the boilerplate and potential runtime bugs associated with redundant explicit downcasting operations.",
+          "It removes the boilerplate and runtime bugs that come from redundant explicit downcast operations.",
+          "Redundant explicit downcasts, along with their boilerplate and possible runtime bugs, are no longer required."
+        ]
       }
     ],
     "correct": [
@@ -3230,19 +6280,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Applications can spawn millions of concurrent virtual threads with negligible memory footprint (~a few KB stack each)."
+        "variants": [
+          "Applications can spawn millions of concurrent virtual threads with negligible memory footprint (~a few KB stack each).",
+          "Applications can create millions of concurrent virtual threads, each with a negligible stack of about a few KB.",
+          "Millions of concurrent virtual threads are practical because each one uses only a negligible stack of about a few KB."
+        ]
       },
       {
         "id": "B",
-        "text": "Virtual threads are lightweight, JVM-managed user-mode threads that unmount from carrier threads during blocking I/O."
+        "variants": [
+          "Virtual threads are lightweight, JVM-managed user-mode threads that unmount from carrier threads during blocking I/O.",
+          "Virtual threads are lightweight user-mode threads that the JVM manages and unmounts from carrier threads during blocking I/O.",
+          "The JVM manages these lightweight user-mode threads and unmounts them from carrier threads while they block in I/O."
+        ]
       },
       {
         "id": "C",
-        "text": "Virtual threads execute directly in kernel space and consume 1MB of physical operating system stack memory per thread."
+        "reasons": [
+          "Virtual threads do not execute in kernel space, and they do not consume 1MB of operating-system stack per thread.",
+          "A virtual thread does not keep an exclusive carrier for its entire life, because carriers are shared as threads mount and unmount.",
+          "The operating system does not time-slice virtual threads at bytecode safepoints the way it schedules platform threads."
+        ],
+        "variants": [
+          "Virtual threads execute directly in kernel space and consume 1MB of physical operating system stack memory per thread.",
+          "Each virtual thread keeps a dedicated carrier for its whole life and never shares that carrier with another virtual thread.",
+          "The operating system time-slices each virtual thread at bytecode safepoints, the same way it schedules ordinary platform threads."
+        ]
       },
       {
         "id": "D",
-        "text": "Virtual threads strictly prohibit the execution of blocking socket reads and require reactive non-blocking API syntax."
+        "reasons": [
+          "Virtual threads do not forbid blocking socket reads, and they do not require a reactive non-blocking API.",
+          "They are not restricted to `newFixedThreadPool` pools, and `Thread.start` can start a virtual thread.",
+          "A virtual thread can hold its own thread-local values and is not limited to the caller's context class loader."
+        ],
+        "variants": [
+          "Virtual threads strictly prohibit the execution of blocking socket reads and require reactive non-blocking API syntax.",
+          "Virtual threads run only on pools from `newFixedThreadPool`, and `Thread.start` is not able to start one.",
+          "A virtual thread cannot keep thread-local values of its own and may use only the caller's context class loader."
+        ]
       }
     ],
     "correct": [
@@ -3259,19 +6335,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Use `Optional` primarily as a method return type to clearly signal to callers that a return value may be absent."
+        "variants": [
+          "Use `Optional` primarily as a method return type to clearly signal to callers that a return value may be absent.",
+          "Use `Optional` mainly as a method return type so callers can see that the returned value may be absent.",
+          "As a method return type, `Optional` tells callers clearly that the method's result may be absent."
+        ]
       },
       {
         "id": "B",
-        "text": "Transform and unwrap `Optional` values using functional methods like `.map()`, `.flatMap()`, `.orElse()`, and `.orElseThrow()`."
+        "variants": [
+          "Transform and unwrap `Optional` values using functional methods like `.map()`, `.flatMap()`, `.orElse()`, and `.orElseThrow()`.",
+          "Transform and unwrap an `Optional` with the methods `.map()`, `.flatMap()`, `.orElse()`, and `.orElseThrow()`.",
+          "The methods `.map()`, `.flatMap()`, `.orElse()`, and `.orElseThrow()` are how you transform and unwrap an `Optional`."
+        ]
       },
       {
         "id": "C",
-        "text": "Use `Optional` as method parameter types to avoid creating overloaded method signatures for optional arguments."
+        "reasons": [
+          "`Optional` is not an idiomatic method parameter, and it is not the intended way to avoid overloads for optional arguments.",
+          "A method that returns `Optional` should not also return `null` to signal absence.",
+          "`Optional.of(null)` does not encode a missing value, because that call fails instead of producing an empty `Optional`."
+        ],
+        "variants": [
+          "Use `Optional` as method parameter types to avoid creating overloaded method signatures for optional arguments.",
+          "Return a raw `null` from a method whose return type is already `Optional`, so callers can test null or emptiness.",
+          "Represent a missing value with `Optional.of(null)` so the wrapper object itself documents that absence."
+        ]
       },
       {
         "id": "D",
-        "text": "Declare `Optional` as class instance fields to ensure all JavaBean domain properties support serialization safely."
+        "reasons": [
+          "`Optional` is not meant to be a field type, and using it that way does not make JavaBean properties serialize safely.",
+          "Calling `.get()` on every `Optional` is not idiomatic, because an empty value then throws instead of being handled.",
+          "`List<Optional<T>>` is not the intended way to represent missing elements."
+        ],
+        "variants": [
+          "Declare `Optional` as class instance fields to ensure all JavaBean domain properties support serialization safely.",
+          "Call `.get()` immediately on every `Optional` so the caller never has to handle the case of an empty result.",
+          "Put `Optional` in a collection element position, as with `List<Optional<T>>`, to represent holes inside the collection."
+        ]
       }
     ],
     "correct": [
@@ -3288,23 +6390,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`clean` is the first phase of the default lifecycle, so `mvn compile` deletes `target` before compiling."
+        "reasons": [
+          "`clean` is not the first phase of the default lifecycle, and `mvn compile` does not delete `target` before it compiles.",
+          "`mvn validate` does not delete `target`, and validation is not defined as starting from an empty build directory.",
+          "`pre-clean` does not compile sources, and the clean lifecycle does not rebuild classes before removing `target`."
+        ],
+        "variants": [
+          "`clean` is the first phase of the default lifecycle, so `mvn compile` deletes `target` before compiling.",
+          "`mvn validate` always deletes `target`, because validation is defined to start from an empty build directory.",
+          "The `pre-clean` phase compiles sources, so the clean lifecycle rebuilds classes before it deletes `target`."
+        ]
       },
       {
         "id": "B",
-        "text": "`mvn clean` deletes `target` and then runs `deploy`, because clean means a full rebuild and publish."
+        "reasons": [
+          "`mvn clean` removes build output such as `target` and does not continue on to `deploy` or publish the artifact.",
+          "`mvn clean` deletes `target` and does not remove the project's artifacts from the local repository while leaving `target` behind.",
+          "`mvn clean install` still runs the default lifecycle after clean, including tests, and clean does not replace that lifecycle."
+        ],
+        "variants": [
+          "`mvn clean` deletes `target` and then runs `deploy`, because clean means a full rebuild and publish.",
+          "`mvn clean` deletes the project from the local repository and leaves the `target` directory in place.",
+          "`mvn clean install` skips the tests, because clean replaces the default lifecycle instead of running before it."
+        ]
       },
       {
         "id": "C",
-        "text": "`clean` is its own lifecycle, not a phase of the default lifecycle that runs from `validate` through `deploy`."
+        "variants": [
+          "`clean` is its own lifecycle, not a phase of the default lifecycle that runs from `validate` through `deploy`.",
+          "`clean` is a lifecycle of its own, not a phase inside the default lifecycle from `validate` through `deploy`.",
+          "The default lifecycle from `validate` through `deploy` does not include `clean`, which is its own lifecycle."
+        ]
       },
       {
         "id": "D",
-        "text": "`mvn clean package` runs the clean lifecycle first and then the default lifecycle through `package`."
+        "variants": [
+          "`mvn clean package` runs the clean lifecycle first and then the default lifecycle through `package`.",
+          "`mvn clean package` executes the clean lifecycle before the default lifecycle runs through `package`.",
+          "`mvn clean package` does clean first, then follows the default lifecycle through the `package` phase."
+        ]
       },
       {
         "id": "E",
-        "text": "`mvn package` alone does not delete `target`, because that command never enters the clean lifecycle."
+        "variants": [
+          "`mvn package` alone does not delete `target`, because that command never enters the clean lifecycle.",
+          "`mvn package` by itself does not delete `target`, because that command never enters the clean lifecycle.",
+          "Because `mvn package` never enters the clean lifecycle, that command alone does not delete `target`."
+        ]
       }
     ],
     "correct": [
@@ -3322,19 +6454,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`var` introduces dynamic typing at runtime, allowing a variable to be reassigned to arbitrary unrelated object types."
+        "reasons": [
+          "`var` does not introduce dynamic typing, and the variable cannot later be assigned an unrelated type.",
+          "`var` still requires an initializer on the declaration, and later assignments in `if` branches do not remove that requirement.",
+          "An initializer that is a method invocation does not cause the inferred static type to widen to `Object`."
+        ],
+        "variants": [
+          "`var` introduces dynamic typing at runtime, allowing a variable to be reassigned to arbitrary unrelated object types.",
+          "`var` may omit its initializer when every branch of a later `if` assigns the variable before the variable is read.",
+          "When the initializer expression is a method call rather than `new`, `var` widens the inferred static type all the way to `Object`."
+        ]
       },
       {
         "id": "B",
-        "text": "`var` is restricted strictly to local variables, enhanced for-loop declarations, and try-with-resources resource variables."
+        "variants": [
+          "`var` is restricted strictly to local variables, enhanced for-loop declarations, and try-with-resources resource variables.",
+          "`var` is allowed only for local variables, enhanced for-loop variables, and try-with-resources resource variables.",
+          "The only legal uses of `var` are local variables, enhanced for-loop declarations, and try-with-resources resources."
+        ]
       },
       {
         "id": "C",
-        "text": "The compiler infers the static type of the variable from its mandatory initializer expression at compile time."
+        "variants": [
+          "The compiler infers the static type of the variable from its mandatory initializer expression at compile time.",
+          "At compile time the compiler infers the static type from the initializer expression, which `var` requires.",
+          "`var` requires an initializer, and the compiler infers the variable's static type from that expression at compile time."
+        ]
       },
       {
         "id": "D",
-        "text": "`var` can be used to declare class instance fields, method parameters, and public interface return types."
+        "reasons": [
+          "`var` cannot declare instance fields, method parameters, or the return type of a public interface method.",
+          "`var` cannot name a thrown exception type or the component type in an array-creation expression.",
+          "`var` cannot be the target of a cast or a type argument in a generic method invocation."
+        ],
+        "variants": [
+          "`var` can be used to declare class instance fields, method parameters, and public interface return types.",
+          "`var` can declare the exceptions a method throws and the component type of an array created with `new`.",
+          "`var` may be used as a cast target, as in `(var) value`, and as the type argument of a generic method."
+        ]
       }
     ],
     "correct": [
@@ -3351,19 +6509,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`==` evaluates logical content equivalence for all classes that implement the `java.lang.Comparable` interface."
+        "reasons": [
+          "`==` does not test logical content, including for classes that implement `java.lang.Comparable`.",
+          "`==` does not compare identity hash codes, so matching hash codes are not what makes the operator return true.",
+          "When both operands are wrapper objects, `==` compares references and does not unbox them to primitive values."
+        ],
+        "variants": [
+          "`==` evaluates logical content equivalence for all classes that implement the `java.lang.Comparable` interface.",
+          "`==` compares the two objects by identity hash code and may return true even when those two references are not the same.",
+          "Whenever either operand is a wrapper type, `==` unboxes both sides and compares the underlying primitive values."
+        ]
       },
       {
         "id": "B",
-        "text": "`equals()` evaluates logical equivalence based on object content when appropriately overridden by the target class."
+        "variants": [
+          "`equals()` evaluates logical equivalence based on object content when appropriately overridden by the target class.",
+          "When a class overrides `equals()` appropriately, that method tests logical equivalence from the object's content.",
+          "An appropriately overridden `equals()` reports logical equivalence according to the content of the object."
+        ]
       },
       {
         "id": "C",
-        "text": "`equals()` cannot be overridden by subclasses because it is declared `final` on `java.lang.Object`."
+        "reasons": [
+          "`equals()` is not declared `final` on `java.lang.Object`, so a subclass is allowed to override it.",
+          "A correct `equals()` returns false when the argument is `null` and is not required to throw `NullPointerException`.",
+          "`equals()` is not limited to comparing runtime class names, because an override can compare the fields that define equality."
+        ],
+        "variants": [
+          "`equals()` cannot be overridden by subclasses because it is declared `final` on `java.lang.Object`.",
+          "`equals()` is required to throw `NullPointerException` for a `null` argument instead of returning false.",
+          "`equals()` compares only the runtime class names of its arguments and does not inspect field values."
+        ]
       },
       {
         "id": "D",
-        "text": "`==` compares reference identity (whether two object variables point to the exact same memory address on the heap)."
+        "variants": [
+          "`==` compares reference identity (whether two object variables point to the exact same memory address on the heap).",
+          "`==` tests reference identity, meaning both variables refer to the same object at the same address on the heap.",
+          "Reference identity is what `==` checks: the two variables point at one exact memory address on the heap."
+        ]
       }
     ],
     "correct": [
@@ -3380,19 +6564,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "If two objects produce identical hash codes, they are mathematically guaranteed to evaluate as equal via `equals()`."
+        "reasons": [
+          "Identical hash codes do not guarantee that `equals()` is true, because unequal objects are allowed to share a hash code.",
+          "Mutating a key after insertion is not safe merely because `hashCode()` still returns an `int`, since the key can leave the bucket the map expects.",
+          "Unequal keys may share a hash code, and `hashCode()` does not have to be unique for both keys to be stored."
+        ],
+        "variants": [
+          "If two objects produce identical hash codes, they are mathematically guaranteed to evaluate as equal via `equals()`.",
+          "Changing a stored key's fields after that key is inserted remains safe as long as `hashCode()` still returns some `int` value.",
+          "`hashCode()` has to return a distinct integer for every unequal object, or the map cannot store both keys."
+        ]
       },
       {
         "id": "B",
-        "text": "The collection uses `hashCode()` to compute the bucket array index and `equals()` to find the matching key in that bucket."
+        "variants": [
+          "The collection uses `hashCode()` to compute the bucket array index and `equals()` to find the matching key in that bucket.",
+          "The collection uses `hashCode()` for the bucket array index and then `equals()` to locate the matching key in that bucket.",
+          "`hashCode()` selects the bucket index, and `equals()` identifies the matching key stored in that bucket."
+        ]
       },
       {
         "id": "C",
-        "text": "If two objects are considered equal by `equals()`, they must produce the exact same integer return value from `hashCode()`."
+        "variants": [
+          "If two objects are considered equal by `equals()`, they must produce the exact same integer return value from `hashCode()`.",
+          "If `equals()` considers two objects equal, then both must return the exact same integer from `hashCode()`.",
+          "Objects that are equal according to `equals()` are required to return the same integer from `hashCode()`."
+        ]
       },
       {
         "id": "D",
-        "text": "Hash collections ignore `equals()` entirely and rely exclusively on 32-bit hash codes to identify unique stored keys."
+        "reasons": [
+          "Hash collections do not ignore `equals()`, because a hash code only chooses a bucket and `equals()` confirms the key.",
+          "`hashCode()` must stay stable for an object that has not changed, and it may not return a different value on every call.",
+          "A hash map does not resolve collisions by calling `compareTo` on neighboring buckets, and `equals()` is not reserved for non-hash sets."
+        ],
+        "variants": [
+          "Hash collections ignore `equals()` entirely and rely exclusively on 32-bit hash codes to identify unique stored keys.",
+          "Only `equals()` is part of the contract, so `hashCode()` may return a different integer on every call for one object.",
+          "On a hash collision the map probes adjacent buckets using `compareTo`, while `equals()` applies only to non-hash sets."
+        ]
       }
     ],
     "correct": [
@@ -3409,23 +6619,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Immutability: designing objects whose state cannot be modified after construction, eliminating synchronization needs."
+        "variants": [
+          "Immutability: designing objects whose state cannot be modified after construction, eliminating synchronization needs.",
+          "Immutability means an object's state cannot change after construction, which removes the need to synchronize that state.",
+          "Objects that cannot be modified after construction are immutable and do not need synchronization for that state."
+        ]
       },
       {
         "id": "B",
-        "text": "Atomic variables: using `java.util.concurrent.atomic` classes to execute lock-free compare-and-swap (CAS) memory updates."
+        "variants": [
+          "Atomic variables: using `java.util.concurrent.atomic` classes to execute lock-free compare-and-swap (CAS) memory updates.",
+          "Atomic variables from `java.util.concurrent.atomic` perform lock-free updates through compare-and-swap (CAS).",
+          "Lock-free compare-and-swap (CAS) memory updates are what the `java.util.concurrent.atomic` classes provide."
+        ]
       },
       {
         "id": "C",
-        "text": "Thread interruption: calling `Thread.stop()` on long-running threads to clear memory race conditions automatically."
+        "reasons": [
+          "`Thread.stop()` does not clear memory races, and it is not a sound way to stop a long-running thread.",
+          "`Thread.yield()` does not flush other threads' caches or publish shared writes in place of a lock.",
+          "Swallowing `InterruptedException` in an empty catch does not reset memory barriers or remove a race."
+        ],
+        "variants": [
+          "Thread interruption: calling `Thread.stop()` on long-running threads to clear memory race conditions automatically.",
+          "`Thread.yield()` forces other threads to flush cached writes, publishing shared updates so they become visible with no lock.",
+          "An empty catch of `InterruptedException` resets memory barriers on that thread and clears the race."
+        ]
       },
       {
         "id": "D",
-        "text": "Synchronization: using `synchronized` blocks or `ReentrantLock` to enforce mutual exclusion on critical code sections."
+        "variants": [
+          "Synchronization: using `synchronized` blocks or `ReentrantLock` to enforce mutual exclusion on critical code sections.",
+          "Synchronization with `synchronized` blocks or `ReentrantLock` enforces mutual exclusion on critical sections.",
+          "Mutual exclusion for a critical section is obtained from a `synchronized` block or from a `ReentrantLock`."
+        ]
       },
       {
         "id": "E",
-        "text": "Global static fields: sharing unsynchronized mutable data across threads to allow direct memory bus register access."
+        "reasons": [
+          "Sharing unsynchronized mutable static fields does not make cross-thread access safe and does not grant direct memory-bus register access.",
+          "A single `volatile` field does not make every nested mutable object safe to update without further synchronization.",
+          "Setting workers to `MAX_PRIORITY` does not serialize their access to shared data."
+        ],
+        "variants": [
+          "Global static fields: sharing unsynchronized mutable data across threads to allow direct memory bus register access.",
+          "A single `volatile` field on the outer object makes every nested mutable field safe to update with no more synchronization.",
+          "Raising each worker to `MAX_PRIORITY` with `Thread.setPriority` serializes those threads' use of shared data."
+        ]
       }
     ],
     "correct": [
@@ -3443,23 +6683,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Resources are closed only if the try block completes successfully without encountering any checked exceptions."
+        "reasons": [
+          "Resources are still closed when the try block throws a checked exception, so successful completion is not required.",
+          "Every resource declared in the header is closed automatically, not only the first, so the others do not need a handwritten `finally`.",
+          "An object created inside the try body is not closed automatically, because only resources declared in the header are."
+        ],
+        "variants": [
+          "Resources are closed only if the try block completes successfully without encountering any checked exceptions.",
+          "Only the first declared resource is closed automatically, and later ones must be closed in a `finally` block you write.",
+          "Objects acquired inside the try body, rather than declared in the header, are closed automatically when the block ends."
+        ]
       },
       {
         "id": "B",
-        "text": "Resources are closed automatically in reverse order of their declaration upon leaving the try-with-resources block."
+        "variants": [
+          "Resources are closed automatically in reverse order of their declaration upon leaving the try-with-resources block.",
+          "On leaving the try-with-resources block, resources are closed automatically in the reverse order of their declaration.",
+          "Automatic closing runs in reverse declaration order when execution leaves the try-with-resources block."
+        ]
       },
       {
         "id": "C",
-        "text": "Declared resource variables must implement `java.lang.AutoCloseable` (or its subinterface `java.io.Closeable`)."
+        "variants": [
+          "Declared resource variables must implement `java.lang.AutoCloseable` (or its subinterface `java.io.Closeable`).",
+          "Each declared resource variable must implement `java.lang.AutoCloseable` or its subinterface `java.io.Closeable`.",
+          "A resource declared in that statement has to be `java.lang.AutoCloseable` (or the subinterface `java.io.Closeable`)."
+        ]
       },
       {
         "id": "D",
-        "text": "Try-with-resources statements prohibit declaring `catch` or `finally` blocks attached to the try resource header."
+        "reasons": [
+          "Try-with-resources does not forbid `catch` or `finally` blocks on the same try that declares the resources.",
+          "Resource variables are scoped to the try-with-resources statement and are not visible in code after it, including after a `catch`.",
+          "Implementing `java.io.Closeable` does not cause a second close from a finalizer after try-with-resources closes the resource."
+        ],
+        "variants": [
+          "Try-with-resources statements prohibit declaring `catch` or `finally` blocks attached to the try resource header.",
+          "Resource variables also remain in scope after the whole try statement, including in code that follows the attached `catch` block.",
+          "A `java.io.Closeable` resource is closed twice: once by try-with-resources and a second time by its finalizer."
+        ]
       },
       {
         "id": "E",
-        "text": "Exceptions thrown during resource closure are added as suppressed exceptions to any primary exception thrown in the try block."
+        "variants": [
+          "Exceptions thrown during resource closure are added as suppressed exceptions to any primary exception thrown in the try block.",
+          "If closing a resource throws, that exception is added as a suppressed exception on any primary exception from the try block.",
+          "An exception thrown during close is attached as a suppressed exception to the primary exception thrown in the try block."
+        ]
       }
     ],
     "correct": [
@@ -3477,19 +6747,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "An unmodifiable collection created by the compiler that prevents adding new instances of enums at runtime."
+        "reasons": [
+          "`EnumSet` is not an unmodifiable collection generated by the compiler, and new enum constants can still be added at runtime.",
+          "`EnumSet` is not a list of constants paired with ordinals, and it does not reject duplicates by comparing names.",
+          "It is not a map from constants to the declaring class, and it is not a lookup that replaces `valueOf`."
+        ],
+        "variants": [
+          "An unmodifiable collection created by the compiler that prevents adding new instances of enums at runtime.",
+          "A list that keeps each enum constant next to its ordinal and drops duplicates by comparing the constant names.",
+          "A map from enum constants to the declaring class, used to resolve a constant without calling `valueOf`."
+        ]
       },
       {
         "id": "B",
-        "text": "A legacy collection from Java 1.0 designed exclusively for serializing enum ordinal integers to binary streams."
+        "reasons": [
+          "`EnumSet` is not a Java 1.0 collection, and it is not limited to writing enum ordinals into binary streams.",
+          "An `EnumSet` does not have to contain every constant of the enum, because elements may be absent.",
+          "`EnumSet` is not a concurrent set, and separate instances do not share one lock on the enum class."
+        ],
+        "variants": [
+          "A legacy collection from Java 1.0 designed exclusively for serializing enum ordinal integers to binary streams.",
+          "An array-backed set that always holds every constant of the enum, because an absent constant cannot be represented.",
+          "A concurrent set that synchronizes on the enum `Class` object so every `EnumSet` of that type shares one lock."
+        ]
       },
       {
         "id": "C",
-        "text": "A specialized `Set` implementation backed internally by bit vectors (e.g. `long`), offering superior speed and minimal memory."
+        "variants": [
+          "A specialized `Set` implementation backed internally by bit vectors (e.g. `long`), offering superior speed and minimal memory.",
+          "A specialized `Set` backed by bit vectors such as `long`, which provides superior speed and minimal memory use.",
+          "This specialized `Set` is stored as bit vectors (for example `long`), giving superior speed and a minimal memory footprint."
+        ]
       },
       {
         "id": "D",
-        "text": "A synchronized thread-safe wrapper around a `TreeSet` that automatically alphabetizes enum constant name declarations."
+        "reasons": [
+          "`EnumSet` is not a synchronized wrapper around a `TreeSet`, and it does not sort constants by alphabetizing their names.",
+          "It is not a hash table keyed by `name()`, and it does not resize the way a `HashSet` does.",
+          "Its iteration order follows enum ordinals, not the source-file line number of each constant."
+        ],
+        "variants": [
+          "A synchronized thread-safe wrapper around a `TreeSet` that automatically alphabetizes enum constant name declarations.",
+          "A hash set that uses the enum constant `name()` as its key and resizes an internal table in the same manner that `HashSet` does.",
+          "A sorted set ordered by the source-file line number of every declared enum constant, instead of by that constant's ordinal."
+        ]
       }
     ],
     "correct": [
@@ -3505,19 +6806,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It runs tests from classes that were compiled on a previous build, and it does not compile `src/main` or `src/test` on its own."
+        "reasons": [
+          "`mvn test` compiles both `src/main` and `src/test` rather than reusing only classes left from an earlier build.",
+          "It does not compile only `src/test`, and the tests are not run against classes taken from the local repository in place of this build.",
+          "`mvn test` does not enter the `verify` phase, and a missing site does not cause that command to fail."
+        ],
+        "variants": [
+          "It runs tests from classes that were compiled on a previous build, and it does not compile `src/main` or `src/test` on its own.",
+          "It compiles only `src/test` and executes those tests against bytecode already installed in the local repository.",
+          "It runs through the `verify` phase, so Failsafe integration tests execute and the build fails if no site was generated."
+        ]
       },
       {
         "id": "B",
-        "text": "It builds the jar or war first and then runs the unit tests against that packaged archive."
+        "reasons": [
+          "`mvn test` does not package a jar or war first, and the unit tests do not run against that archive.",
+          "Class files already present in `target` do not make `mvn test` skip compilation and skip running tests.",
+          "A passing test run does not cause `mvn test` to deploy the artifact to a remote repository."
+        ],
+        "variants": [
+          "It builds the jar or war first and then runs the unit tests against that packaged archive.",
+          "It skips compilation and tests whenever `target` already holds class files from an earlier build.",
+          "After the unit tests have passed, this command deploys the built artifact to the remote repository."
+        ]
       },
       {
         "id": "C",
-        "text": "It runs the unit tests and the integration tests, then installs the artifact into the local repository."
+        "reasons": [
+          "`mvn test` does not run integration tests and does not install the artifact into the local repository.",
+          "It does not generate the project site or copy reports into `target/site` before the tests run.",
+          "Failsafe is not bound by default for this command, and `src/test` classes are not treated as integration tests."
+        ],
+        "variants": [
+          "It runs the unit tests and the integration tests, then installs the artifact into the local repository.",
+          "It writes the project site and copies the test reports into `target/site` before any test method runs.",
+          "Failsafe is on the default binding, and every class in `src/test` is run as an integration test."
+        ]
       },
       {
         "id": "D",
-        "text": "It compiles main and test code and runs the unit tests, then stops before `package`, so it produces no jar or war."
+        "variants": [
+          "It compiles main and test code and runs the unit tests, then stops before `package`, so it produces no jar or war.",
+          "It compiles main and test code, runs the unit tests, and stops before `package`, producing neither a jar nor a war.",
+          "Main and test code are compiled and the unit tests run, but it stops before `package` and builds no jar or war."
+        ]
       }
     ],
     "correct": [
@@ -3533,19 +6865,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A phase has no work of its own; bound goals do the work, such as Surefire's test goal on the `test` phase."
+        "variants": [
+          "A phase has no work of its own; bound goals do the work, such as Surefire's test goal on the `test` phase.",
+          "A phase does no work by itself, and bound goals do that work, such as Surefire's test goal on the `test` phase.",
+          "Bound goals perform the work a phase does not do on its own, such as Surefire's test goal on `test`."
+        ]
       },
       {
         "id": "B",
-        "text": "Each phase is itself a plugin, and the Surefire plugin replaces the `test` phase rather than binding a goal to it."
+        "reasons": [
+          "A lifecycle phase is not itself a plugin, and Surefire binds a goal to the `test` phase rather than replacing that phase.",
+          "The order of plugin declarations in `pom.xml` does not by itself order the goals, because the phase still decides when a bound goal runs.",
+          "A goal bound to `compile` is not also bound to `test` and `package`, and it does not run again as those later phases execute."
+        ],
+        "variants": [
+          "Each phase is itself a plugin, and the Surefire plugin replaces the `test` phase rather than binding a goal to it.",
+          "Goals execute in the order their plugins are listed in `pom.xml`, and the phase name does not affect that sequence.",
+          "Binding a goal to `compile` also binds it to each later phase, so the same goal runs again on `test` and on `package`."
+        ]
       },
       {
         "id": "C",
-        "text": "Jar packaging binds a jar goal to `package`, so `mvn package` produces the archive through that binding."
+        "variants": [
+          "Jar packaging binds a jar goal to `package`, so `mvn package` produces the archive through that binding.",
+          "Jar packaging binds a jar goal to `package`, so `mvn package` creates the archive through that goal binding.",
+          "`mvn package` produces the jar because jar packaging binds a jar goal onto the `package` phase."
+        ]
       },
       {
         "id": "D",
-        "text": "A goal runs only when its name is typed, so binding Surefire to `test` does not make `mvn test` run that goal."
+        "reasons": [
+          "A bound goal does not wait for its name to be typed on the command line, so Surefire bound to `test` does run under `mvn test`.",
+          "`mvn test` does not run a goal that is bound only to `package`, because the `test` phase does not include later phases.",
+          "Surefire's test goal is not limited to `mvn verify`, and the `test` phase is not reserved for the compiler plugin."
+        ],
+        "variants": [
+          "A goal runs only when its name is typed, so binding Surefire to `test` does not make `mvn test` run that goal.",
+          "A goal bound only to `package` still runs when you invoke `mvn test`, because earlier phases include the later ones.",
+          "Surefire's test goal runs only during `mvn verify`, while the `test` phase belongs to the compiler plugin."
+        ]
       }
     ],
     "correct": [
@@ -3562,19 +6920,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It automatically rolls back for all checked and unchecked exceptions without requiring any custom configuration."
+        "reasons": [
+          "The default is not to roll back every checked and unchecked exception, because checked exceptions commit unless rollback is configured for them.",
+          "Unchecked exceptions roll back by default even when they are omitted from `rollbackFor`.",
+          "A private `@Transactional` method is not intercepted by the proxy, so that annotation on the private method does not start a rollback."
+        ],
+        "variants": [
+          "It automatically rolls back for all checked and unchecked exceptions without requiring any custom configuration.",
+          "Rollback happens only for types listed in `rollbackFor`, and an unchecked exception commits unless it is listed there.",
+          "A `@Transactional` private method is still proxied, so a `RuntimeException` from that method always rolls the transaction back."
+        ]
       },
       {
         "id": "B",
-        "text": "It triggers automatic transaction rollback when an unchecked exception (`RuntimeException` or `Error`) is thrown."
+        "variants": [
+          "It triggers automatic transaction rollback when an unchecked exception (`RuntimeException` or `Error`) is thrown.",
+          "An unchecked exception (`RuntimeException` or `Error`) causes the transaction to roll back automatically.",
+          "Automatic rollback is triggered when the exception thrown is unchecked, a `RuntimeException` or an `Error`."
+        ]
       },
       {
         "id": "C",
-        "text": "It commits the transaction by default when a checked exception (e.g. `Exception`, `IOException`) is thrown."
+        "variants": [
+          "It commits the transaction by default when a checked exception (e.g. `Exception`, `IOException`) is thrown.",
+          "By default a checked exception such as `Exception` or `IOException` still results in the transaction committing.",
+          "When a checked exception like `Exception` or `IOException` is thrown, the transaction commits by default."
+        ]
       },
       {
         "id": "D",
-        "text": "It disables rollback behavior completely unless explicitly paired with a Hibernate entity interceptor class."
+        "reasons": [
+          "Rollback is not disabled until a Hibernate interceptor is added, because the default checked and unchecked rules apply without one.",
+          "A checked exception does not roll back by default, and making the method `public` does not cause unchecked exceptions to commit.",
+          "Rollback is not restricted to `DataAccessException`, because other `RuntimeException` types roll back as well."
+        ],
+        "variants": [
+          "It disables rollback behavior completely unless explicitly paired with a Hibernate entity interceptor class.",
+          "Rollback is the default only for a `public` method that throws a checked exception, while unchecked exceptions commit.",
+          "The annotation rolls back only when the exception is a `DataAccessException` and commits for any other runtime exception."
+        ]
       }
     ],
     "correct": [
@@ -3591,19 +6975,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Clients should not be forced to depend upon methods they do not use; prefer small, cohesive, focused interfaces."
+        "variants": [
+          "Clients should not be forced to depend upon methods they do not use; prefer small, cohesive, focused interfaces.",
+          "Prefer small, cohesive, focused interfaces so clients are not forced to depend upon methods they do not use.",
+          "Clients should not be forced to depend upon unused methods, so each interface should stay small, cohesive, and focused."
+        ]
       },
       {
         "id": "B",
-        "text": "Classes must be open for extension but closed for modification by utilizing inheritance hierarchies exclusively."
+        "reasons": [
+          "Open for extension and closed for modification is the Open-Closed Principle, not Interface Segregation, and it does not require inheritance alone.",
+          "One method per concrete class, with the client inheriting an implementation, is not Interface Segregation.",
+          "Empty default methods do not fix a wide interface, because clients can still depend on methods they do not use."
+        ],
+        "variants": [
+          "Classes must be open for extension but closed for modification by utilizing inheritance hierarchies exclusively.",
+          "Give each concrete class its own one-method interface so a client can inherit that class's dedicated implementation.",
+          "A wide interface is still fine when every method the client does not use has an empty default body."
+        ]
       },
       {
         "id": "C",
-        "text": "Subclasses must be completely substitutable for their base types without altering program correctness or contracts."
+        "reasons": [
+          "Requiring subtypes to be substitutable for their base types is the Liskov Substitution Principle, not Interface Segregation.",
+          "Creating one interface per public field is not how client-specific interfaces are segregated, and it is not a persistence rule.",
+          "Distinct overrides of every method do not make an interface segregated."
+        ],
+        "variants": [
+          "Subclasses must be completely substitutable for their base types without altering program correctness or contracts.",
+          "Segregation means carving out one interface per public field so the persistence model and the domain model stay aligned.",
+          "An interface is segregated once every implementing class overrides each method with behavior distinct from the others."
+        ]
       },
       {
         "id": "D",
-        "text": "High-level modules should not depend on low-level modules; both should depend on abstract interfaces."
+        "reasons": [
+          "Having high-level and low-level modules depend on abstractions is the Dependency Inversion Principle, not Interface Segregation.",
+          "Placing an interface next to its only implementation so clients compile against the concrete class is not Interface Segregation.",
+          "One interface that lists every operation in the system is the opposite of a small interface aimed at what a client uses."
+        ],
+        "variants": [
+          "High-level modules should not depend on low-level modules; both should depend on abstract interfaces.",
+          "Place each interface in the same package as its sole implementation so clients compile against the concrete class.",
+          "ISP says every module should depend on one shared interface that lists every operation in the system."
+        ]
       }
     ],
     "correct": [
@@ -3619,19 +7034,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`suspend` by itself runs the body on `Dispatchers.IO`, so a blocking JDBC call inside it cannot occupy the thread that started the coroutine."
+        "reasons": [
+          "`suspend` by itself does not run the body on `Dispatchers.IO`, so a blocking JDBC call can still occupy the thread that started the coroutine.",
+          "`suspend` does not compile the body into a blocking native call that parks the carrier until JDBC returns.",
+          "`suspend` does not mark a function main-safe, and the compiler does not reject a blocking call written inside it."
+        ],
+        "variants": [
+          "`suspend` by itself runs the body on `Dispatchers.IO`, so a blocking JDBC call inside it cannot occupy the thread that started the coroutine.",
+          "`suspend` compiles the entire function body into a blocking native call and parks the carrier thread until the JDBC driver finally returns a result.",
+          "`suspend` explicitly marks that function as main-safe, so the compiler rejects any blocking JDBC call written inside the function body."
+        ]
       },
       {
         "id": "B",
-        "text": "`suspend` does not move a blocking call onto another thread; that call still needs `withContext` on a dispatcher such as `Dispatchers.IO`."
+        "variants": [
+          "`suspend` does not move a blocking call onto another thread; that call still needs `withContext` on a dispatcher such as `Dispatchers.IO`.",
+          "A blocking call is not moved onto another thread by `suspend` alone, and it still needs `withContext` on a dispatcher such as `Dispatchers.IO`.",
+          "`suspend` by itself leaves a blocking call on the current thread, so that call still needs `withContext` on a dispatcher like `Dispatchers.IO`."
+        ]
       },
       {
         "id": "C",
-        "text": "`suspend` starts a platform thread for the body and lets the caller continue without waiting for that thread to finish."
+        "reasons": [
+          "`suspend` does not start a platform thread for the body, and the caller does not continue without waiting for that work.",
+          "An ordinary caller does not manually resume a `Continuation` through `resumeWith` after a blocking call in a `suspend` function.",
+          "`suspend` does not turn cancellation off, so the modifier itself does not stop a parent job from cancelling."
+        ],
+        "variants": [
+          "`suspend` starts a platform thread for the body and lets the caller continue without waiting for that thread to finish.",
+          "The caller has to resume the `Continuation` by hand with `resumeWith` after the blocking call inside the `suspend` function finishes.",
+          "`suspend` disables cancellation for the function, so the parent job cannot cancel a blocking JDBC call made inside it."
+        ]
       },
       {
         "id": "D",
-        "text": "`suspend` turns the function into a callback registered on the caller and then cancels the coroutine that invoked it."
+        "reasons": [
+          "`suspend` does not turn the function into a callback registered on the caller, and it does not cancel the coroutine that called it.",
+          "Arguments are not made lazy by `suspend`, and a blocking call in an argument is not delayed until the function returns.",
+          "`suspend` does not drop the result of a blocking call when the first suspension point is reached."
+        ],
+        "variants": [
+          "`suspend` turns the function into a callback registered on the caller and then cancels the coroutine that invoked it.",
+          "`suspend` makes every argument lazy, so a blocking call used as an argument does not run until after the function returns.",
+          "The body stays on the caller thread only up to the first suspension point, and the blocking call's result is then discarded."
+        ]
       }
     ],
     "correct": [
@@ -3647,19 +7093,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Arrays.sort(list, Comparator.randomOrder());` to sort the list with a pseudo-random comparator."
+        "reasons": [
+          "There is no `Comparator.randomOrder()`, and sorting a list with a random comparator is not a correct shuffle.",
+          "`Collections.rotate` only cycles elements by a distance, and a rotation by one is not a random permutation.",
+          "Swapping the first pair with `Collections.swap` does not permute the rest of the list."
+        ],
+        "variants": [
+          "`Arrays.sort(list, Comparator.randomOrder());` to sort the list with a pseudo-random comparator.",
+          "`Collections.rotate(list, 1);` shifts every element by one place and treats that rotation as a shuffle.",
+          "`Collections.swap(list, 0, 1);` swaps the first two elements and regards that single swap as a full shuffle."
+        ]
       },
       {
         "id": "B",
-        "text": "`list = Collections.shuffle(list);` to assign the newly returned shuffled list copy to the variable."
+        "reasons": [
+          "`Collections.shuffle` returns void, so there is no new shuffled list to assign back to the variable.",
+          "`sort(null)` on a sublist applies natural order and does not shuffle the elements.",
+          "Copying through a `HashSet` drops duplicate elements and does not define a random permutation of the original list."
+        ],
+        "variants": [
+          "`list = Collections.shuffle(list);` to assign the newly returned shuffled list copy to the variable.",
+          "`list.subList(0, list.size()).sort(null);` reorders the list by sorting that view with a null comparator.",
+          "`new ArrayList<>(new HashSet<>(list));` rebuilds the list in hash-bucket order and treats that order as random."
+        ]
       },
       {
         "id": "C",
-        "text": "`Collections.shuffle(list);` to permute the elements in-place using the default or custom random source."
+        "variants": [
+          "`Collections.shuffle(list);` to permute the elements in-place using the default or custom random source.",
+          "`Collections.shuffle(list);` permutes the elements in place using the default random source or a custom one.",
+          "Call `Collections.shuffle(list);` to reorder the list in place with the default or a custom random source."
+        ]
       },
       {
         "id": "D",
-        "text": "`list.stream().unordered().collect(Collectors.toList());` to randomize stream processing order."
+        "reasons": [
+          "`unordered()` does not randomize encounter order, and collecting that stream does not shuffle the source list.",
+          "A parallel collect into a list does not ask fork-join to produce a random permutation of the elements.",
+          "`Collections.reverse` inverts the existing order and is not a random shuffle."
+        ],
+        "variants": [
+          "`list.stream().unordered().collect(Collectors.toList());` to randomize stream processing order.",
+          "`list.parallelStream().collect(Collectors.toList());` lets fork-join emit the elements in a random order.",
+          "`Collections.reverse(list);` flips the current order and is the library's random permutation of a list."
+        ]
       }
     ],
     "correct": [
@@ -3675,23 +7152,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Structured Logs: discrete, timestamped event records capturing contextual execution detail within a service."
+        "variants": [
+          "Structured Logs: discrete, timestamped event records capturing contextual execution detail within a service.",
+          "Structured logs are timestamped, discrete event records of contextual execution detail within a service.",
+          "A structured log is a timestamped, discrete event record of contextual execution detail in a service."
+        ]
       },
       {
         "id": "B",
-        "text": "Metrics: numerically measured aggregations (such as request rates, error counts, latency percentiles) over time."
+        "variants": [
+          "Metrics: numerically measured aggregations (such as request rates, error counts, latency percentiles) over time.",
+          "Metrics are numbers aggregated over time, such as request rates, error counts, and latency percentiles.",
+          "Request rates, error counts, and latency percentiles are numeric metric aggregations measured over time."
+        ]
       },
       {
         "id": "C",
-        "text": "Distributed Tracing: end-to-end request journeys tracked across network hops using shared correlation IDs."
+        "variants": [
+          "Distributed Tracing: end-to-end request journeys tracked across network hops using shared correlation IDs.",
+          "Distributed tracing follows a request end to end across network hops with a shared correlation ID.",
+          "A shared correlation ID lets distributed tracing track a request across network hops from end to end."
+        ]
       },
       {
         "id": "D",
-        "text": "Database Backups: automated point-in-time snapshots of relational storage disk volumes."
+        "reasons": [
+          "Database backups and disk snapshots are recovery copies, not one of the three observability telemetry types.",
+          "A health check is a liveness or readiness probe, not a pillar of telemetry next to logs, metrics, and traces.",
+          "A config map holds configuration such as a replica count and is not an observability telemetry type."
+        ],
+        "variants": [
+          "Database Backups: automated point-in-time snapshots of relational storage disk volumes.",
+          "Health checks are timed probes that restart a process whenever one request fails.",
+          "Config maps are mounted files that record the replica count a service is desired to run."
+        ]
       },
       {
         "id": "E",
-        "text": "Git Commit Diffs: source code revisions tracked in centralized version control repositories."
+        "reasons": [
+          "Git commit diffs are source-control history, not a telemetry signal from a running distributed system.",
+          "A heap dump is a one-off memory image, not a foundational telemetry type beside logs, metrics, and traces.",
+          "Feature flags change runtime behavior and are not one of the three observability data types."
+        ],
+        "variants": [
+          "Git Commit Diffs: source code revisions tracked in centralized version control repositories.",
+          "Heap dumps are full memory images captured so one service's object graph can be explained after the fact.",
+          "Feature flags are runtime toggles that record which code paths the current deployment has turned on."
+        ]
       }
     ],
     "correct": [
@@ -3709,19 +7216,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`varargs ` (variable arity is the default fallback for integer literals in Java expressions)."
+        "reasons": [
+          "Variable arity is not the overload selected for the literal `10`, and the program does not print `varargs `.",
+          "The literal is applicable without a cast, and the program does print a result.",
+          "Only one overload is invoked, so the call does not print two labels from both `test(long)` and `test(int...)`."
+        ],
+        "variants": [
+          "`varargs ` (variable arity is the default fallback for integer literals in Java expressions).",
+          "Nothing is printed, because the literal `10` matches none of the three overloads unless a cast is added.",
+          "Both `test(long)` and `test(int...)` are invoked, so this one call prints two labels."
+        ]
       },
       {
         "id": "B",
-        "text": "`boxed ` (autoboxing to `Integer` takes precedence over widening to primitive numeric types)."
+        "reasons": [
+          "Autoboxing to `Integer` does not take precedence over widening, so the call does not print `boxed `.",
+          "The literal is not both boxed and wrapped as a varargs array, and the output is not `boxed varargs `.",
+          "The compiler does not cast `10` to `int[]`, and this call does not throw `ClassCastException`."
+        ],
+        "variants": [
+          "`boxed ` (autoboxing to `Integer` takes precedence over widening to primitive numeric types).",
+          "The printed text is `boxed varargs ` because the literal is boxed and also passed as a varargs array.",
+          "The call throws `ClassCastException` because the compiler inserts a cast of the literal `10` to `int[]`."
+        ]
       },
       {
         "id": "C",
-        "text": "Compilation error due to ambiguity between the `test(long)` and `test(Integer)` method candidates."
+        "reasons": [
+          "`test(long)` and `test(Integer)` are not ambiguous for `10`, because widening is preferred and the code compiles.",
+          "`test(Integer)` and `test(int...)` are not an ambiguous pair that makes `test(10)` a compilation error.",
+          "Variable arity is not selected in the first phase ahead of widening, so the call does not print `varargs `."
+        ],
+        "variants": [
+          "Compilation error due to ambiguity between the `test(long)` and `test(Integer)` method candidates.",
+          "Compilation fails because `test(Integer)` and `test(int...)` are equally specific for the `int` literal `10`.",
+          "It prints `varargs ` because variable arity is chosen in the first overload phase, before widening or boxing."
+        ]
       },
       {
         "id": "D",
-        "text": "`primitive ` (primitive widening to `long` takes precedence over autoboxing and variable arity)."
+        "variants": [
+          "`primitive ` (primitive widening to `long` takes precedence over autoboxing and variable arity).",
+          "`primitive ` because widening the `int` to `long` outranks both autoboxing and variable arity.",
+          "The call prints `primitive `, since primitive widening to `long` outranks autoboxing and varargs."
+        ]
       }
     ],
     "correct": [
@@ -3737,19 +7275,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`s1 == s3` evaluates to `false` because concatenation involving non-final variables creates a new heap object at runtime."
+        "variants": [
+          "`s1 == s3` evaluates to `false` because concatenation involving non-final variables creates a new heap object at runtime.",
+          "`s1 == s3` is `false` because concatenation that uses a non-final variable creates a new heap object at runtime.",
+          "A non-final variable in the concatenation creates a new heap object at runtime, so `s1 == s3` evaluates to `false`."
+        ]
       },
       {
         "id": "B",
-        "text": "`s1 == s2` evaluates to `true` because compile-time constant expressions of string literals are interned in the pool."
+        "variants": [
+          "`s1 == s2` evaluates to `true` because compile-time constant expressions of string literals are interned in the pool.",
+          "`s1 == s2` is `true` because a compile-time constant expression of string literals is interned in the pool.",
+          "Compile-time constant string-literal expressions are interned in the pool, which makes `s1 == s2` evaluate to `true`."
+        ]
       },
       {
         "id": "C",
-        "text": "`s1 == s3` evaluates to `true` because the JVM automatically interns every concatenated string at runtime."
+        "reasons": [
+          "The JVM does not intern every string built by runtime concatenation, so `s1 == s3` is not `true`.",
+          "`s1.equals(s3)` is not `false`, because the characters match even though `part` is not a compile-time constant.",
+          "`\"Ja\" + part` is not a compile-time constant fold, so `s3 == s2` is not `true`."
+        ],
+        "variants": [
+          "`s1 == s3` evaluates to `true` because the JVM automatically interns every concatenated string at runtime.",
+          "`s1.equals(s3)` is `false` because `part` is not a compile-time constant, so the characters in the result differ.",
+          "`s3 == s2` is `true` because assigning `part` still allows the compiler to fold `\"Ja\" + part` at compile time."
+        ]
       },
       {
         "id": "D",
-        "text": "`s1 == s2` evaluates to `false` because the `+` operator always allocates a distinct heap object bypassing the pool."
+        "reasons": [
+          "The `+` operator does not always allocate a distinct object outside the pool, so `s1 == s2` is not `false` for this compile-time constant.",
+          "`s1 == s2` does not require a later `intern()` call, because the compile-time constant is already the pooled instance.",
+          "A string literal assigned to `part` is interned, so `part == \"va\"` is not `false`."
+        ],
+        "variants": [
+          "`s1 == s2` evaluates to `false` because the `+` operator always allocates a distinct heap object bypassing the pool.",
+          "`s1 == s2` is `true` only after an extra `s2.intern()` call, because the literal concatenation itself yields two objects.",
+          "`part == \"va\"` is `false` because a string literal stored in a variable is excluded from the intern pool."
+        ]
       }
     ],
     "correct": [
@@ -3766,23 +7330,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Static methods participate in dynamic runtime dispatch when invoked through subclass reference variables."
+        "reasons": [
+          "Static methods do not take part in dynamic dispatch, even when the call is written on a subclass reference.",
+          "A private superclass method is not dynamically dispatched to a subclass method that happens to share its signature.",
+          "Overload resolution uses the compile-time argument types and does not select a method from the runtime types the way overriding does."
+        ],
+        "variants": [
+          "Static methods participate in dynamic runtime dispatch when invoked through subclass reference variables.",
+          "A private superclass method is dispatched dynamically when a subclass declares a method with the same signature.",
+          "Overloaded methods are selected at runtime from the actual type of each argument, in the same way that overrides are."
+        ]
       },
       {
         "id": "B",
-        "text": "Instance methods are virtual and dispatch dynamically at runtime based on the actual object instance type."
+        "variants": [
+          "Instance methods are virtual and dispatch dynamically at runtime based on the actual object instance type.",
+          "Instance methods are virtual, so the actual type of the object selects the method at runtime.",
+          "The runtime type of the actual instance chooses the instance method, because those methods dispatch dynamically."
+        ]
       },
       {
         "id": "C",
-        "text": "Instance fields override superclass fields polymorphically when declared with identical identifiers."
+        "reasons": [
+          "Instance fields do not override superclass fields when the names match, because fields are hidden rather than polymorphic.",
+          "Static fields are not polymorphic and are not selected from the runtime type through a superclass reference.",
+          "A same-named field in a subclass does not remove the superclass field from the object layout."
+        ],
+        "variants": [
+          "Instance fields override superclass fields polymorphically when declared with identical identifiers.",
+          "Static fields are polymorphic and are read from the runtime type when the reference is typed as the superclass.",
+          "A subclass field of the same name replaces the superclass field, so the superclass field is dropped."
+        ]
       },
       {
         "id": "D",
-        "text": "Instance fields are shadowed rather than polymorphic and resolve at compile time based on the reference type."
+        "variants": [
+          "Instance fields are shadowed rather than polymorphic and resolve at compile time based on the reference type.",
+          "Instance fields are shadowed instead of polymorphic, and the reference type resolves them at compile time.",
+          "The compile-time reference type resolves instance fields, which are shadowed rather than selected polymorphically."
+        ]
       },
       {
         "id": "E",
-        "text": "Static methods are hidden rather than overridden and bind at compile time based on the declared reference type."
+        "variants": [
+          "Static methods are hidden rather than overridden and bind at compile time based on the declared reference type.",
+          "Static methods are hidden rather than overridden and are bound at compile time from the declared reference type.",
+          "Static methods bind from the declared reference type at compile time and are hidden, not overridden."
+        ]
       }
     ],
     "correct": [
@@ -3800,19 +7394,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`99` (a return statement inside a finally block overrides any prior return value or pending exception)."
+        "variants": [
+          "`99` (a return statement inside a finally block overrides any prior return value or pending exception).",
+          "It returns `99` because a `return` in `finally` overrides any earlier return value or a pending exception.",
+          "`99` is produced when `finally` returns, replacing a prior return value and any exception that is still pending."
+        ]
       },
       {
         "id": "B",
-        "text": "`5` (the initial return value from the try block is preserved and finally executes without mutation)."
+        "reasons": [
+          "A `return` inside `finally` replaces the `try` result, so `calculate()` yields `99` rather than keeping `5`.",
+          "The expression `10 / 2` is evaluated before `finally`, and that `return` does not substitute the dividend `10`.",
+          "The specification makes the `finally` return win, so the result is `99` on every compliant JVM."
+        ],
+        "variants": [
+          "`5` (the initial return value from the try block is preserved and finally executes without mutation).",
+          "`10` is returned because the `finally` return skips evaluating the division and yields the dividend unchanged.",
+          "The result is left unspecified, so one JVM may return the `try` value while another returns the `finally` value."
+        ]
       },
       {
         "id": "C",
-        "text": "`0` (the catch block fallback return value is chosen when finally blocks are declared with returns)."
+        "reasons": [
+          "No exception is thrown by `10 / 2`, and the `finally` return supplies `99` rather than the `catch` value `0`.",
+          "Returning from both `try` and `finally` is legal, and this call completes normally with `99`.",
+          "The division is fully evaluated, and the value returned by `finally` is `99`, not the divisor `2`."
+        ],
+        "variants": [
+          "`0` (the catch block fallback return value is chosen when finally blocks are declared with returns).",
+          "The call throws `IllegalStateException` because `try` and `finally` both try to complete the method abruptly.",
+          "The method returns `2` because a `finally` return keeps only the right-hand operand of the division."
+        ]
       },
       {
         "id": "D",
-        "text": "Compilation error because the compiler forbids declaring return statements inside a finally block."
+        "reasons": [
+          "A `return` inside `finally` is legal Java, so `FlowTest` compiles and `calculate()` returns `99`.",
+          "javac emits verifiable bytecode for this `finally` return, so loading the class does not raise `VerifyError`.",
+          "A method completes only once, and the single result delivered to the caller is the `finally` value `99`."
+        ],
+        "variants": [
+          "Compilation error because the compiler forbids declaring return statements inside a finally block.",
+          "Loading `FlowTest` fails with `VerifyError` because a `finally` return leaves the operand stack inconsistent.",
+          "The caller is resumed twice, first with the `try` result and then again with the `finally` result."
+        ]
       }
     ],
     "correct": [
@@ -3828,23 +7453,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Modules are built strictly in the order listed under `modules`, even when a later entry depends on one listed before it."
+        "reasons": [
+          "The reactor topologically orders modules so each project is built after the reactor projects it depends on, not strictly in `modules` listing order.",
+          "Dependency order is applied while the reactor schedules the build, and modules are not held unordered until `install`.",
+          "One reactor invocation builds the selected child modules together with the parent, without a mandatory second run."
+        ],
+        "variants": [
+          "Modules are built strictly in the order listed under `modules`, even when a later entry depends on one listed before it.",
+          "Independent modules always compile in parallel, and dependency order is applied only when the reactor reaches `install`.",
+          "A reactor build compiles the parent POM alone, then requires a second invocation before any child module is built."
+        ]
       },
       {
         "id": "B",
-        "text": "The reactor builds a module after the reactor projects it depends on, rather than only in POM listing order."
+        "variants": [
+          "The reactor builds a module after the reactor projects it depends on, rather than only in POM listing order.",
+          "Each module is built after the reactor projects it depends on, rather than only by its POM position.",
+          "Dependencies among reactor projects set build order, so a module is not ordered only by the POM listing."
+        ]
       },
       {
         "id": "C",
-        "text": "`mvn package -pl module-b -am` builds module-b and also the reactor projects that module-b depends on."
+        "variants": [
+          "`mvn package -pl module-b -am` builds module-b and also the reactor projects that module-b depends on.",
+          "`mvn package -pl module-b -am` builds `module-b` and also builds the reactor projects that `module-b` depends on.",
+          "Running `mvn package -pl module-b -am` produces module-b together with the reactor projects module-b depends on."
+        ]
       },
       {
         "id": "D",
-        "text": "`-pl` excludes the module you name, and `-am` turns the reactor off so only the parent POM is built."
+        "reasons": [
+          "`-pl` selects the projects you name, and `-am` also builds the reactor projects those selections depend on, rather than building only the parent.",
+          "`-am` adds the dependencies of the selected projects and still builds the selected module; dependents are requested with `-amd`.",
+          "`-pl` is a project selector on the command line, and `-am` does not replace the default lifecycle with the `site` lifecycle."
+        ],
+        "variants": [
+          "`-pl` excludes the module you name, and `-am` turns the reactor off so only the parent POM is built.",
+          "`-am` also builds every project that depends on the `-pl` selection, and it skips that named module.",
+          "`-pl` loads names from `settings.xml`, and `-am` switches the build to the `site` lifecycle."
+        ]
       },
       {
         "id": "E",
-        "text": "A module can use a sibling produced earlier in the same invocation, without a separate `mvn install` first."
+        "variants": [
+          "A module can use a sibling produced earlier in the same invocation, without a separate `mvn install` first.",
+          "In one reactor run, a module can use a sibling built earlier in that invocation, without a separate `mvn install`.",
+          "A sibling produced earlier in the same invocation is available to later modules, so you do not need a prior `mvn install`."
+        ]
       }
     ],
     "correct": [
@@ -3862,23 +7517,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The multi-catch parameter `e` must be explicitly declared `volatile` to allow multi-threaded exception inspection."
+        "reasons": [
+          "The multi-catch parameter is implicitly `final`, and nothing about it requires the modifier `volatile`.",
+          "The parameter `e` cannot be assigned at all, and the block does not need an assignment to know which type was caught.",
+          "The `|` list is catch syntax, not a requirement that the `try` body throw those types through the `||` operator."
+        ],
+        "variants": [
+          "The multi-catch parameter `e` must be explicitly declared `volatile` to allow multi-threaded exception inspection.",
+          "The body of a multi-catch must assign `e` so the block records which of the `|` alternatives was actually thrown.",
+          "A multi-catch is valid only when each alternative is thrown by a separate `try` statement combined with the `||` operator."
+        ]
       },
       {
         "id": "B",
-        "text": "The alternative exception types separated by `|` cannot have a subclass-superclass inheritance relationship."
+        "variants": [
+          "The alternative exception types separated by `|` cannot have a subclass-superclass inheritance relationship.",
+          "Types separated by `|` in one `catch` must not stand in a subclass-superclass relationship with each other.",
+          "No alternative joined by `|` may be a subclass or superclass of another in that same multi-catch."
+        ]
       },
       {
         "id": "C",
-        "text": "A single multi-catch block can handle multiple disjoint checked or unchecked exception types simultaneously."
+        "variants": [
+          "A single multi-catch block can handle multiple disjoint checked or unchecked exception types simultaneously.",
+          "One multi-catch block can handle several disjoint exception types at the same time, whether they are checked or unchecked.",
+          "Disjoint checked exceptions and unchecked exceptions can be handled together by the same multi-catch clause."
+        ]
       },
       {
         "id": "D",
-        "text": "The multi-catch exception parameter `e` is implicitly `final` and cannot be reassigned within the catch block."
+        "variants": [
+          "The multi-catch exception parameter `e` is implicitly `final` and cannot be reassigned within the catch block.",
+          "A multi-catch parameter `e` is implicitly `final`, so the `catch` body is not allowed to assign a new value to it.",
+          "Inside a multi-catch, `e` cannot be reassigned, because the language treats that parameter as implicitly `final`."
+        ]
       },
       {
         "id": "E",
-        "text": "Multi-catch blocks can only catch subclasses of `RuntimeException` and strictly reject all checked exception types."
+        "reasons": [
+          "A multi-catch may include checked exceptions such as `IOException` and is not limited to subclasses of `RuntimeException`.",
+          "Unchecked alternatives are allowed beside disjoint checked ones, so a `RuntimeException` subtype is not automatically illegal.",
+          "The `|` syntax accepts more than two disjoint types, so a third alternative is not a syntax error."
+        ],
+        "variants": [
+          "Multi-catch blocks can only catch subclasses of `RuntimeException` and strictly reject all checked exception types.",
+          "Every alternative in a multi-catch must be a checked exception, and listing a `RuntimeException` subtype fails to compile.",
+          "A multi-catch accepts at most two alternatives, so a third type joined with `|` is a syntax error."
+        ]
       }
     ],
     "correct": [
@@ -3896,19 +7581,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The conflict causes an immediate `ClassFormatError` when the compiled class bytecode is loaded by the class loader."
+        "reasons": [
+          "The clash is a compile-time conflict unless the class overrides the method, and loading a normally compiled class does not raise `ClassFormatError`.",
+          "The JVM does not choose a winning default method arbitrarily when the class is initialized.",
+          "The two default bodies are not both invoked, in `implements` order or otherwise, on each call."
+        ],
+        "variants": [
+          "The conflict causes an immediate `ClassFormatError` when the compiled class bytecode is loaded by the class loader.",
+          "On first initialization the JVM picks one default method at random and keeps that choice for the process lifetime.",
+          "Each call runs both default method bodies, following the order written in the `implements` clause."
+        ]
       },
       {
         "id": "B",
-        "text": "The compiler automatically selects the default method implementation from the interface listed first in the `implements` clause."
+        "reasons": [
+          "The compiler does not prefer the interface written first in `implements`; the class must override the conflicting method.",
+          "Classpath order does not select a default method, and the conflict is not resolved by compilation order.",
+          "A class may implement multiple interfaces that declare default methods, overriding only when those methods actually conflict."
+        ],
+        "variants": [
+          "The compiler automatically selects the default method implementation from the interface listed first in the `implements` clause.",
+          "The compiler keeps the default method from whichever interface shows up first on the full compilation classpath.",
+          "A class is forbidden from implementing two interfaces that declare any default methods, so one interface must be removed."
+        ]
       },
       {
         "id": "C",
-        "text": "Inside the overriding method, the class can explicitly choose an implementation via `InterfaceName.super.method()`."
+        "variants": [
+          "Inside the overriding method, the class can explicitly choose an implementation via `InterfaceName.super.method()`.",
+          "The overriding method can select one default implementation by invoking `InterfaceName.super.method()`.",
+          "From the override, the class may call the chosen interface default with `InterfaceName.super.method()`."
+        ]
       },
       {
         "id": "D",
-        "text": "The implementing class must explicitly override the conflicting method to resolve the inheritance ambiguity."
+        "variants": [
+          "The implementing class must explicitly override the conflicting method to resolve the inheritance ambiguity.",
+          "The class that implements both interfaces must override the conflicting method to clear the ambiguity.",
+          "Identical default methods stay ambiguous until the implementing class overrides that method."
+        ]
       }
     ],
     "correct": [
@@ -3925,19 +7636,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`new BigDecimal(0.1)` because passing a primitive double creates the most mathematically precise decimal instance."
+        "reasons": [
+          "`new BigDecimal(0.1)` captures the inexact binary `double` value, so it is not the most precise way to obtain the decimal `0.1`.",
+          "A `float` is still a binary floating-point value, and narrowing `0.1` to `float` does not produce an exact decimal.",
+          "`MathContext.UNLIMITED` keeps the exact binary expansion of the `double`, which is not the decimal `0.1`."
+        ],
+        "variants": [
+          "`new BigDecimal(0.1)` because passing a primitive double creates the most mathematically precise decimal instance.",
+          "`new BigDecimal(0.1f)` is exact because narrowing the literal to `float` removes the binary rounding still present in `double`.",
+          "`new BigDecimal(0.1, MathContext.UNLIMITED)` expands those exact `double` bits into the base-10 decimal value `0.1`."
+        ]
       },
       {
         "id": "B",
-        "text": "`BigDecimal.valueOf(0.1)` or `new BigDecimal(\"0.1\")` to avoid binary floating-point representation inaccuracies."
+        "variants": [
+          "`BigDecimal.valueOf(0.1)` or `new BigDecimal(\"0.1\")` to avoid binary floating-point representation inaccuracies.",
+          "Use `BigDecimal.valueOf(0.1)` or `new BigDecimal(\"0.1\")` to avoid the binary `double` representation.",
+          "Either `new BigDecimal(\"0.1\")` or `BigDecimal.valueOf(0.1)` sidesteps binary floating-point inaccuracy."
+        ]
       },
       {
         "id": "C",
-        "text": "`BigDecimal.fromDouble(0.1)` as the dedicated high-performance numerical factory method in `java.math`."
+        "reasons": [
+          "`BigDecimal` has no `fromDouble` factory; that call is not a method of `java.math.BigDecimal`.",
+          "`doubleToLongBits` yields the IEEE bit pattern, and `valueOf(long)` treats it as an integer, not as the decimal `0.1`.",
+          "`BigInteger` cannot parse a fractional token such as `0.1`, so this chain is not a valid precise conversion."
+        ],
+        "variants": [
+          "`BigDecimal.fromDouble(0.1)` as the dedicated high-performance numerical factory method in `java.math`.",
+          "`valueOf(Double.doubleToLongBits(0.1))` keeps `0.1` by reading those bits as a decimal magnitude.",
+          "`new BigInteger(\"0.1\").toBigDecimal()` keeps the fractional digits by parsing them as an integer first."
+        ]
       },
       {
         "id": "D",
-        "text": "`(BigDecimal) 0.1` using primitive decimal casting to preserve full floating-point register precision."
+        "reasons": [
+          "A `double` cannot be cast to `BigDecimal`, and there is no primitive decimal cast that preserves a floating-point register.",
+          "Java does not implicitly convert a `double` literal to `BigDecimal`, so that assignment does not compile.",
+          "`String.valueOf(0.1)` is the text `0.1`, which `BigInteger` rejects, so the chain does not preserve a decimal value."
+        ],
+        "variants": [
+          "`(BigDecimal) 0.1` using primitive decimal casting to preserve full floating-point register precision.",
+          "`BigDecimal d = 0.1;` is legal because Java boxes a floating-point literal into `java.math.BigDecimal`.",
+          "`String.valueOf(0.1)` fed to `new BigInteger` and then `new BigDecimal(BigInteger)` retains every decimal digit."
+        ]
       }
     ],
     "correct": [
@@ -3953,19 +7695,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Incidental leading white space common to all lines and the closing delimiter is automatically stripped by the compiler."
+        "variants": [
+          "Incidental leading white space common to all lines and the closing delimiter is automatically stripped by the compiler.",
+          "The compiler removes incidental leading white space that is shared by every content line and by the closing delimiter.",
+          "Leading white space common to all lines, including the closing delimiter's line, is stripped automatically by the compiler."
+        ]
       },
       {
         "id": "B",
-        "text": "Escape sequences like `\\n` and `\\t` are prohibited inside text blocks and cause compile-time parsing errors."
+        "reasons": [
+          "Escapes such as `\\n` and `\\t` are allowed in text blocks and do not cause a compile-time parsing error.",
+          "The escape `\\n` in a text block becomes a newline character, not a backslash followed by the letter `n`.",
+          "Quotation marks are legal content in a text block and do not need to be forbidden as compile-time errors."
+        ],
+        "variants": [
+          "Escape sequences like `\\n` and `\\t` are prohibited inside text blocks and cause compile-time parsing errors.",
+          "Inside a text block the sequence `\\n` is stored as a backslash plus `n`, and only a real line break becomes a newline.",
+          "A text block rejects ordinary quotation marks, so any `\"` character in the content is a compile-time error."
+        ]
       },
       {
         "id": "C",
-        "text": "Placing the closing `\"\"\"` delimiter on its own line preserves the trailing newline character of the preceding text line."
+        "variants": [
+          "Placing the closing `\"\"\"` delimiter on its own line preserves the trailing newline character of the preceding text line.",
+          "If the closing `\"\"\"` is placed on its own line, the newline ending the preceding text line is preserved.",
+          "A closing `\"\"\"` delimiter alone on the next line keeps the trailing newline of the text line before it."
+        ]
       },
       {
         "id": "D",
-        "text": "Text blocks require the opening delimiter `\"\"\"` to be immediately followed by characters on the exact same line."
+        "reasons": [
+          "The opening `\"\"\"` must be followed by a line terminator, so content is not allowed on that same line.",
+          "Text blocks are multiline by design, and a line break between the delimiters is required rather than forbidden.",
+          "Incidental indentation is determined with the closing delimiter, and the opening delimiter's column is not copied into the string."
+        ],
+        "variants": [
+          "Text blocks require the opening delimiter `\"\"\"` to be immediately followed by characters on the exact same line.",
+          "A text block must occupy a single source line, so a line break between the two `\"\"\"` delimiters fails to compile.",
+          "Indentation of the opening `\"\"\"` is copied into the result, and the closing delimiter's column is ignored."
+        ]
       }
     ],
     "correct": [
@@ -3982,19 +7750,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The compiler requires an explicit `(List<Object>)` cast to convert invariant collections into covariant collections."
+        "reasons": [
+          "The assignment is illegal because generics are invariant, and a cast would not turn `ArrayList<String>` into a covariant `List<Object>`.",
+          "`ArrayList<String>` is a legal parameterization, and the failure is invariance, not a missing wildcard argument.",
+          "Generic types are invariant, unlike arrays, so this error is not a compile-time array-store check."
+        ],
+        "variants": [
+          "The compiler requires an explicit `(List<Object>)` cast to convert invariant collections into covariant collections.",
+          "The assignment fails because `ArrayList` must be given a wildcard argument inside the Java source, and `String` is not a wildcard.",
+          "Generics are covariant in the same way as arrays, so the compiler rejects the line as an illegal array-store check."
+        ]
       },
       {
         "id": "B",
-        "text": "`Object` is a non-generic class that cannot be used as an upper bound for parameterized collections."
+        "reasons": [
+          "`Object` is a valid type argument and a valid upper bound; the failure comes from generic invariance, not from `Object` being non-generic.",
+          "`ArrayList` is parameterized with reference types, and `String` is a legal type argument while `char` is not.",
+          "Type arguments are legal on declarations such as `List<Object>` even though erasure removes them at runtime."
+        ],
+        "variants": [
+          "`Object` is a non-generic class that cannot be used as an upper bound for parameterized collections.",
+          "`ArrayList` allows only primitive type arguments, so `String` must become `char` for the line to compile.",
+          "The variable must be a raw `List` because type arguments are erased and cannot appear on a local declaration."
+        ]
       },
       {
         "id": "C",
-        "text": "Java generics are invariant; allowing the assignment would permit inserting non-String objects and break type safety."
+        "variants": [
+          "Java generics are invariant; allowing the assignment would permit inserting non-String objects and break type safety.",
+          "Generics in Java are invariant, so this assignment is rejected because it would allow non-`String` inserts.",
+          "Because generics are invariant, this assignment would allow non-`String` inserts and would break type safety."
+        ]
       },
       {
         "id": "D",
-        "text": "`ArrayList` does not implement the `List` interface when parameterized with non-primitive reference types."
+        "reasons": [
+          "`ArrayList` implements `List` for reference type arguments, including `String`, so the failure is not a missing `List` implementation.",
+          "Explicit type arguments on `new ArrayList<String>()` remain legal, and the diamond operator is not required.",
+          "An empty constructor argument list does not make `new ArrayList<String>()` a raw type."
+        ],
+        "variants": [
+          "`ArrayList` does not implement the `List` interface when parameterized with non-primitive reference types.",
+          "The line fails because the diamond is mandatory, and an explicit `new ArrayList<String>()` is no longer legal Java.",
+          "`new ArrayList<String>()` returns a raw list whenever the constructor is invoked with an empty argument list."
+        ]
       }
     ],
     "correct": [
@@ -4010,23 +7809,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "You cannot add elements (except literal `null`) into a collection parameterized with `<? extends T>` because the exact subtype is unknown."
+        "variants": [
+          "You cannot add elements (except literal `null`) into a collection parameterized with `<? extends T>` because the exact subtype is unknown.",
+          "Apart from the literal `null`, elements cannot be added to a `<? extends T>` collection, because the exact subtype is unknown.",
+          "A `<? extends T>` collection rejects every inserted element except the literal `null`, because the exact subtype is unknown."
+        ]
       },
       {
         "id": "B",
-        "text": "Reading from a `<? super T>` collection returns strongly typed instances of `T` without requiring casts to `Object`."
+        "reasons": [
+          "A `<? super T>` collection is read as `Object`, not as a strongly typed `T` that needs no cast.",
+          "A cast from the `Object` you read out of `<? super T>` to `T` is unchecked and is not guaranteed safe.",
+          "You may add `T` and its subtypes to `<? super T>`, and a supertype of `T` is not a safe insert."
+        ],
+        "variants": [
+          "Reading from a `<? super T>` collection returns strongly typed instances of `T` without requiring casts to `Object`.",
+          "A value read from `<? super T>` may be assigned to `T` after an explicit cast, and that cast is guaranteed to succeed.",
+          "Inserting `T` into a `<? super T>` collection is a compile error, while inserting any proper supertype of `T` is statically safe."
+        ]
       },
       {
         "id": "C",
-        "text": "A wildcard `<? super T>` acts as a Consumer: you can safely add instances of type `T` (or its subtypes) into the collection."
+        "variants": [
+          "A wildcard `<? super T>` acts as a Consumer: you can safely add instances of type `T` (or its subtypes) into the collection.",
+          "As a consumer, a `<? super T>` collection lets you safely add an instance of `T` or of any subtype of `T`.",
+          "You can safely insert an instance of `T`, or of a subtype of `T`, into a collection declared as `<? super T>`."
+        ]
       },
       {
         "id": "D",
-        "text": "A collection declared as `<? extends T>` can be both read from and added to with complete compile-time type safety."
+        "reasons": [
+          "From `<? extends T>` you can read values as `T`, but you cannot add elements other than `null` with static safety.",
+          "You cannot add `T` to `<? extends T>`, and reads are not limited to `size()`.",
+          "The two wildcards are not symmetric: `extends` is for reading as `T`, and `super` is for adding `T`."
+        ],
+        "variants": [
+          "A collection declared as `<? extends T>` can be both read from and added to with complete compile-time type safety.",
+          "A `<? extends T>` collection accepts inserts of `T` and allows no read other than calling `size()`.",
+          "`<? extends T>` and `<? super T>` permit the same set of reads and writes because wildcards are invariant."
+        ]
       },
       {
         "id": "E",
-        "text": "A wildcard `<? extends T>` acts as a Producer: you can safely read elements as type `T` from the collection."
+        "variants": [
+          "A wildcard `<? extends T>` acts as a Producer: you can safely read elements as type `T` from the collection.",
+          "The `<? extends T>` wildcard acts as a producer, so you can safely read its elements as type `T`.",
+          "Elements can be read safely as `T` from a `<? extends T>` collection, the producer form of that wildcard."
+        ]
       }
     ],
     "correct": [
@@ -4044,19 +7873,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`20 30` (`computeIfAbsent` overwrites previous entries regardless of whether the existing mapped value is null or non-null)."
+        "reasons": [
+          "`computeIfAbsent` does not replace a non-null mapping, so after `putIfAbsent` stores `10` the printout is `10 30`, not `20 30`.",
+          "`computeIfAbsent` leaves the non-null value `10` in place and does insert key `B`, so the line is not `20 null`.",
+          "Each `computeIfAbsent` call considers only the key it is given, and it does not write one result under every existing key."
+        ],
+        "variants": [
+          "`20 30` (`computeIfAbsent` overwrites previous entries regardless of whether the existing mapped value is null or non-null).",
+          "`20 null` is printed because `computeIfAbsent` replaces the mapping of `A`, even when it is non-null, and never inserts an absent key.",
+          "`30 30` is printed because each `computeIfAbsent` call stores its computed result under every key already present in the map."
+        ]
       },
       {
         "id": "B",
-        "text": "`null null` (`HashMap` rejects `null` values by throwing a silent runtime exception and discarding both keys)."
+        "reasons": [
+          "`HashMap` accepts a null value, and this snippet does not throw or discard the keys, so the printout is not `null null`.",
+          "String conversion of a null reference yields the text `null` and does not unbox the `Integer` before the `+` with `\" \"`.",
+          "`putIfAbsent` treats a null mapping as absent and stores `10`, so the value is not kept as zero."
+        ],
+        "variants": [
+          "`null null` (`HashMap` rejects `null` values by throwing a silent runtime exception and discarding both keys).",
+          "Concatenation throws `NullPointerException` because a null `Integer` from `get` is unboxed before the space.",
+          "`0 30` is printed because a null `Integer` counts as zero and `putIfAbsent` refuses to replace a numeric zero."
+        ]
       },
       {
         "id": "C",
-        "text": "`null 30` (`putIfAbsent` detects that key 'A' is already present in the map and leaves the `null` value unchanged)."
+        "reasons": [
+          "`putIfAbsent` treats a null mapping as absent and replaces it, so key `A` does not stay `null` while `B` becomes `30`.",
+          "`putIfAbsent` updates key `A`, and `computeIfAbsent` inserts missing key `B`, so the output is not `null 10`.",
+          "`computeIfAbsent` is specified to treat a null mapping as absent and does not throw `IllegalArgumentException` for it."
+        ],
+        "variants": [
+          "`null 30` (`putIfAbsent` detects that key 'A' is already present in the map and leaves the `null` value unchanged).",
+          "`null 10` is printed because `putIfAbsent` writes `10` under `B` and `computeIfAbsent` skips every key that is already present.",
+          "`computeIfAbsent` throws `IllegalArgumentException` when it observes that the current mapped value is null."
+        ]
       },
       {
         "id": "D",
-        "text": "`10 30` (both `putIfAbsent` and `computeIfAbsent` treat keys mapped to `null` as absent and compute/store values)."
+        "variants": [
+          "`10 30` (both `putIfAbsent` and `computeIfAbsent` treat keys mapped to `null` as absent and compute/store values).",
+          "`10 30`: both `putIfAbsent` and `computeIfAbsent` treat a `null` mapping as absent and then store a value.",
+          "Output `10 30`, since `putIfAbsent` and `computeIfAbsent` treat a null mapping as absent and store values."
+        ]
       }
     ],
     "correct": [
@@ -4072,19 +7932,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Hello World` (the list structure itself is unmodifiable, but the objects referenced within it remain mutable)."
+        "variants": [
+          "`Hello World` (the list structure itself is unmodifiable, but the objects referenced within it remain mutable).",
+          "`Hello World` prints because `List.of` freezes the list structure while the referenced builder stays mutable.",
+          "`List.of` cannot gain or lose elements, but `sb` stays mutable, so the element prints as `Hello World`."
+        ]
       },
       {
         "id": "B",
-        "text": "Compilation error because `List.of` rejects mutable argument types such as `StringBuilder` at compile time."
+        "reasons": [
+          "`List.of` accepts a `StringBuilder` argument, so this snippet compiles and is not rejected for using a mutable type.",
+          "`List.of` allows a `StringBuilder` element and does not throw `IllegalArgumentException` for that type.",
+          "`List.of` returns a `List`, and printing the element shows the builder contents rather than a wrapper type name."
+        ],
+        "variants": [
+          "Compilation error because `List.of` rejects mutable argument types such as `StringBuilder` at compile time.",
+          "It throws `IllegalArgumentException` because `List.of` rejects `StringBuilder` and accepts only `String`.",
+          "`List.of` returns an immutable `String`, so the print shows that wrapper type's name instead of the builder text."
+        ]
       },
       {
         "id": "C",
-        "text": "Throws `UnsupportedOperationException` on `sb.append()` because `List.of` deeply freezes all contained objects."
+        "reasons": [
+          "`List.of` rejects structural modification of the list, but it does not freeze `sb`, so `append` does not throw `UnsupportedOperationException`.",
+          "`get` on this list returns the stored builder and does not throw `UnsupportedOperationException`.",
+          "`sb.append` updates the stored builder and does not throw `IllegalStateException` just because `List.of` holds that builder."
+        ],
+        "variants": [
+          "Throws `UnsupportedOperationException` on `sb.append()` because `List.of` deeply freezes all contained objects.",
+          "`list.get(0)` throws `UnsupportedOperationException` because `List.of` freezes reads of elements as well as writes.",
+          "`sb.append` throws `IllegalStateException` because any builder retained by `List.of` is no longer allowed to change."
+        ]
       },
       {
         "id": "D",
-        "text": "`Hello` because `List.of` automatically creates an isolated defensive deep clone of all constructor arguments."
+        "reasons": [
+          "`List.of` stores the reference it is given and does not deep-clone `sb`, so the append is visible as `Hello World`.",
+          "The same `StringBuilder` instance is stored, including the characters `Hello`, and `append` adds ` World`.",
+          "`List.of` does not clone its arguments, so a missing `clone` implementation is not thrown as `CloneNotSupportedException`."
+        ],
+        "variants": [
+          "`Hello` because `List.of` automatically creates an isolated defensive deep clone of all constructor arguments.",
+          "It prints an empty builder because `List.of` stores a new `StringBuilder` and drops the argument's text.",
+          "`get(0)` throws `CloneNotSupportedException` because `List.of` deep-copies arguments and `StringBuilder` is not `Cloneable`."
+        ]
       }
     ],
     "correct": [
@@ -4100,19 +7991,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A runtime `IllegalStateException` is thrown because the stream pipeline was discarded without calling `close()`."
+        "reasons": [
+          "Discarding a stream without `close()` does not throw `IllegalStateException`; the pipeline simply is not run.",
+          "`filter` is an intermediate operation, and the absence of a `Collector` does not make it throw `IllegalStateException`.",
+          "`List.of(...).stream().filter(...)` is legal, and this pipeline does not throw `UnsupportedOperationException`."
+        ],
+        "variants": [
+          "A runtime `IllegalStateException` is thrown because the stream pipeline was discarded without calling `close()`.",
+          "`filter` throws `IllegalStateException` because it is a terminal operation and this pipeline supplies no `Collector`.",
+          "The pipeline throws `UnsupportedOperationException` because a stream from `List.of` cannot be filtered."
+        ]
       },
       {
         "id": "B",
-        "text": "Nothing is printed (streams are lazy; intermediate operations like `filter` do not execute without a terminal operation)."
+        "variants": [
+          "Nothing is printed (streams are lazy; intermediate operations like `filter` do not execute without a terminal operation).",
+          "Nothing is printed, because streams are lazy and `filter` does not run unless a terminal operation requests elements.",
+          "No characters are printed: without a terminal operation, an intermediate operation such as `filter` is not executed."
+        ]
       },
       {
         "id": "C",
-        "text": "`alpha bravo charlie ` (all stream intermediate operations evaluate immediately upon invocation)."
+        "reasons": [
+          "The `filter` lambda does not run at all until a terminal operation is applied, so the three names are not printed immediately.",
+          "There is no terminal operation, so evaluation does not stop after `alpha` or print that prefix.",
+          "Without a terminal operation the pipeline does not skip ahead to `bravo` and `charlie` and print them."
+        ],
+        "variants": [
+          "`alpha bravo charlie ` (all stream intermediate operations evaluate immediately upon invocation).",
+          "`alpha ` is printed because `filter` evaluates elements only until the predicate returns false.",
+          "`bravo charlie ` is printed because an intermediate operation skips the first element and runs immediately."
+        ]
       },
       {
         "id": "D",
-        "text": "`charlie ` (only stream elements satisfying the predicate filter are evaluated and printed)."
+        "reasons": [
+          "Nothing is printed, because `filter` is not executed and matching elements such as `charlie` are not selected for output.",
+          "The pipeline has no terminal operation, so it does not print `alpha bravo ` and then stop.",
+          "`filter` does not sample the middle element, and `bravo ` is not printed in the absence of a terminal operation."
+        ],
+        "variants": [
+          "`charlie ` (only stream elements satisfying the predicate filter are evaluated and printed).",
+          "`alpha bravo ` is printed because evaluation stops after an element longer than `5` is seen.",
+          "`bravo ` is printed because, with no terminal operation, `filter` samples only the middle element."
+        ]
       }
     ],
     "correct": [
@@ -4128,19 +8050,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The code fails to compile because the `Collectors.toMap()` factory method strictly requires three arguments."
+        "reasons": [
+          "The two-argument `Collectors.toMap` overload is legal, so this call does not fail compilation for needing a third argument.",
+          "Both the key mapper and the value mapper are applied, and the values are the strings, not copies of the keys.",
+          "`char` is boxed to `Character`, which is a legal key type for `Map<Character, String>`."
+        ],
+        "variants": [
+          "The code fails to compile because the `Collectors.toMap()` factory method strictly requires three arguments.",
+          "The two-argument `toMap` ignores the value mapper, so each map value is a copy of that entry's key.",
+          "The code fails to compile because `charAt(0)` returns a primitive `char`, which cannot be a generic `Map` key."
+        ]
       },
       {
         "id": "B",
-        "text": "The map stores both values within an internal collision linked list under key `'a'` without throwing an error."
+        "reasons": [
+          "`toMap` does not keep both strings in a collision chain under `'a'`; a duplicate key fails the collection.",
+          "The duplicate key `'a'` is not resolved by keeping `apple` and discarding `apricot`.",
+          "The two strings are not concatenated into one map value under `'a'`."
+        ],
+        "variants": [
+          "The map stores both values within an internal collision linked list under key `'a'` without throwing an error.",
+          "The collector keeps `apple` under key `'a'` and silently drops `apricot` without throwing an exception.",
+          "Under the shared key `'a'`, the stored value is the concatenation `appleapricot` and nothing else."
+        ]
       },
       {
         "id": "C",
-        "text": "An `IllegalStateException` is thrown at runtime because both 'apple' and 'apricot' generate the identical key `'a'`."
+        "variants": [
+          "An `IllegalStateException` is thrown at runtime because both 'apple' and 'apricot' generate the identical key `'a'`.",
+          "Runtime execution throws `IllegalStateException` because `apple` and `apricot` both produce the key `'a'`.",
+          "Because `apple` and `apricot` share the key `'a'`, collecting the stream throws `IllegalStateException` at runtime."
+        ]
       },
       {
         "id": "D",
-        "text": "The second value ('apricot') silently overwrites the first value ('apple') in the resulting map."
+        "reasons": [
+          "Without a merge function, `toMap` throws `IllegalStateException` on the duplicate key `'a'` instead of letting `apricot` overwrite `apple`.",
+          "Elements that share a first character are not all discarded, and `banana` is not the sole surviving entry.",
+          "The collector does not store an `Optional` under `'a'` when two strings share that key."
+        ],
+        "variants": [
+          "The second value ('apricot') silently overwrites the first value ('apple') in the resulting map.",
+          "Only `banana` is retained, because `toMap` drops every key that another element would also produce.",
+          "The duplicate is wrapped, and key `'a'` maps to `Optional.of(\"apricot\")` after `apple` is replaced."
+        ]
       }
     ],
     "correct": [
@@ -4156,19 +8109,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`orElseGet` throws `NullPointerException` if the `Optional` contains a value; `orElse` handles present values safely."
+        "reasons": [
+          "`orElseGet` does not throw `NullPointerException` merely because the `Optional` contains a value, and `orElse` is not the only safe method for a present value.",
+          "A present `Optional` makes `orElse` return that value, and it does not throw `NoSuchElementException`.",
+          "`computeDefault()` is not required to accept `\"Existing\"`, and neither call throws `NullPointerException` for that reason."
+        ],
+        "variants": [
+          "`orElseGet` throws `NullPointerException` if the `Optional` contains a value; `orElse` handles present values safely.",
+          "`orElse` throws `NoSuchElementException` when the `Optional` is present, while `orElseGet` still calls the supplier every time.",
+          "Both calls throw `NullPointerException` because the stored value is never passed as an argument to `computeDefault()`."
+        ]
       },
       {
         "id": "B",
-        "text": "`orElse` can only accept primitive integer constants; `orElseGet` accepts arbitrary generic reference types."
+        "reasons": [
+          "`orElse` accepts a value of the optional's type, and `orElseGet` accepts a `Supplier`, not a split between primitive constants and generic references.",
+          "`orElse` takes the fallback value itself, and `orElseGet` is the method that takes a `Supplier`.",
+          "`Optional<String>` provides both `orElse` and `orElseGet`; `orElseGet` is not limited to `OptionalInt`."
+        ],
+        "variants": [
+          "`orElse` can only accept primitive integer constants; `orElseGet` accepts arbitrary generic reference types.",
+          "`orElse` accepts a `Supplier`, whereas `orElseGet` accepts only a `String` that the caller has already computed.",
+          "`orElseGet` is provided only by `OptionalInt`, while `Optional<String>` offers `orElse` and not `orElseGet`."
+        ]
       },
       {
         "id": "C",
-        "text": "Both methods evaluate `computeDefault()` lazily on demand only when the `Optional` is determined to be empty."
+        "reasons": [
+          "`orElse` evaluates `computeDefault()` immediately even though the `Optional` already holds `Existing`, so the two calls are not both lazy.",
+          "`orElse` still evaluates its argument when the `Optional` is present, so it is not true that neither call invokes `computeDefault()`.",
+          "`orElseGet` skips the lambda when a value is present, and `orElse` does not wait until the `Optional` is empty."
+        ],
+        "variants": [
+          "Both methods evaluate `computeDefault()` lazily on demand only when the `Optional` is determined to be empty.",
+          "Neither call invokes `computeDefault()`, because a non-empty `Optional` turns off both fallback paths completely.",
+          "`orElse` runs `computeDefault()` only if empty, while `orElseGet` runs it even when a value is present."
+        ]
       },
       {
         "id": "D",
-        "text": "`orElse` evaluates its argument eagerly even if value is present; `orElseGet` evaluates its lambda lazily only if empty."
+        "variants": [
+          "`orElse` evaluates its argument eagerly even if value is present; `orElseGet` evaluates its lambda lazily only if empty.",
+          "`orElse` evaluates its argument immediately; `orElseGet` runs its lambda only when the `Optional` is empty.",
+          "When a value is present, `orElse` still evaluates its argument, while `orElseGet` runs its lambda only if empty."
+        ]
       }
     ],
     "correct": [
@@ -4184,23 +8168,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Records permit declaring abstract instance methods to be implemented by extending subclass declarations."
+        "reasons": [
+          "A record is implicitly `final`, cannot be extended, and cannot declare abstract instance methods for subclasses to implement.",
+          "A record already extends `java.lang.Record` and cannot name another superclass, even one that has no instance fields.",
+          "Record methods are not implicitly `abstract`, and records are already implicitly `final` so they can be instantiated directly."
+        ],
+        "variants": [
+          "Records permit declaring abstract instance methods to be implemented by extending subclass declarations.",
+          "A record may extend one class other than `java.lang.Record` when that superclass declares no instance fields.",
+          "Record methods are implicitly `abstract` unless the record is `final`, which the language forbids."
+        ]
       },
       {
         "id": "B",
-        "text": "A compact constructor in a record allows parameter normalization without repeating explicit `this.x = x` assignments."
+        "variants": [
+          "A compact constructor in a record allows parameter normalization without repeating explicit `this.x = x` assignments.",
+          "A compact constructor can normalize the record parameters without writing the assignments `this.x = x` explicitly.",
+          "Inside a compact constructor you normalize parameters, and you do not repeat the explicit assignments `this.x = x`."
+        ]
       },
       {
         "id": "C",
-        "text": "Record instance fields can be declared non-final to allow mutating record state through JavaBeans setter methods."
+        "reasons": [
+          "Record components are implicitly `private final` and are not mutable JavaBeans properties with setters.",
+          "Component accessors are public, so another package does not need reflection to read them.",
+          "A component remains a constructor parameter even if it is `transient`, and callers do not assign it later through a setter."
+        ],
+        "variants": [
+          "Record instance fields can be declared non-final to allow mutating record state through JavaBeans setter methods.",
+          "The generated accessors are package-private, so other packages have to use reflection in order to read the component state.",
+          "A `transient` component is omitted from the generated constructor, leaving the caller to assign that component afterward."
+        ]
       },
       {
         "id": "D",
-        "text": "A record cannot extend any other class because it implicitly extends `java.lang.Record`, but it can implement interfaces."
+        "variants": [
+          "A record cannot extend any other class because it implicitly extends `java.lang.Record`, but it can implement interfaces.",
+          "A record implicitly extends `java.lang.Record`, so it cannot extend any other class, but it is allowed to implement interfaces.",
+          "Because the superclass is already `java.lang.Record`, a record cannot extend another class, although it can implement interfaces."
+        ]
       },
       {
         "id": "E",
-        "text": "Records are shallowly immutable data carriers whose component fields are implicitly declared `private final`."
+        "variants": [
+          "Records are shallowly immutable data carriers whose component fields are implicitly declared `private final`.",
+          "A record is a shallowly immutable data carrier whose components are implicitly `private final`.",
+          "Component fields are implicitly `private final`, and the record is only a shallowly immutable data carrier."
+        ]
       }
     ],
     "correct": [
@@ -4218,23 +8232,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Every permitted subclass must explicitly declare an inheritance modifier: `final`, `sealed`, or `non-sealed`."
+        "variants": [
+          "Every permitted subclass must explicitly declare an inheritance modifier: `final`, `sealed`, or `non-sealed`.",
+          "Each permitted subclass must declare an inheritance modifier of `final`, `sealed`, or `non-sealed`.",
+          "A permitted subclass must declare explicitly whether it is `final`, `sealed`, or `non-sealed`."
+        ]
       },
       {
         "id": "B",
-        "text": "A sealed class restricts which subtypes may extend it using the `permits` clause (or same-file declarations)."
+        "variants": [
+          "A sealed class restricts which subtypes may extend it using the `permits` clause (or same-file declarations).",
+          "A sealed class limits which subtypes may extend it, using a `permits` clause or same-file declarations.",
+          "Subtypes of a sealed class are restricted by the `permits` clause, unless they are declared in the same source file."
+        ]
       },
       {
         "id": "C",
-        "text": "All permitted subclasses must automatically be declared `sealed` to enforce infinite sealing across the hierarchy."
+        "reasons": [
+          "A permitted subclass may be `final`, `sealed`, or `non-sealed`, and it is not required to be `sealed` all the way down.",
+          "`final` and `sealed` are legal choices for a permitted subclass, so `non-sealed` is not the only allowed modifier.",
+          "The subclass must explicitly declare `final`, `sealed`, or `non-sealed`; that choice is not inherited for it."
+        ],
+        "variants": [
+          "All permitted subclasses must automatically be declared `sealed` to enforce infinite sealing across the hierarchy.",
+          "Every permitted subclass must be `non-sealed`, and declaring it `final` or `sealed` is a compile-time error.",
+          "A permitted subclass may omit `final`, `sealed`, and `non-sealed` because that modifier is inherited automatically."
+        ]
       },
       {
         "id": "D",
-        "text": "The `permits` clause allows any external library class in any package to extend the sealed class without restriction."
+        "reasons": [
+          "The `permits` clause names the allowed subtypes and does not open the sealed type to arbitrary classes in other packages.",
+          "When `permits` is omitted, only subtypes declared in the same compilation unit are allowed, not every class in the module.",
+          "A subtype must be permitted, and declaring it `non-sealed` does not admit a class left off the `permits` list."
+        ],
+        "variants": [
+          "The `permits` clause allows any external library class in any package to extend the sealed class without restriction.",
+          "Omitting the `permits` clause allows every class in the same module to extend the sealed type, with no further limit.",
+          "A class that is absent from `permits` may still extend the sealed type when that class itself is declared `non-sealed`."
+        ]
       },
       {
         "id": "E",
-        "text": "All permitted subclasses must belong to the exact same named module (or same package if in an unnamed module)."
+        "variants": [
+          "All permitted subclasses must belong to the exact same named module (or same package if in an unnamed module).",
+          "Every permitted subclass must sit in the same named module, or in the same package when the module is unnamed.",
+          "Permitted subclasses share the sealed type's named module, or its package if both types are in an unnamed module."
+        ]
       }
     ],
     "correct": [
@@ -4252,23 +8296,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`verify` replaces `test`, so a `verify` build skips the unit tests and runs only the integration tests."
+        "reasons": [
+          "`verify` does not replace `test`; a build that reaches `verify` still runs the earlier `test` phase and its unit tests.",
+          "`verify` comes after `package` and `test`, and it does not run integration tests before `compile`.",
+          "`test` and `verify` are phases of the default lifecycle, and `mvn verify` still runs `package`."
+        ],
+        "variants": [
+          "`verify` replaces `test`, so a `verify` build skips the unit tests and runs only the integration tests.",
+          "`verify` is bound before `compile`, so integration tests run on class files left from the previous build.",
+          "`test` and `verify` are plugin goals outside the lifecycle, so neither invocation ever executes `package`."
+        ]
       },
       {
         "id": "B",
-        "text": "`test` runs the unit tests, usually through Surefire, and that phase comes before `package`."
+        "variants": [
+          "`test` runs the unit tests, usually through Surefire, and that phase comes before `package`.",
+          "Unit tests run in `test`, usually via Surefire, and that phase precedes `package`.",
+          "Unit tests run during `test`, typically via Surefire, and this phase precedes `package`."
+        ]
       },
       {
         "id": "C",
-        "text": "`verify` comes after `package` and is the usual place for integration tests, such as Failsafe, on the built artifact."
+        "variants": [
+          "`verify` comes after `package` and is the usual place for integration tests, such as Failsafe, on the built artifact.",
+          "`verify` comes after `package`, and integration tests such as Failsafe normally run there against the built artifact.",
+          "Integration tests, for example Failsafe, usually belong in `verify`, which follows `package` and exercises the built artifact."
+        ]
       },
       {
         "id": "D",
-        "text": "`test` runs after `package` and executes the unit tests from inside the jar that was just built."
+        "reasons": [
+          "`test` runs before `package`, and the unit tests execute from `target/classes` rather than from inside the jar.",
+          "Unit tests are bound to `test`, which is earlier than `install`, and they do not load the installed jar.",
+          "`package` produces the artifact after `test`, and Surefire is not launched by the `package` phase."
+        ],
+        "variants": [
+          "`test` runs after `package` and executes the unit tests from inside the jar that was just built.",
+          "Unit tests run in `install`, loading the local-repository jar rather than classes from `target/classes`.",
+          "The `test` phase writes the jar, and the `package` phase is what actually launches Surefire."
+        ]
       },
       {
         "id": "E",
-        "text": "`mvn verify` still runs the earlier phases, so unit tests run before packaging and before integration tests."
+        "variants": [
+          "`mvn verify` still runs the earlier phases, so unit tests run before packaging and before integration tests.",
+          "`mvn verify` still executes the earlier phases, so unit tests run before packaging and before integration tests.",
+          "Invoking `mvn verify` includes the preceding phases: unit tests happen before `package` and before integration tests."
+        ]
       }
     ],
     "correct": [
@@ -4286,23 +8360,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Explicit `case null` labels that handle `null` reference values directly without throwing `NullPointerException`."
+        "variants": [
+          "Explicit `case null` labels that handle `null` reference values directly without throwing `NullPointerException`.",
+          "A `case null` label matches a `null` selector directly and does not throw `NullPointerException`.",
+          "Writing `case null` handles a `null` reference in the `switch` without throwing `NullPointerException`."
+        ]
       },
       {
         "id": "B",
-        "text": "Guarded patterns using `when` clauses (e.g. `case Integer i when i > 100`) to refine pattern match conditions."
+        "variants": [
+          "Guarded patterns using `when` clauses (e.g. `case Integer i when i > 100`) to refine pattern match conditions.",
+          "A pattern may be guarded with `when`, as in `case Integer i when i > 100`, to refine when that case matches.",
+          "Guards use a `when` clause, for example `case Integer i when i > 100`, to narrow the pattern-match condition."
+        ]
       },
       {
         "id": "C",
-        "text": "Automatic runtime optimization that converts all switch expressions into native regular expression automata."
+        "reasons": [
+          "Pattern `switch` is not rewritten into a regular-expression automaton, natively or otherwise.",
+          "Labels may be type patterns, `null`, and other pattern forms, not only string constants compiled as `lookupswitch`.",
+          "The selector does not need to implement `Predicate`, and `when` is a language guard rather than a call on that interface."
+        ],
+        "variants": [
+          "Automatic runtime optimization that converts all switch expressions into native regular expression automata.",
+          "Every pattern-`switch` label must be a string constant so the compiler can emit one hash-based `lookupswitch`.",
+          "A `when` guard compiles only when the selector type implements `Predicate`, because `when` invokes that interface."
+        ]
       },
       {
         "id": "D",
-        "text": "Guarded `when` pattern branches are evaluated only after all standard type patterns fail to match."
+        "reasons": [
+          "A `when` guard is part of its own case and is not deferred until every unguarded type pattern has failed.",
+          "The type pattern is matched first, and only then is the `when` guard evaluated; the guard does not run before the type test.",
+          "`when` can refine ordinary type patterns such as `case Integer i when i > 100`, not only `case null`."
+        ],
+        "variants": [
+          "Guarded `when` pattern branches are evaluated only after all standard type patterns fail to match.",
+          "The `when` guard is tested before the type pattern, and a failed guard skips that case's type test entirely.",
+          "A `when` clause is considered only when the selector is `null`, because guards exist to refine `case null`."
+        ]
       },
       {
         "id": "E",
-        "text": "Type patterns (e.g. `case Integer i`) that match types and bind a strongly typed pattern variable without casting."
+        "variants": [
+          "Type patterns (e.g. `case Integer i`) that match types and bind a strongly typed pattern variable without casting.",
+          "A type pattern such as `case Integer i` matches that type and binds `i` without an explicit cast.",
+          "`case Integer i` tests the type and introduces the pattern variable `i`, which does not need a cast."
+        ]
       }
     ],
     "correct": [
@@ -4320,23 +8424,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Automatic compile-time sorting of all `HashSet` and `HashMap` instances according to natural element order."
+        "reasons": [
+          "`HashSet` and `HashMap` are not sorted at compile time, and they do not gain natural encounter order from this API.",
+          "`LinkedHashSet` keeps insertion encounter order, and JEP 431 does not re-sort it by `hashCode`.",
+          "`HashSet` does not implement `SequencedSet`, and it has no defined encounter order."
+        ],
+        "variants": [
+          "Automatic compile-time sorting of all `HashSet` and `HashMap` instances according to natural element order.",
+          "`LinkedHashSet` drops encounter order under this API and re-sorts itself by `hashCode` on every insertion.",
+          "`HashSet` implements `SequencedSet` by treating natural element order as its encounter order."
+        ]
       },
       {
         "id": "B",
-        "text": "A unified interface hierarchy (`SequencedCollection`, `SequencedSet`, `SequencedMap`) defining defined encounter order."
+        "variants": [
+          "A unified interface hierarchy (`SequencedCollection`, `SequencedSet`, `SequencedMap`) defining defined encounter order.",
+          "`SequencedCollection`, `SequencedSet`, and `SequencedMap` are the interfaces that define a defined encounter order.",
+          "Defined encounter order is expressed by the hierarchy `SequencedCollection`, `SequencedSet`, and `SequencedMap`."
+        ]
       },
       {
         "id": "C",
-        "text": "Uniform first and last element access and mutation methods (`getFirst()`, `getLast()`, `addFirst()`, `addLast()`)."
+        "variants": [
+          "Uniform first and last element access and mutation methods (`getFirst()`, `getLast()`, `addFirst()`, `addLast()`).",
+          "Both ends support uniform access and mutation through `getFirst()`, `getLast()`, `addFirst()`, and `addLast()`.",
+          "`getFirst()`, `getLast()`, `addFirst()`, and `addLast()` read and update the first and last elements uniformly."
+        ]
       },
       {
         "id": "D",
-        "text": "A collection type that replaces generic type parameters with native integer indices to eliminate autoboxing overhead."
+        "reasons": [
+          "Sequenced collections still use generic type parameters and do not replace them with native integer indexes to avoid boxing.",
+          "Sequenced collections hold reference types such as `String`, and they are not restricted to primitive values.",
+          "`List` provides `addFirst()` through `SequencedCollection` in Java 21, so that call is not reserved for `SequencedMap`."
+        ],
+        "variants": [
+          "A collection type that replaces generic type parameters with native integer indices to eliminate autoboxing overhead.",
+          "Sequenced collections are limited to primitive values only, and any reference such as `String` is rejected at runtime.",
+          "`addFirst()` is provided only by `SequencedMap`, so calling it on a `List` always throws `UnsupportedOperationException`."
+        ]
       },
       {
         "id": "E",
-        "text": "The `reversed()` method, which provides a live, reverse-ordered view of the underlying collection in O(1) time."
+        "variants": [
+          "The `reversed()` method, which provides a live, reverse-ordered view of the underlying collection in O(1) time.",
+          "`reversed()` returns a live reverse-ordered view of the underlying collection and does so in O(1) time.",
+          "The view returned by `reversed()` is live and reverse-ordered, and creating that view takes O(1) time."
+        ]
       }
     ],
     "correct": [
@@ -4354,23 +8488,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`ThreadLocal` variables are automatically synchronized across all JVM processes running on the same operating system host."
+        "reasons": [
+          "`ThreadLocal` storage is per thread inside one JVM, and it is not synchronized across other processes on the host.",
+          "Ordinary `ThreadLocal` values are not copied into child threads; that inheritance belongs to `InheritableThreadLocal`.",
+          "Each thread has its own entry, and `get` or `set` is not a single class-locked cell shared by every thread."
+        ],
+        "variants": [
+          "`ThreadLocal` variables are automatically synchronized across all JVM processes running on the same operating system host.",
+          "A `ThreadLocal` value is copied into every child created with `new Thread`, even when that child never touches the variable.",
+          "`ThreadLocal.get` and `set` share one static cell guarded by the class lock, so every thread observes that same stored value."
+        ]
       },
       {
         "id": "B",
-        "text": "Failing to call `ThreadLocal.remove()` causes ClassLoader memory leaks when web applications are redeployed in containers."
+        "variants": [
+          "Failing to call `ThreadLocal.remove()` causes ClassLoader memory leaks when web applications are redeployed in containers.",
+          "Skipping `ThreadLocal.remove()` can leak a webapp `ClassLoader` when a container redeploys that application.",
+          "If `ThreadLocal.remove()` is skipped, a redeploy can leak the webapp `ClassLoader` held by pool threads."
+        ]
       },
       {
         "id": "C",
-        "text": "Calling `ThreadLocal.get()` causes an immediate `ConcurrentModificationException` when accessed by concurrent threads."
+        "reasons": [
+          "`ThreadLocal.get` does not throw `ConcurrentModificationException` when other threads use the same variable.",
+          "A value passed to `set` stays on the calling thread, and other threads do not observe that write through `get`.",
+          "`remove()` clears only the calling thread's entry, not the entries stored for other threads."
+        ],
+        "variants": [
+          "Calling `ThreadLocal.get()` causes an immediate `ConcurrentModificationException` when accessed by concurrent threads.",
+          "`ThreadLocal.set` publishes the value to every thread, so a later `get` on another thread sees that write.",
+          "Calling `remove()` on one thread drops the `ThreadLocal` value for every thread that has ever called `set`."
+        ]
       },
       {
         "id": "D",
-        "text": "Uncleared `ThreadLocal` state can leak security contexts or tenant IDs from a previous user request into an unrelated task."
+        "variants": [
+          "Uncleared `ThreadLocal` state can leak security contexts or tenant IDs from a previous user request into an unrelated task.",
+          "A `ThreadLocal` left set can expose a previous request's security context or tenant ID to a later unrelated task.",
+          "Uncleared `ThreadLocal` state may carry a prior user's security context or tenant ID into a task that is otherwise unrelated."
+        ]
       },
       {
         "id": "E",
-        "text": "Because thread pool worker threads are reused, values stored in `ThreadLocal` persist across independent requests if not cleared."
+        "variants": [
+          "Because thread pool worker threads are reused, values stored in `ThreadLocal` persist across independent requests if not cleared.",
+          "Pool workers are reused, so a `ThreadLocal` value remains visible to the next independent request unless it is cleared.",
+          "Because a pool reuses worker threads, values left in a `ThreadLocal` survive from one independent request to the next if they are not cleared."
+        ]
       }
     ],
     "correct": [
@@ -4388,23 +8552,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A concurrent thread performing the first unsynchronized `null` check could observe a partially initialized singleton instance."
+        "variants": [
+          "A concurrent thread performing the first unsynchronized `null` check could observe a partially initialized singleton instance.",
+          "Another thread can pass the first unsynchronized `null` check and observe a singleton that is only partially initialized.",
+          "The unsynchronized `null` check can let a concurrent thread see a singleton instance whose initialization has not finished."
+        ]
       },
       {
         "id": "B",
-        "text": "Object instantiation (`new Singleton()`) is a multi-step operation that involves memory allocation, construction, and assignment."
+        "variants": [
+          "Object instantiation (`new Singleton()`) is a multi-step operation that involves memory allocation, construction, and assignment.",
+          "`new Singleton()` performs several steps: it allocates memory, runs the constructor, and then assigns the reference.",
+          "Creating the instance with `new Singleton()` is multiple steps, covering allocation, construction, and assignment of the reference."
+        ]
       },
       {
         "id": "C",
-        "text": "Declaring the field `volatile` instructs the JVM to serialize singleton state to disk on every method invocation."
+        "reasons": [
+          "`volatile` controls visibility and ordering of the reference, and it does not serialize the singleton to disk on each call.",
+          "`volatile` does not disable inlining of `getInstance` or force a new instance to be constructed on every invocation.",
+          "A `volatile` field does not turn `getInstance` into a synchronized method, and the inner `synchronized` block still locks."
+        ],
+        "variants": [
+          "Declaring the field `volatile` instructs the JVM to serialize singleton state to disk on every method invocation.",
+          "`volatile` stops the JIT from inlining `getInstance`, so the method executes `new Singleton()` on every call.",
+          "A `volatile` field synchronizes all of `getInstance` and makes the inner `synchronized` block ignored."
+        ]
       },
       {
         "id": "D",
-        "text": "Without `volatile`, the compiler or CPU can reorder reference assignment before constructor field initialization completes."
+        "variants": [
+          "Without `volatile`, the compiler or CPU can reorder reference assignment before constructor field initialization completes.",
+          "Without `volatile`, the compiler or the CPU may publish the reference before the constructor finishes writing the fields.",
+          "If the field is not `volatile`, reference assignment can be reordered ahead of the constructor's field initialization by the compiler or CPU."
+        ]
       },
       {
         "id": "E",
-        "text": "Without `volatile`, the Java Virtual Machine fails to acquire the class monitor lock during the synchronized block."
+        "reasons": [
+          "The `synchronized` block acquires its monitor whether or not the field is `volatile`; `volatile` is what orders publication of the reference.",
+          "The lock target is the object named in the `synchronized` statement, and `volatile` does not retarget that lock onto the published instance.",
+          "Threads that do not hold the monitor do not enter the `synchronized` block during construction just because the field lacks `volatile`."
+        ],
+        "variants": [
+          "Without `volatile`, the Java Virtual Machine fails to acquire the class monitor lock during the synchronized block.",
+          "The inner `synchronized` block locks the instance being published, rather than the class, unless the field is `volatile`.",
+          "Without `volatile`, the `synchronized` block still starts, but other threads may enter it while the constructor is running."
+        ]
       }
     ],
     "correct": [
@@ -4422,19 +8616,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`thenApply()` executes tasks synchronously; `thenCompose()` executes tasks asynchronously across loopback sockets."
+        "reasons": [
+          "`thenApply()` and `thenCompose()` differ by mapping versus flattening, not by synchronous execution versus loopback sockets.",
+          "Neither method is defined to always use the common pool or always stay on the caller; asynchronous variants are separate methods.",
+          "`thenCompose()` flattens a returned `CompletableFuture`, so the two methods are not aliases that both nest futures."
+        ],
+        "variants": [
+          "`thenApply()` executes tasks synchronously; `thenCompose()` executes tasks asynchronously across loopback sockets.",
+          "`thenApply()` always runs its function on `ForkJoinPool.commonPool()`, while `thenCompose()` always stays on the calling thread.",
+          "The two methods are aliases, and each one returns a nested `CompletableFuture` when the callback itself returns a future."
+        ]
       },
       {
         "id": "B",
-        "text": "`thenCompose()` blocks the calling thread until the underlying future completes and returns its final computed result."
+        "reasons": [
+          "`thenCompose()` does not block the caller until completion; blocking is what `join` or `get` do.",
+          "`thenApply()` does not block for an incomplete stage, and `thenCompose()` does not return `null` in that situation.",
+          "An exceptional inner future stays exceptional through `thenCompose()`, rather than becoming a successful `null`."
+        ],
+        "variants": [
+          "`thenCompose()` blocks the calling thread until the underlying future completes and returns its final computed result.",
+          "`thenApply()` blocks until its function returns, and `thenCompose()` returns `null` when the stage is not yet complete.",
+          "`thenCompose()` turns a failed inner future into a successful `null` result instead of completing exceptionally."
+        ]
       },
       {
         "id": "C",
-        "text": "`thenCompose()` accepts a function returning `CompletableFuture<U>` and flattens it, preventing nested `CompletableFuture`s."
+        "variants": [
+          "`thenCompose()` accepts a function returning `CompletableFuture<U>` and flattens it, preventing nested `CompletableFuture`s.",
+          "`thenCompose()` takes a function that returns `CompletableFuture<U>` and flattens it, so the result is not a nested `CompletableFuture`.",
+          "Passing a function that returns `CompletableFuture<U>` to `thenCompose()` flattens it and avoids a nested future."
+        ]
       },
       {
         "id": "D",
-        "text": "`thenApply()` maps a value `T -> U`, producing a resulting `CompletableFuture<U>` upon completion of the stage."
+        "variants": [
+          "`thenApply()` maps a value `T -> U`, producing a resulting `CompletableFuture<U>` upon completion of the stage.",
+          "`thenApply()` applies a function from `T` to `U` and completes the following stage as a `CompletableFuture<U>`.",
+          "Mapping `T -> U` is what `thenApply()` does, and the stage that follows is a `CompletableFuture<U>`."
+        ]
       }
     ],
     "correct": [
@@ -4451,19 +8671,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It sets the reference to `update` atomically if and only if the current value reference-equals (`==`) `expected`."
+        "variants": [
+          "It sets the reference to `update` atomically if and only if the current value reference-equals (`==`) `expected`.",
+          "The reference is set to `update` in one atomic step only when the current reference is `==` to `expected`.",
+          "It atomically writes `update` if and only if the current value and `expected` are the same reference under `==`."
+        ]
       },
       {
         "id": "B",
-        "text": "It compares values using `equals()` and throws `ConcurrentModificationException` whenever comparison fails."
+        "reasons": [
+          "The comparison uses reference equality `==`, and a mismatch returns `false` without throwing `ConcurrentModificationException`.",
+          "Equality is `==` rather than `Objects.equals`, and a mismatch returns `false` rather than `true`.",
+          "A single `compareAndSet` attempt returns `false` when the reference differs, and it does not loop until success."
+        ],
+        "variants": [
+          "It compares values using `equals()` and throws `ConcurrentModificationException` whenever comparison fails.",
+          "The comparison uses `Objects.equals`, and a mismatch returns `true` while leaving the stored reference unchanged.",
+          "`compareAndSet` repeats the attempt until the reference matches `expected`, so the caller never sees a failed update."
+        ]
       },
       {
         "id": "C",
-        "text": "It acquires an exclusive monitor lock on all threads in the JVM until the value is updated in main memory."
+        "reasons": [
+          "`compareAndSet` is a lock-free atomic update of one reference, not a monitor lock held against every thread in the JVM.",
+          "The caller does not need to own the intrinsic lock, and a missing lock does not cause `IllegalMonitorStateException`.",
+          "The update is a compare-and-swap, not a plain store published by synchronizing on the `AtomicReference`."
+        ],
+        "variants": [
+          "It acquires an exclusive monitor lock on all threads in the JVM until the value is updated in main memory.",
+          "`compareAndSet` throws `IllegalMonitorStateException` unless the caller already holds the reference's intrinsic lock.",
+          "The write is an ordinary store, and `AtomicReference` synchronizes on `this` to publish that store."
+        ]
       },
       {
         "id": "D",
-        "text": "It writes the update to disk storage first to ensure transactional durability before updating JVM memory."
+        "reasons": [
+          "`compareAndSet` updates memory atomically and does not write the new value to disk to obtain durability.",
+          "The atomic update does not wait until every other thread has called `get` before a happens-before edge exists.",
+          "A failed comparison leaves the current reference in place and does not clear it to `null`."
+        ],
+        "variants": [
+          "It writes the update to disk storage first to ensure transactional durability before updating JVM memory.",
+          "`compareAndSet` forms a happens-before edge only after every other thread has read the prior value with `get`.",
+          "When the comparison fails, the method sets the reference to `null` so later readers cannot still observe `expected`."
+        ]
       }
     ],
     "correct": [
@@ -4479,19 +8730,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Threads take turns executing tasks in a round-robin schedule coordinated by a single centralized monitor lock."
+        "reasons": [
+          "Work-stealing workers do not take turns under one centralized monitor lock in a round-robin schedule.",
+          "Each worker has its own deque, and another worker may steal a task rather than leaving it only to the forking worker.",
+          "A thief takes a task from the other deque; it does not copy that entire deque before it can run anything."
+        ],
+        "variants": [
+          "Threads take turns executing tasks in a round-robin schedule coordinated by a single centralized monitor lock.",
+          "Every worker shares one FIFO queue, and only the worker that forked a task is allowed to pop that task.",
+          "An idle worker first copies a busy worker's entire deque into a private queue, then runs the copied tasks."
+        ]
       },
       {
         "id": "B",
-        "text": "Worker threads maintain private deques; when a worker finishes its tasks, it steals tasks from the tail of another busy worker's deque."
+        "variants": [
+          "Worker threads maintain private deques; when a worker finishes its tasks, it steals tasks from the tail of another busy worker's deque.",
+          "Each worker keeps a private deque, and a worker that has finished its own tasks steals from the tail of another busy worker's deque.",
+          "Workers hold private deques; once a worker has no tasks left, it steals work from the tail of a busy worker's deque."
+        ]
       },
       {
         "id": "C",
-        "text": "Work is serialized and transmitted to idle worker processes over local TCP loopback network sockets."
+        "reasons": [
+          "Tasks move between workers inside the JVM, and they are not serialized over local TCP loopback sockets.",
+          "Work-stealing does not ship tasks through a `ProcessBuilder` pipe into a child process.",
+          "Idle workers steal tasks from busy workers, so a task is not confined to the core where it was forked."
+        ],
+        "variants": [
+          "Work is serialized and transmitted to idle worker processes over local TCP loopback network sockets.",
+          "A stolen task is written to a pipe opened with `ProcessBuilder` and runs in a separate child process.",
+          "Each worker stays pinned to one core for the pool's lifetime, and a task forked on that core never moves."
+        ]
       },
       {
         "id": "D",
-        "text": "The pool spawns one thousand native threads per CPU core to prevent any thread idle time during execution."
+        "reasons": [
+          "A `ForkJoinPool` sizes its parallelism from available processors and does not start one thousand native threads per core.",
+          "Workers are pooled and reused, rather than being created in pairs per task and destroyed when that task finishes.",
+          "Submitted tasks run on pool workers, not only on the caller and not only for the duration of a `synchronized` block."
+        ],
+        "variants": [
+          "The pool spawns one thousand native threads per CPU core to prevent any thread idle time during execution.",
+          "The pool creates two worker threads for each submitted task and terminates those threads when the task returns.",
+          "The caller runs every task itself, and a pool thread is used only while that task is inside a `synchronized` block."
+        ]
       }
     ],
     "correct": [
@@ -4507,23 +8789,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Safepoints are used exclusively by the Just-In-Time compiler and are completely bypassed during all garbage collection cycles."
+        "reasons": [
+          "Safepoints are how the JVM stops mutators for garbage collection, and they are not used only by the JIT and skipped for every GC.",
+          "A stop-the-world collection requires mutator threads in general to reach a safepoint, not only the thread that performed the allocation.",
+          "JIT-compiled Java code contains safepoint polls, and those polls are not limited to JNI native methods."
+        ],
+        "variants": [
+          "Safepoints are used exclusively by the Just-In-Time compiler and are completely bypassed during all garbage collection cycles.",
+          "During a garbage collection, only the thread that allocated the object stops at a safepoint, and every other mutator keeps running.",
+          "Safepoint polls execute only inside JNI native methods, and JIT-compiled Java code never checks for a requested safepoint pause."
+        ]
       },
       {
         "id": "B",
-        "text": "Safepoints are points where all database transactions are committed to persistent disk before garbage collection starts."
+        "reasons": [
+          "A safepoint is a VM coordination point for mutator threads, not a commit of database transactions to disk before GC.",
+          "Entering a safepoint does not wait for every `Object.wait` to be notified and to reacquire its monitor.",
+          "Runnable Java threads are asked to reach a safepoint, and the mechanism is not limited to threads that are already `BLOCKED` or `WAITING`."
+        ],
+        "variants": [
+          "Safepoints are points where all database transactions are committed to persistent disk before garbage collection starts.",
+          "A safepoint begins only after every thread waiting in `Object.wait` has been notified and has reacquired its monitor.",
+          "Runnable mutators ignore safepoints, and only threads already in `BLOCKED` or `WAITING` are required to stop."
+        ]
       },
       {
         "id": "C",
-        "text": "The JVM brings threads to safepoints to execute GC root scanning, object relocation, deoptimization, or thread dumps."
+        "variants": [
+          "The JVM brings threads to safepoints to execute GC root scanning, object relocation, deoptimization, or thread dumps.",
+          "The JVM brings threads to safepoints so it can scan GC roots, relocate objects, deoptimize, or take thread dumps.",
+          "Safepoints are where the JVM performs GC root scanning, object relocation, deoptimization, or thread dumps."
+        ]
       },
       {
         "id": "D",
-        "text": "A Safepoint is a designated point where all mutator threads bring their execution state to a consistent, stable halt."
+        "variants": [
+          "A Safepoint is a designated point where all mutator threads bring their execution state to a consistent, stable halt.",
+          "At a safepoint, every mutator thread reaches a halt whose execution state is both consistent and stable.",
+          "A safepoint is the place where all mutator threads stop with execution state held in a consistent, stable condition."
+        ]
       },
       {
         "id": "E",
-        "text": "The time required to bring all mutator threads to a halt ('Time To Safepoint' or TTSP) contributes directly to STW pauses."
+        "variants": [
+          "The time required to bring all mutator threads to a halt ('Time To Safepoint' or TTSP) contributes directly to STW pauses.",
+          "The time spent bringing every mutator to a halt, called time to safepoint or TTSP, is part of the stop-the-world pause.",
+          "Stop-the-world time includes time to safepoint (TTSP), which is the time taken to halt all mutator threads."
+        ]
       }
     ],
     "correct": [
@@ -4541,19 +8853,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`true` requires all bean methods to be declared `private`; `false` requires all bean methods to be declared `public static`."
+        "reasons": [
+          "`proxyBeanMethods` does not force bean methods to be `private` in one mode and `public static` in the other.",
+          "Bean methods are not required to be `final` when the flag is `true`, nor `abstract` when it is `false`.",
+          "Registration does not depend on `protected` versus package-private visibility for the two flag values."
+        ],
+        "variants": [
+          "`true` requires all bean methods to be declared `private`; `false` requires all bean methods to be declared `public static`.",
+          "`true` requires every `@Bean` method to be `final`, and `false` requires every `@Bean` method to be `abstract`.",
+          "Methods are registered only if they are `protected` when the flag is `true`, and only if they are package-private when it is `false`."
+        ]
       },
       {
         "id": "B",
-        "text": "`false` converts all singleton beans into prototype beans automatically to eliminate JVM memory consumption."
+        "reasons": [
+          "`proxyBeanMethods = false` does not change singleton beans into prototypes, and it is not a memory-elimination switch.",
+          "Lite mode still registers and invokes `@Bean` methods; the flag does not leave them uncalled.",
+          "Full mode returns cached singletons for inter-bean calls, and it does not switch those beans to prototype scope."
+        ],
+        "variants": [
+          "`false` converts all singleton beans into prototype beans automatically to eliminate JVM memory consumption.",
+          "`false` tells the container not to call `@Bean` methods, so those methods stay ordinary and create no beans.",
+          "`true` assigns prototype scope to every bean in that configuration, and each `@Bean` invocation constructs a new instance."
+        ]
       },
       {
         "id": "C",
-        "text": "`true` creates CGLIB proxies so inter-`@Bean` calls return cached singletons; `false` (Lite mode) treats them as plain Java method calls."
+        "variants": [
+          "`true` creates CGLIB proxies so inter-`@Bean` calls return cached singletons; `false` (Lite mode) treats them as plain Java method calls.",
+          "With `true`, CGLIB proxies make an inter-`@Bean` call return the cached singleton; `false`, lite mode, performs an ordinary Java method call.",
+          "`true` uses a CGLIB proxy so an inter-`@Bean` call returns the cached singleton; `false` (lite mode) is a plain Java call."
+        ]
       },
       {
         "id": "D",
-        "text": "`false` disables dependency injection across the entire Spring application context and prevents `@Autowired` from functioning."
+        "reasons": [
+          "`proxyBeanMethods = false` does not turn off dependency injection for the application context, and `@Autowired` continues to work.",
+          "Lite mode does not disable `@Autowired` on that configuration class while leaving other classes injected.",
+          "The flag chooses whether `@Bean` methods are proxied, and it does not switch the application between field injection and constructor injection."
+        ],
+        "variants": [
+          "`false` disables dependency injection across the entire Spring application context and prevents `@Autowired` from functioning.",
+          "`false` disables `@Autowired` inside that configuration class, while field injection in every other class still continues to work.",
+          "`true` selects field injection for the whole application, and `false` selects constructor injection for the whole application."
+        ]
       }
     ],
     "correct": [
@@ -4569,19 +8912,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`exceptionally()` executes only if an upstream stage failed, taking the throwable and returning a fallback recovery value."
+        "variants": [
+          "`exceptionally()` executes only if an upstream stage failed, taking the throwable and returning a fallback recovery value.",
+          "`exceptionally()` runs only when an upstream stage has failed, taking the throwable and returning a fallback recovery value.",
+          "`exceptionally()` is applied solely after an upstream stage fails, accepting the throwable and producing a fallback recovery value."
+        ]
       },
       {
         "id": "B",
-        "text": "`handle()` suppresses all exceptions by terminating the asynchronous pipeline and returning `null` to the calling thread."
+        "reasons": [
+          "`handle()` does not end the pipeline or force `null` back to the caller; it completes a further stage with the value computed from the result and throwable.",
+          "`handle()` still runs after failure and is given the throwable, so it is not limited to a normally completed result.",
+          "`handle()` does not rethrow onto the calling thread; the callback's return value completes the `handle()` stage itself."
+        ],
+        "variants": [
+          "`handle()` suppresses all exceptions by terminating the asynchronous pipeline and returning `null` to the calling thread.",
+          "`handle()` is skipped when the upstream stage fails and observes only a result that completed normally for that future stage.",
+          "`handle()` rethrows the upstream throwable directly onto the calling thread before any later downstream stage is permitted to begin."
+        ]
       },
       {
         "id": "C",
-        "text": "`handle()` executes in both success and failure cases, taking the result and throwable as arguments to return a transformed value."
+        "variants": [
+          "`handle()` executes in both success and failure cases, taking the result and throwable as arguments to return a transformed value.",
+          "`handle()` runs for both success and failure, taking the result and the throwable and returning a transformed value.",
+          "`handle()` executes whether the stage succeeded or failed, receiving the result and throwable to return a transformed value."
+        ]
       },
       {
         "id": "D",
-        "text": "`exceptionally()` converts unchecked exceptions into checked `IOException` instances and re-throws them synchronously."
+        "reasons": [
+          "`exceptionally()` does not turn unchecked failures into checked `IOException` values or rethrow them synchronously; it supplies a recovery value for the next stage.",
+          "`exceptionally()` is skipped when the stage succeeds, so it does not run for both outcomes or replace a successful result with `null`.",
+          "`exceptionally()` applies to completion failures in general, not only to `CancellationException`."
+        ],
+        "variants": [
+          "`exceptionally()` converts unchecked exceptions into checked `IOException` instances and re-throws them synchronously.",
+          "`exceptionally()` always runs, for both success and failure, and replaces the prior stage result with `null`.",
+          "`exceptionally()` recovers only from `CancellationException` and leaves every other stage failure unhandled by that recovery callback."
+        ]
       }
     ],
     "correct": [
@@ -4598,19 +8967,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "When executing inside a `synchronized` block/method or invoking a native method through JNI, blocking the carrier thread."
+        "variants": [
+          "When executing inside a `synchronized` block/method or invoking a native method through JNI, blocking the carrier thread.",
+          "Pinning occurs inside a `synchronized` block or method, or on a JNI native call, and it blocks the carrier thread.",
+          "The carrier stays blocked in a `synchronized` block or method or during a native method call through JNI."
+        ]
       },
       {
         "id": "B",
-        "text": "Whenever it performs non-blocking asynchronous socket reads using Java NIO `SocketChannel` or `HttpClient`."
+        "reasons": [
+          "Non-blocking NIO `SocketChannel` or `HttpClient` reads do not pin a virtual thread, because they do not hold the carrier inside `synchronized` or JNI.",
+          "`Thread.sleep` and `BlockingQueue.take()` unmount the virtual thread instead of pinning it permanently to a carrier.",
+          "`ReentrantLock` parks without pinning; pinning in Java 21 comes from `synchronized` or JNI, not from `java.util.concurrent` locks."
+        ],
+        "variants": [
+          "Whenever it performs non-blocking asynchronous socket reads using Java NIO `SocketChannel` or `HttpClient`.",
+          "Whenever it calls `Thread.sleep` or parks in `BlockingQueue.take()`, which mounts it permanently on one carrier.",
+          "Whenever it enters a `ReentrantLock`, because every `java.util.concurrent` lock pins that virtual thread."
+        ]
       },
       {
         "id": "C",
-        "text": "When allocating arrays or collection instances larger than 10 megabytes within young generation heap memory."
+        "reasons": [
+          "Allocating a large array or collection in the young generation does not pin a virtual thread to its carrier.",
+          "A thread name or an inherited `ThreadLocal` is not a pinning point and does not bind the virtual thread to the carrier.",
+          "Growing the virtual thread's own stack does not pin it; pinning is tied to `synchronized` and JNI, not to stack expansion."
+        ],
+        "variants": [
+          "When allocating arrays or collection instances larger than 10 megabytes within young generation heap memory.",
+          "When the virtual thread is created with a custom name or an inherited `ThreadLocal` that must be copied onto the carrier.",
+          "When its stack grows past the carrier stack size and the JVM expands that stack in native memory."
+        ]
       },
       {
         "id": "D",
-        "text": "Whenever a virtual thread executes a lambda expression that accesses effectively final local method variables."
+        "reasons": [
+          "A lambda that captures effectively final locals does not pin a virtual thread to its carrier.",
+          "Submitting work to the common `ForkJoinPool` does not pin the submitting virtual thread for the life of that task.",
+          "`volatile` access does not pin a virtual thread or require it to remain on one carrier CPU."
+        ],
+        "variants": [
+          "Whenever a virtual thread executes a lambda expression that accesses effectively final local method variables.",
+          "Whenever it submits work to the common `ForkJoinPool`, which binds it to a pool worker until that task finishes.",
+          "Whenever it reads or writes a `volatile` field, that access is required to stay on that same carrier CPU."
+        ]
       }
     ],
     "correct": [
@@ -4626,23 +9026,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Every launched coroutine allocates a dedicated 1-megabyte native OS kernel call stack in physical hardware memory."
+        "reasons": [
+          "A launched coroutine does not receive a dedicated 1-megabyte kernel call stack; its continuation frames live on the heap.",
+          "Coroutines are not platform threads, and `Dispatchers` still choose the carrier threads that run them.",
+          "Suspension is controlled by the `suspend` modifier, not by `tailrec`, which only optimizes tail-recursive calls."
+        ],
+        "variants": [
+          "Every launched coroutine allocates a dedicated 1-megabyte native OS kernel call stack in physical hardware memory.",
+          "Every coroutine is compiled into a platform thread, and the operating system schedules that thread independently of `Dispatchers`.",
+          "A coroutine cannot suspend across a function call unless that called function is marked `tailrec`."
+        ]
       },
       {
         "id": "B",
-        "text": "Coroutines are lightweight user-space execution units that suspend without blocking their underlying OS carrier threads."
+        "variants": [
+          "Coroutines are lightweight user-space execution units that suspend without blocking their underlying OS carrier threads.",
+          "Coroutines are lightweight user-space tasks that suspend while leaving their underlying OS carrier threads unblocked.",
+          "A coroutine is a lightweight user-mode execution unit that suspends without blocking the OS thread carrying it."
+        ]
       },
       {
         "id": "C",
-        "text": "`launch` starts a fire-and-forget coroutine returning a `Job`, whereas `async` starts a coroutine returning a `Deferred<T>`."
+        "variants": [
+          "`launch` starts a fire-and-forget coroutine returning a `Job`, whereas `async` starts a coroutine returning a `Deferred<T>`.",
+          "`launch` starts a fire-and-forget coroutine that yields a `Job`, while `async` starts one that yields a `Deferred<T>`.",
+          "`launch` returns a `Job` for a fire-and-forget coroutine, and `async` returns a `Deferred<T>` for its coroutine."
+        ]
       },
       {
         "id": "D",
-        "text": "A `CoroutineDispatcher` (such as `Dispatchers.IO` or `Dispatchers.Default`) determines which thread pool executes the coroutine."
+        "variants": [
+          "A `CoroutineDispatcher` (such as `Dispatchers.IO` or `Dispatchers.Default`) determines which thread pool executes the coroutine.",
+          "A `CoroutineDispatcher`, such as `Dispatchers.IO` or `Dispatchers.Default`, chooses the thread pool that runs the coroutine.",
+          "Which thread pool runs a coroutine is set by its `CoroutineDispatcher`, such as `Dispatchers.IO` or `Dispatchers.Default`."
+        ]
       },
       {
         "id": "E",
-        "text": "`runBlocking` launches an asynchronous background coroutine and immediately returns control to the caller thread."
+        "reasons": [
+          "`runBlocking` blocks the caller until its coroutine finishes; it does not start background work and return at once.",
+          "`runBlocking` is meant to be called from ordinary blocking code such as `main`, not only from `suspend` functions.",
+          "`runBlocking` waits for the coroutine it starts; it does not cancel the parent `Job` when a child suspends."
+        ],
+        "variants": [
+          "`runBlocking` launches an asynchronous background coroutine and immediately returns control to the caller thread.",
+          "`runBlocking` can be called only from a `suspend` function and is illegal inside an ordinary `main` function.",
+          "`runBlocking` cancels the parent `Job` as soon as the first child suspends, then resumes the caller immediately."
+        ]
       }
     ],
     "correct": [
@@ -4660,19 +9090,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The Kotlin compiler automatically wraps every Java return value inside a `java.util.Optional` container at compile time."
+        "reasons": [
+          "The Kotlin compiler does not wrap every Java return in a `java.util.Optional`; unannotated Java types stay platform types.",
+          "Kotlin does not rewrite Java methods to non-null returns or plant null checks inside the Java bytecode.",
+          "Unannotated Java returns are platform types, not mandatory `T?` types, and Kotlin allows calls without an explicit null check."
+        ],
+        "variants": [
+          "The Kotlin compiler automatically wraps every Java return value inside a `java.util.Optional` container at compile time.",
+          "Kotlin rewrites each Java method so the return type becomes non-null and inserts that null check into the Java bytecode.",
+          "Java reference returns are always exposed as nullable `T?` types, so the compiler rejects any call that does not check null."
+        ]
       },
       {
         "id": "B",
-        "text": "Dereferencing a null platform type that is assigned to a non-nullable Kotlin variable throws a `NullPointerException` at the call site."
+        "variants": [
+          "Dereferencing a null platform type that is assigned to a non-nullable Kotlin variable throws a `NullPointerException` at the call site.",
+          "If a null platform type is stored in a non-nullable Kotlin variable, dereferencing it throws a `NullPointerException` at the call site.",
+          "Assigning a null platform type to a non-nullable Kotlin variable and dereferencing it throws a `NullPointerException` at that call site."
+        ]
       },
       {
         "id": "C",
-        "text": "Types returned from Java without nullability annotations are treated as 'platform types' denoted with an exclamation mark (`T!`)."
+        "variants": [
+          "Types returned from Java without nullability annotations are treated as 'platform types' denoted with an exclamation mark (`T!`).",
+          "Java types lacking nullability annotations are treated as platform types, written with an exclamation mark as `T!`.",
+          "A Java return with no nullability annotation is treated as a platform type and is shown with an exclamation mark (`T!`)."
+        ]
       },
       {
         "id": "D",
-        "text": "Kotlin strictly rejects any compilation that invokes Java methods lacking explicit `@Nullable` or `@NotNull` annotations."
+        "reasons": [
+          "Kotlin does not reject compilation merely because a Java method lacks `@Nullable` or `@NotNull`; those calls are allowed as platform types.",
+          "Null arguments to Java platform parameters are not a compile-time error; Kotlin does not ban them at compile time.",
+          "`@NotNull` maps toward a non-null Kotlin type and `@Nullable` maps toward `T?`, which is the opposite of that mapping."
+        ],
+        "variants": [
+          "Kotlin strictly rejects any compilation that invokes Java methods lacking explicit `@Nullable` or `@NotNull` annotations.",
+          "Kotlin bans every null argument that is passed into Java at compile time, so a null value fails compilation instead of failing at runtime.",
+          "Kotlin maps `@NotNull` Java returns onto nullable `T?` and maps `@Nullable` Java returns onto non-null `T`."
+        ]
       }
     ],
     "correct": [
@@ -4689,23 +9145,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`LongAdder` stripes counter updates across an internal array of cells, dramatically reducing CAS retry contention across CPU cores."
+        "variants": [
+          "`LongAdder` stripes counter updates across an internal array of cells, dramatically reducing CAS retry contention across CPU cores.",
+          "`LongAdder` spreads counter updates across an internal array of cells, which reduces CAS retry contention across CPU cores.",
+          "`LongAdder` keeps counter increments in an internal array of cells so CAS retries contend less across CPU cores."
+        ]
       },
       {
         "id": "B",
-        "text": "`LongAdder` consumes significantly less heap memory than `AtomicLong` because it shares a single 64-bit integer word."
+        "reasons": [
+          "`LongAdder` uses more heap than `AtomicLong` because of its cell array; it does not store the counter in one shared 64-bit word.",
+          "`LongAdder.increment()` is not a blocking synchronized call; it CAS-es a cell and does not wait on the adder's monitor.",
+          "`LongAdder` has no `compareAndSet` that swaps the entire striped sum in one atomic step."
+        ],
+        "variants": [
+          "`LongAdder` consumes significantly less heap memory than `AtomicLong` because it shares a single 64-bit integer word.",
+          "`LongAdder.increment()` synchronizes on the adder instance, so every caller still blocks until the current cell stripe is released.",
+          "`LongAdder` offers `compareAndSet`, which atomically replaces the whole striped sum in a single step across its cells."
+        ]
       },
       {
         "id": "C",
-        "text": "`LongAdder.sum()` aggregates across cells without locking, returning an eventually consistent sum rather than an atomic snapshot."
+        "variants": [
+          "`LongAdder.sum()` aggregates across cells without locking, returning an eventually consistent sum rather than an atomic snapshot.",
+          "`LongAdder.sum()` adds the cells without taking a lock and returns an eventually consistent total, not an atomic snapshot.",
+          "`LongAdder.sum()` totals its cells with no lock, so the returned sum is eventually consistent rather than an atomic snapshot."
+        ]
       },
       {
         "id": "D",
-        "text": "`AtomicLong` has been deprecated in modern Java and throws an `UnsupportedOperationException` when called from virtual threads."
+        "reasons": [
+          "`AtomicLong` is not deprecated and does not throw `UnsupportedOperationException` when used from virtual threads.",
+          "`incrementAndGet` updates via CAS, not by taking the instance monitor, and `get` is not the only lock-free operation.",
+          "Increments are CAS retry loops, not a bare `volatile` publish that can drop concurrent updates."
+        ],
+        "variants": [
+          "`AtomicLong` has been deprecated in modern Java and throws an `UnsupportedOperationException` when called from virtual threads.",
+          "`AtomicLong` is lock-free only for `get`, while `incrementAndGet` always takes the monitor on that instance during each invocation.",
+          "`AtomicLong` publishes updates with a plain `volatile` write, so concurrent increments can be lost with no retry on that one field."
+        ]
       },
       {
         "id": "E",
-        "text": "`AtomicLong` updates a single shared variable via CAS retry loops, which cause severe CPU spin overhead under heavy concurrent writes."
+        "variants": [
+          "`AtomicLong` updates a single shared variable via CAS retry loops, which cause severe CPU spin overhead under heavy concurrent writes.",
+          "`AtomicLong` CAS-retries updates of one shared variable, and under heavy concurrent writes that spinning costs a lot of CPU.",
+          "`AtomicLong` changes a single shared variable with CAS retry loops, which burn CPU when many threads write at once."
+        ]
       }
     ],
     "correct": [
@@ -4723,19 +9209,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`lateinit` can be applied to primitive types like `Int`; `by lazy` can only be applied to custom reference objects."
+        "reasons": [
+          "`lateinit` cannot be applied to primitive types such as `Int`, and `by lazy` is not limited to custom reference objects.",
+          "`lateinit` stays uninitialized until your code assigns it; the runtime does not set it before the constructor body.",
+          "`by lazy` is used with read-only properties and runs the initializer once, not again on every read of a `var`."
+        ],
+        "variants": [
+          "`lateinit` can be applied to primitive types like `Int`; `by lazy` can only be applied to custom reference objects.",
+          "`lateinit` is filled in by the runtime before the constructor body runs, like a Java instance-field initializer.",
+          "`by lazy` requires the property to be a `var` and runs the initializer again after every single read."
+        ]
       },
       {
         "id": "B",
-        "text": "`lateinit` is for mutable properties initialized after construction; `by lazy` is for read-only properties initialized on first access."
+        "variants": [
+          "`lateinit` is for mutable properties initialized after construction; `by lazy` is for read-only properties initialized on first access.",
+          "`lateinit` is a mutable property set after construction, while `by lazy` is a read-only property set on first access.",
+          "`lateinit` marks a `var` initialized after construction; `by lazy` marks a read-only property computed on first access."
+        ]
       },
       {
         "id": "C",
-        "text": "`lateinit` properties are immutable once set; `by lazy` properties can be reassigned multiple times throughout runtime."
+        "reasons": [
+          "`lateinit` properties stay mutable after they are set, and `by lazy` properties are not reassigned throughout runtime.",
+          "`lateinit` cannot be nullable, and reading it before assignment throws rather than returning `null`.",
+          "`by lazy` runs on first access, not during construction ahead of the other property initializers."
+        ],
+        "variants": [
+          "`lateinit` properties are immutable once set; `by lazy` properties can be reassigned multiple times throughout runtime.",
+          "`lateinit` may be declared as a nullable type such as `String?`, and reading it before assignment returns `null`.",
+          "`by lazy` initializes the property during object construction, before any other property initializer runs in Kotlin code."
+        ]
       },
       {
         "id": "D",
-        "text": "`lateinit` initializes the property on a background thread; `by lazy` initializes it synchronously during class loading."
+        "reasons": [
+          "`lateinit` does not initialize on a background thread, and `by lazy` does not run synchronously during class loading.",
+          "`lateinit` does not throw `IllegalStateException` merely because two threads read it.",
+          "The default `by lazy` mode is synchronized, so two threads do not both run the initializer."
+        ],
+        "variants": [
+          "`lateinit` initializes the property on a background thread; `by lazy` initializes it synchronously during class loading.",
+          "`lateinit` throws `IllegalStateException` when the property is read from more than one thread at a time.",
+          "Default `by lazy` publishes the initialized value with no synchronization, so two caller threads may both run the initializer."
+        ]
       }
     ],
     "correct": [
@@ -4751,19 +9268,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Restarting all production server instances immediately without taking heap or thread dumps to clear volatile diagnostic logs."
+        "reasons": [
+          "Restarting production instances without a heap or thread dump discards the evidence instead of diagnosing the leak.",
+          "Disabling explicit GC and looping on `System.gc()` does not identify retained objects, and it will not drain a real leak to zero.",
+          "Lowering `-Xmx` until allocation fails does not show which request handler retains the leaked objects."
+        ],
+        "variants": [
+          "Restarting all production server instances immediately without taking heap or thread dumps to clear volatile diagnostic logs.",
+          "Setting `-XX:+DisableExplicitGC` and calling `System.gc()` in a loop until measured old-generation occupancy falls all the way to zero.",
+          "Shrinking `-Xmx` until allocation fails, which is taken to prove which request handler retains the leaked objects."
+        ]
       },
       {
         "id": "B",
-        "text": "Generating a heap dump via `jcmd <pid> GC.heap_dump` or `-XX:+HeapDumpOnOutOfMemoryError` and analyzing retained sizes in Eclipse MAT."
+        "variants": [
+          "Generating a heap dump via `jcmd <pid> GC.heap_dump` or `-XX:+HeapDumpOnOutOfMemoryError` and analyzing retained sizes in Eclipse MAT.",
+          "Take a heap dump with `jcmd <pid> GC.heap_dump` or `-XX:+HeapDumpOnOutOfMemoryError`, then inspect retained sizes in Eclipse MAT.",
+          "Capture a heap dump using `jcmd <pid> GC.heap_dump` or `-XX:+HeapDumpOnOutOfMemoryError` and review retained sizes in Eclipse MAT."
+        ]
       },
       {
         "id": "C",
-        "text": "Increasing the thread stack size via `-Xss` to 100 megabytes to prevent heap memory exhaustion during recursive method calls."
+        "reasons": [
+          "Raising `-Xss` enlarges thread stacks, not the heap, so it does not diagnose or prevent heap exhaustion from retained objects.",
+          "`-XX:+UseSerialGC` only changes the collector; it does not identify leaks or drop objects that are still reachable.",
+          "`Thread.print` shows stacks, not heap retainers, so the busiest stack is not the object retaining the heap."
+        ],
+        "variants": [
+          "Increasing the thread stack size via `-Xss` to 100 megabytes to prevent heap memory exhaustion during recursive method calls.",
+          "Switching on `-XX:+UseSerialGC` so one GC thread compacts the old generation and drops unreachable leak candidates.",
+          "Sampling CPU with `jcmd <pid> Thread.print` and treating the busiest stack as the object that retains the heap."
+        ]
       },
       {
         "id": "D",
-        "text": "Monitoring Old Generation memory occupancy and inspecting garbage collection logs to check if memory drops after Full GC cycles."
+        "variants": [
+          "Monitoring Old Generation memory occupancy and inspecting garbage collection logs to check if memory drops after Full GC cycles.",
+          "Monitor Old Generation memory occupancy and inspect GC logs to see whether memory falls after Full GC cycles.",
+          "Track old-generation memory occupancy in the GC logs and check whether used memory drops once a Full GC finishes."
+        ]
       }
     ],
     "correct": [
@@ -4780,23 +9323,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`Semaphore` automatically revokes all permits and terminates worker threads whenever an operating system context switch occurs."
+        "reasons": [
+          "A context switch does not make a `Semaphore` revoke its permits or terminate the worker threads waiting on it.",
+          "`acquire()` blocks when no permit is available, and a missing permit is not signaled with `IllegalStateException`.",
+          "A `Semaphore` does not stick open at zero; a later `acquire()` needs a permit that some thread `release()`s."
+        ],
+        "variants": [
+          "`Semaphore` automatically revokes all permits and terminates worker threads whenever an operating system context switch occurs.",
+          "`Semaphore.acquire()` always returns immediately to the caller, and a missing permit is reported by throwing `IllegalStateException`.",
+          "`Semaphore` counts down to zero and then stays open, so every later `acquire()` succeeds without a matching `release()`."
+        ]
       },
       {
         "id": "B",
-        "text": "`CountDownLatch` acquires an exclusive reentrant lock that prevents reader threads from accessing shared memory caches."
+        "reasons": [
+          "`CountDownLatch` does not take an exclusive reentrant lock, and it does not keep readers out of shared memory caches.",
+          "`await()` does not raise the count again after zero, so the same latch cannot gate a later phase.",
+          "`CountDownLatch` is not a fair arrival-ordered lock; waiters are released together when the count hits zero."
+        ],
+        "variants": [
+          "`CountDownLatch` acquires an exclusive reentrant lock that prevents reader threads from accessing shared memory caches.",
+          "`CountDownLatch.await()` counts the latch back up after it reaches zero so the same latch can gate the next phase.",
+          "`CountDownLatch` is fair by default and wakes `await` callers in the exact order those threads arrived."
+        ]
       },
       {
         "id": "C",
-        "text": "`CountDownLatch` cannot be reset once its count reaches zero; `CyclicBarrier` can be reused across repeated cyclic phases."
+        "variants": [
+          "`CountDownLatch` cannot be reset once its count reaches zero; `CyclicBarrier` can be reused across repeated cyclic phases.",
+          "Once a `CountDownLatch` reaches zero it cannot be reset, while a `CyclicBarrier` can be reused for later cyclic phases.",
+          "A `CountDownLatch` cannot be reset after its count hits zero, whereas a `CyclicBarrier` is reusable across repeated phases."
+        ]
       },
       {
         "id": "D",
-        "text": "`Semaphore` manages a set of permits, allowing a controlled number of concurrent threads to access a shared resource or pool."
+        "variants": [
+          "`Semaphore` manages a set of permits, allowing a controlled number of concurrent threads to access a shared resource or pool.",
+          "`Semaphore` holds a set of permits so only a limited number of threads can use a shared resource or pool at once.",
+          "A `Semaphore` controls entry with permits, letting a bounded number of threads use a shared resource or pool together."
+        ]
       },
       {
         "id": "E",
-        "text": "`CyclicBarrier` awaits a fixed number of threads meeting at a barrier point, optionally executing a barrier action upon arrival."
+        "variants": [
+          "`CyclicBarrier` awaits a fixed number of threads meeting at a barrier point, optionally executing a barrier action upon arrival.",
+          "`CyclicBarrier` waits until a fixed number of threads meet at a barrier, and it can run a barrier action when they arrive.",
+          "A `CyclicBarrier` blocks until a set number of parties reach the barrier and may run a barrier action at that point."
+        ]
       }
     ],
     "correct": [
@@ -4814,19 +9387,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A default no-argument constructor and asynchronous non-blocking reactive stream adapters for Kafka producers."
+        "reasons": [
+          "A `data class` does not get a default no-arg constructor or reactive stream adapters for Kafka producers.",
+          "A `data class` does not automatically implement `Comparable` or generate `compareTo()` from constructor order.",
+          "The generated `copy()` is not a `clone()` deep copy, and mutable collections are not deep-copied for you."
+        ],
+        "variants": [
+          "A default no-argument constructor and asynchronous non-blocking reactive stream adapters for Kafka producers.",
+          "The compiler generates `compareTo()` for every `data class`, so instances are always ordered by constructor-parameter order.",
+          "Kotlin generates `clone()`, which deep-copies every property of the `data class`, including mutable collections."
+        ]
       },
       {
         "id": "B",
-        "text": "Public getter and setter methods along with automated database schema migration scripts for SQL table generation."
+        "reasons": [
+          "A `data class` does not generate database schema migration scripts, and its methods are not a SQL table generator.",
+          "`readObject` and `writeObject` are not generated, and a `data class` is not serializable unless it implements `Serializable`.",
+          "The compiler does not generate a `builder()` that nulls out constructor properties before `build()`."
+        ],
+        "variants": [
+          "Public getter and setter methods along with automated database schema migration scripts for SQL table generation.",
+          "Kotlin generates `readObject` and `writeObject` so a `data class` is Java-serializable without implementing `Serializable`.",
+          "A `data class` receives a `builder()` factory that sets every constructor property to `null` until `build()` is called."
+        ]
       },
       {
         "id": "C",
-        "text": "Canonical `equals()`, `hashCode()`, `toString()`, a `copy()` function, and destructuring component functions (`component1()`, `component2()`)."
+        "variants": [
+          "Canonical `equals()`, `hashCode()`, `toString()`, a `copy()` function, and destructuring component functions (`component1()`, `component2()`).",
+          "The compiler generates `equals()`, `hashCode()`, `toString()`, `copy()`, and component functions such as `component1()` and `component2()`.",
+          "A `data class` receives `equals()`, `hashCode()`, `toString()`, `copy()`, and destructuring functions `component1()` and `component2()`."
+        ]
       },
       {
         "id": "D",
-        "text": "Synchronized thread monitors that guarantee all member properties are protected against concurrent multithreaded mutations."
+        "reasons": [
+          "A `data class` does not install synchronized monitors that protect its properties from concurrent mutation.",
+          "`wait()` and `notify()` are not overridden to serialize access to each property.",
+          "Property writes are ordinary field writes, not `AtomicReference` updates with lock-free visibility."
+        ],
+        "variants": [
+          "Synchronized thread monitors that guarantee all member properties are protected against concurrent multithreaded mutations.",
+          "The compiler overrides `wait()` and `notify()` so concurrent access to each property of the `data class` is fully serialized.",
+          "A `data class` automatically applies `AtomicReference` semantics so every property write is lock-free and immediately visible across threads."
+        ]
       }
     ],
     "correct": [
@@ -4842,19 +9446,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`LinkedBlockingQueue` bypasses CPU memory caching by executing all element lookups inside operating system kernel page buffers."
+        "reasons": [
+          "`LinkedBlockingQueue` does not perform lookups in kernel page buffers or bypass CPU memory caches.",
+          "Its default capacity is effectively unbounded (`Integer.MAX_VALUE`), and `put()` blocks rather than throwing `IllegalStateException` at 16 elements.",
+          "It uses separate put and take locks, so a producer and a consumer can proceed at the same time."
+        ],
+        "variants": [
+          "`LinkedBlockingQueue` bypasses CPU memory caching by executing all element lookups inside operating system kernel page buffers.",
+          "`LinkedBlockingQueue` defaults to a bound of 16 slots and rejects a further `put()` with `IllegalStateException`.",
+          "`LinkedBlockingQueue` uses one lock for head and tail, so a producer and a consumer cannot run at the same time."
+        ]
       },
       {
         "id": "B",
-        "text": "`SynchronousQueue` has zero internal capacity; each `put()` operation must wait for a corresponding `take()` by another thread."
+        "variants": [
+          "`SynchronousQueue` has zero internal capacity; each `put()` operation must wait for a corresponding `take()` by another thread.",
+          "`SynchronousQueue` stores nothing internally, so each `put()` waits until another thread performs the matching `take()`.",
+          "A `SynchronousQueue` has zero internal capacity, and a `put()` blocks until some other thread calls `take()`."
+        ]
       },
       {
         "id": "C",
-        "text": "`SynchronousQueue` stores up to 1024 elements in off-heap native memory to provide non-blocking asynchronous buffering."
+        "reasons": [
+          "`SynchronousQueue` does not buffer up to 1024 elements in off-heap memory; its capacity is zero.",
+          "`offer()` returns false if no consumer is waiting, and the queue is not an unbounded buffer until `poll()`.",
+          "There is no one-element slot; a producer cannot deposit an element unless another thread is already taking it."
+        ],
+        "variants": [
+          "`SynchronousQueue` stores up to 1024 elements in off-heap native memory to provide non-blocking asynchronous buffering.",
+          "`SynchronousQueue.offer()` always succeeds and then holds the offered element until a later `poll()`, because its capacity is unbounded.",
+          "`SynchronousQueue` keeps a single buffered element and blocks the producer only when that one slot is already holding one item."
+        ]
       },
       {
         "id": "D",
-        "text": "`ArrayBlockingQueue` allocates a fixed-size array upfront, whereas `LinkedBlockingQueue` dynamically allocates nodes on each insertion."
+        "variants": [
+          "`ArrayBlockingQueue` allocates a fixed-size array upfront, whereas `LinkedBlockingQueue` dynamically allocates nodes on each insertion.",
+          "`ArrayBlockingQueue` creates its fixed array in advance, while `LinkedBlockingQueue` allocates a node on every insertion.",
+          "`ArrayBlockingQueue` uses a preallocated fixed-size array; `LinkedBlockingQueue` creates nodes dynamically as elements are inserted."
+        ]
       }
     ],
     "correct": [
@@ -4871,23 +9501,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The Java compiler (`javac`) compiles all application source code into native x86 machine instructions ahead of time during the build."
+        "reasons": [
+          "`javac` emits bytecode, not native x86 instructions, and it does not native-compile the application ahead of time at build.",
+          "Methods are not all compiled at class-load time; compilation happens later for code that becomes hot.",
+          "C2 does not run only at startup, and hot methods are not left permanently in the interpreter."
+        ],
+        "variants": [
+          "The Java compiler (`javac`) compiles all application source code into native x86 machine instructions ahead of time during the build.",
+          "HotSpot compiles every loaded method to native code during class loading, before that method has ever been called.",
+          "The C2 compiler runs only while the JVM is starting and then leaves every loaded method in the interpreter for good."
+        ]
       },
       {
         "id": "B",
-        "text": "Frequently executed 'hot' methods and loops are dynamically compiled into optimized native machine code by C1 and C2 JIT compilers."
+        "variants": [
+          "Frequently executed 'hot' methods and loops are dynamically compiled into optimized native machine code by C1 and C2 JIT compilers.",
+          "Methods and loops that run often are compiled at runtime into optimized native code by the C1 and C2 JIT compilers.",
+          "C1 and C2 compile frequently executed hot methods and loops into optimized native machine code while the program runs."
+        ]
       },
       {
         "id": "C",
-        "text": "The JVM initially executes methods via the interpreter while collecting runtime execution profiling counters."
+        "variants": [
+          "The JVM initially executes methods via the interpreter while collecting runtime execution profiling counters.",
+          "At first the JVM interprets methods and gathers runtime profiling counters from that execution.",
+          "Methods begin in the interpreter, which collects runtime execution profiling counters while they run."
+        ]
       },
       {
         "id": "D",
-        "text": "JIT compilation permanently disables CPU branch prediction to ensure deterministic execution times across all threads."
+        "reasons": [
+          "JIT compilation does not turn off CPU branch prediction, and it does not make execution times deterministic for every thread.",
+          "HotSpot can deoptimize compiled code when a speculative assumption, such as a class hierarchy, is later invalidated.",
+          "C1 code is executed while C2 compiles; tiered compilation does not throw C1 code away unused."
+        ],
+        "variants": [
+          "JIT compilation permanently disables CPU branch prediction to ensure deterministic execution times across all threads.",
+          "After C2 compiles a method, HotSpot never deoptimizes that method, even if a later class load breaks its speculative assumptions.",
+          "Tiered compilation discards unused C1 code, and application threads enter only the final C2 native code."
+        ]
       },
       {
         "id": "E",
-        "text": "The first requests to a newly deployed Java service often exhibit higher latency while classes are loaded and hot methods are compiled."
+        "variants": [
+          "The first requests to a newly deployed Java service often exhibit higher latency while classes are loaded and hot methods are compiled.",
+          "Early requests to a freshly deployed Java service are often slower while classes load and hot methods are compiled.",
+          "A newly deployed Java service often shows higher latency on its first requests as classes load and hot methods get compiled."
+        ]
       }
     ],
     "correct": [
@@ -4905,19 +9565,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Naming one task skips configuration, so Gradle goes from initialization straight to executing that task."
+        "reasons": [
+          "Naming a single task does not skip configuration; Gradle does not go from initialization straight into executing that task.",
+          "The task graph is created in configuration after build scripts are evaluated, not during initialization from the settings file.",
+          "Task actions run in the execution phase after configuration; they are not interleaved with evaluation of the build script."
+        ],
+        "variants": [
+          "Naming one task skips configuration, so Gradle goes from initialization straight to executing that task.",
+          "The task graph is built during initialization from the settings file, before any `build.gradle` script is evaluated.",
+          "The named task's actions run during script evaluation, so configuration and execution overlap."
+        ]
       },
       {
         "id": "B",
-        "text": "Only the task named on the command line is configured, and every other project that the settings file includes is left unconfigured."
+        "reasons": [
+          "Gradle does not configure only the task named on the command line; projects included from settings are still configured.",
+          "Tasks without `dependsOn` are still configured; dependencies are not what decides whether configuration runs.",
+          "Included projects are configured in the same build, not in a separate daemon per project."
+        ],
+        "variants": [
+          "Only the task named on the command line is configured, and every other project that the settings file includes is left unconfigured.",
+          "Only tasks that declare `dependsOn` are configured, and a task with no dependencies is executed with no configuration phase.",
+          "Each included project is configured in its own Gradle daemon, and the client daemon only executes the task named on the command line."
+        ]
       },
       {
         "id": "C",
-        "text": "The named task runs first, and configuration happens afterward to record the outputs that task wrote."
+        "reasons": [
+          "The named task does not run before configuration, and configuration is not a later step that records what that task wrote.",
+          "Configuration is a phase of every build, not a separate command, and execution is not merged into initialization.",
+          "`pluginManagement` belongs to settings evaluation, and configuration does create the task graph."
+        ],
+        "variants": [
+          "The named task runs first, and configuration happens afterward to record the outputs that task wrote.",
+          "Initialization and execution are one phase, and configuration is a different command such as `gradle tasks`.",
+          "The configuration phase only resolves `pluginManagement` in the settings file and does not create tasks."
+        ]
       },
       {
         "id": "D",
-        "text": "Gradle initializes, then configures projects and the task graph, and only then executes, so configuration still runs for one task."
+        "variants": [
+          "Gradle initializes, then configures projects and the task graph, and only then executes, so configuration still runs for one task.",
+          "Gradle still configures projects and the task graph after initialization and before execution, even when only one task is named.",
+          "Even for a single named task, Gradle initializes, then configures projects and the task graph, and only afterward executes."
+        ]
       }
     ],
     "correct": [
@@ -4933,19 +9624,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Using `JOIN FETCH` in JPQL / HQL queries to retrieve parent entities and their associated child collections in a single SQL query."
+        "variants": [
+          "Using `JOIN FETCH` in JPQL / HQL queries to retrieve parent entities and their associated child collections in a single SQL query.",
+          "Use `JOIN FETCH` in JPQL or HQL so parent entities and their associated child collections load in one SQL query.",
+          "`JOIN FETCH` in JPQL / HQL retrieves a parent and its associated child collections together in a single SQL query."
+        ]
       },
       {
         "id": "B",
-        "text": "Configuring an `@EntityGraph` or setting `@BatchSize` to fetch collections in batches rather than individual queries."
+        "variants": [
+          "Configuring an `@EntityGraph` or setting `@BatchSize` to fetch collections in batches rather than individual queries.",
+          "Define an `@EntityGraph` or `@BatchSize` so collections load in batches instead of individual queries.",
+          "An `@EntityGraph` or `@BatchSize` fetches collections in batches rather than through individual queries."
+        ]
       },
       {
         "id": "C",
-        "text": "Declaring all entity relationship fields with the `transient` keyword to prevent Hibernate from issuing SQL queries."
+        "reasons": [
+          "Marking relationships `transient` drops them from persistence; it is not how you load an association without the N+1 selects.",
+          "`session.clear()` detaches the persistence context and does not reliably stop association selects on the next parent read.",
+          "`hibernate.jdbc.fetch_size` hints how many rows JDBC fetches at once; it does not join child collections into the parent select."
+        ],
+        "variants": [
+          "Declaring all entity relationship fields with the `transient` keyword to prevent Hibernate from issuing SQL queries.",
+          "Calling `session.clear()` before every parent read so Hibernate cannot issue any later association selects.",
+          "Setting `hibernate.jdbc.fetch_size` to 1, which folds association loading into the original parent select."
+        ]
       },
       {
         "id": "D",
-        "text": "Setting `fetch = FetchType.EAGER` on all entity relationships to force eager loading across the entire domain model."
+        "reasons": [
+          "Setting `FetchType.EAGER` on every relationship is not an effective N+1 fix and can widen loading across the domain model.",
+          "`LazyCollectionOption.EXTRA` still queries for operations such as size, and iterating the collection does hit the database.",
+          "A new `Session` per child does not remove the extra selects; it isolates them from the parent's persistence context."
+        ],
+        "variants": [
+          "Setting `fetch = FetchType.EAGER` on all entity relationships to force eager loading across the entire domain model.",
+          "Annotating every collection with `@LazyCollection(LazyCollectionOption.EXTRA)` so size checks and iteration never touch the database.",
+          "Opening a new `Session` per child entity so each association loads outside the persistence context that read the parent."
+        ]
       }
     ],
     "correct": [
@@ -4962,23 +9679,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Methods annotated with `@PostConstruct` execute after dependency injection is complete and properties are set."
+        "variants": [
+          "Methods annotated with `@PostConstruct` execute after dependency injection is complete and properties are set.",
+          "`@PostConstruct` methods run after dependency injection has finished and properties have been set.",
+          "A method marked `@PostConstruct` executes once injection is complete and the bean properties are set."
+        ]
       },
       {
         "id": "B",
-        "text": "`BeanPostProcessor` implementations can intercept, inspect, or wrap bean instances before and after their initialization callbacks."
+        "variants": [
+          "`BeanPostProcessor` implementations can intercept, inspect, or wrap bean instances before and after their initialization callbacks.",
+          "A `BeanPostProcessor` can intercept, inspect, or wrap a bean both before and after its initialization callbacks.",
+          "`BeanPostProcessor` may inspect, wrap, or intercept a bean both before and after its own initialization callbacks."
+        ]
       },
       {
         "id": "C",
-        "text": "Spring singleton beans are automatically garbage collected and re-instantiated on every incoming HTTP request."
+        "reasons": [
+          "A Spring singleton is not garbage-collected and recreated on every HTTP request; one instance is shared for the container lifetime.",
+          "Singletons are created eagerly at startup by default, and `@PostConstruct` still runs for those startup instances.",
+          "An `ApplicationEvent` from a dependency does not destroy and recreate the singleton that received it."
+        ],
+        "variants": [
+          "Spring singleton beans are automatically garbage collected and re-instantiated on every incoming HTTP request.",
+          "Singletons are created only on the first `getBean` call, and `@PostConstruct` is skipped for beans created eagerly at startup.",
+          "Spring destroys and recreates a singleton whenever an injected dependency publishes an `ApplicationEvent`."
+        ]
       },
       {
         "id": "D",
-        "text": "Annotating a method with `@PreDestroy` allows singleton beans to release connections, sockets, and threads during container shutdown."
+        "variants": [
+          "Annotating a method with `@PreDestroy` allows singleton beans to release connections, sockets, and threads during container shutdown.",
+          "`@PreDestroy` lets a singleton bean release its open connections, sockets, and threads when the container shuts down.",
+          "A `@PreDestroy` method on a singleton bean can free open connections, sockets, and threads during container shutdown."
+        ]
       },
       {
         "id": "E",
-        "text": "`@PostConstruct` methods execute before the bean's constructor is called by the Spring IoC container."
+        "reasons": [
+          "`@PostConstruct` runs after the constructor and after injection, not before the Spring container calls the constructor.",
+          "`@PostConstruct` runs once during initialization, not after request interceptors and not only when an HTTP call arrives.",
+          "`postProcessAfterInitialization` runs after initialization callbacks, not before the constructor, and it does not choose the class to instantiate."
+        ],
+        "variants": [
+          "`@PostConstruct` methods execute before the bean's constructor is called by the Spring IoC container.",
+          "`@PostConstruct` runs after each request interceptor and only when that bean handles an HTTP call.",
+          "`postProcessAfterInitialization` runs before the constructor and can replace the class Spring instantiates."
+        ]
       }
     ],
     "correct": [
@@ -4996,19 +9743,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`jstack <pid>` (or `jcmd <pid> Thread.print`), which outputs all thread call stacks and reports identified Java-level deadlocks."
+        "variants": [
+          "`jstack <pid>` (or `jcmd <pid> Thread.print`), which outputs all thread call stacks and reports identified Java-level deadlocks.",
+          "`jstack <pid>` or `jcmd <pid> Thread.print` prints every thread stack and reports Java-level deadlocks it finds.",
+          "Use `jstack <pid>` (or `jcmd <pid> Thread.print`) to dump all thread stacks and any detected Java-level deadlocks."
+        ]
       },
       {
         "id": "B",
-        "text": "`jdeprscan <jar>`, which statically analyzes archived library JAR files for usage of deprecated Java runtime APIs."
+        "reasons": [
+          "`jdeprscan` scans JARs for deprecated APIs; it does not print thread stacks or detect Java-level deadlocks.",
+          "`jmap -histo` is a heap histogram and does not name threads that are deadlocked.",
+          "`GC.class_histogram` counts class instances and does not mark threads blocked on monitors."
+        ],
+        "variants": [
+          "`jdeprscan <jar>`, which statically analyzes archived library JAR files for usage of deprecated Java runtime APIs.",
+          "`jmap -histo <pid>` lists live object counts per class and thereby names the threads that are stuck together in a deadlock.",
+          "`jcmd <pid> GC.class_histogram` prints class instance counts and marks threads blocked on monitors."
+        ]
       },
       {
         "id": "C",
-        "text": "`jstat -gc <pid>`, which continuously streams garbage collection heap generation capacities and execution pause counts."
+        "reasons": [
+          "`jstat -gc` reports garbage-collection heap statistics, not thread stack traces or deadlocks.",
+          "`jps -l` lists process ids and main classes; it does not append a thread dump.",
+          "`jconsole` can show thread stacks and deadlocks, so it is not limited to a heap graph with no lock view."
+        ],
+        "variants": [
+          "`jstat -gc <pid>`, which continuously streams garbage collection heap generation capacities and execution pause counts.",
+          "`jps -l` lists Java process ids and appends each running process's current thread dump to standard output for the user.",
+          "`jconsole <pid>` graphs heap usage only and has no view of thread stacks or of which threads own locks in that process."
+        ]
       },
       {
         "id": "D",
-        "text": "`javap -c <class>`, which disassembles compiled class bytecode into raw Java Virtual Machine assembly instructions."
+        "reasons": [
+          "`javap -c` disassembles bytecode; it does not inspect a live process's thread stacks or find deadlocks.",
+          "`serialver` prints a serial version id and does not report threads blocked in `readObject`.",
+          "`jdeps` analyzes static dependencies, and a package cycle is not a runtime thread deadlock."
+        ],
+        "variants": [
+          "`javap -c <class>`, which disassembles compiled class bytecode into raw Java Virtual Machine assembly instructions.",
+          "`serialver <class>` prints the `serialVersionUID` and reports any threads blocked inside `readObject`.",
+          "`jdeps <jar>` lists package dependencies and flags cycles between classes as runtime thread deadlocks."
+        ]
       }
     ],
     "correct": [
@@ -5024,19 +9802,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "In a standard `coroutineScope`, an uncaught exception in a child coroutine cancels the parent scope and all sibling coroutines."
+        "variants": [
+          "In a standard `coroutineScope`, an uncaught exception in a child coroutine cancels the parent scope and all sibling coroutines.",
+          "Inside a normal `coroutineScope`, an uncaught child exception cancels that parent scope and every sibling coroutine.",
+          "With `coroutineScope`, a child that throws and is not caught cancels the parent scope together with its sibling coroutines."
+        ]
       },
       {
         "id": "B",
-        "text": "Uncaught coroutine exceptions are silently suppressed by the runtime and automatically converted into `null` return values."
+        "reasons": [
+          "Uncaught coroutine exceptions are not swallowed and turned into `null` results.",
+          "`join()` does not throw the coroutine's exception; waiting with `join()` is not what surfaces it.",
+          "A `CoroutineExceptionHandler` on the parent does not make a failed child complete that parent successfully."
+        ],
+        "variants": [
+          "Uncaught coroutine exceptions are silently suppressed by the runtime and automatically converted into `null` return values.",
+          "An exception inside `launch` is stored on the `Job` and is thrown only when the caller later invokes `join()` from that coroutine.",
+          "A failed child completes its parent successfully whenever the parent has a `CoroutineExceptionHandler` installed."
+        ]
       },
       {
         "id": "C",
-        "text": "In a `supervisorScope`, a failure in a child coroutine does not propagate upwards and does not cancel other sibling coroutines."
+        "variants": [
+          "In a `supervisorScope`, a failure in a child coroutine does not propagate upwards and does not cancel other sibling coroutines.",
+          "In a `supervisorScope`, a child failure stays local: it does not cancel the parent or the other sibling coroutines.",
+          "Under `supervisorScope`, one child's failure is not propagated upward and does not cancel its sibling coroutines."
+        ]
       },
       {
         "id": "D",
-        "text": "`async` coroutines immediately re-throw uncaught exceptions on the calling thread without requiring a call to `await()`."
+        "reasons": [
+          "`async` does not rethrow on the calling thread immediately; the exception is thrown when `await()` is called.",
+          "In `coroutineScope`, a failed `async` child cancels the scope; the scope does not always complete normally.",
+          "`await()` throws the stored exception rather than returning a default value of `T`."
+        ],
+        "variants": [
+          "`async` coroutines immediately re-throw uncaught exceptions on the calling thread without requiring a call to `await()`.",
+          "`async` cancels only itself when it fails, and the enclosing `coroutineScope` always completes normally.",
+          "`await()` on a failed `Deferred` returns the default of `T` and exposes the error only via `getCompletionExceptionOrNull()`."
+        ]
       }
     ],
     "correct": [
@@ -5053,19 +9857,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Synchronous REST calls automatically retry failed requests indefinitely with built-in exponential backoff at the OS socket level."
+        "reasons": [
+          "Synchronous REST does not automatically retry forever with exponential backoff implemented at the OS socket.",
+          "A down callee makes a synchronous REST call fail or block; the client does not substitute a cached previous response.",
+          "A synchronous unary gRPC call waits for the server response and does not return when the request bytes are merely written."
+        ],
+        "variants": [
+          "Synchronous REST calls automatically retry failed requests indefinitely with built-in exponential backoff at the OS socket level.",
+          "Synchronous REST stays responsive when the callee is down, because the HTTP client returns a cached copy of the last successful response.",
+          "A synchronous gRPC call returns as soon as the request bytes are written, before the server has handled the RPC."
+        ]
       },
       {
         "id": "B",
-        "text": "Asynchronous messaging buffers requests in queues or topic logs, decoupling producers and consumers in both availability and time."
+        "variants": [
+          "Asynchronous messaging buffers requests in queues or topic logs, decoupling producers and consumers in both availability and time.",
+          "Async messaging stores requests in queues or topic logs, so producers and consumers are decoupled in availability and in time.",
+          "Queues or topic logs buffer asynchronous messages and decouple producers from consumers in both availability and time."
+        ]
       },
       {
         "id": "C",
-        "text": "Asynchronous messaging guarantees that all consumer services process transmitted messages with strictly zero network latency."
+        "reasons": [
+          "Asynchronous messaging does not guarantee that consumers process messages with zero network latency.",
+          "Competing consumers and consumer groups are normal; messaging does not forbid more than one consumer on a queue or topic.",
+          "A successful send means the broker accepted the message, not that a consumer has already finished processing it."
+        ],
+        "variants": [
+          "Asynchronous messaging guarantees that all consumer services process transmitted messages with strictly zero network latency.",
+          "Asynchronous messaging delivers each message to exactly one consumer and forbids a competing consumer on that queue or topic.",
+          "Once the producer send returns, asynchronous messaging guarantees the consumer has already finished handling that message."
+        ]
       },
       {
         "id": "D",
-        "text": "Synchronous communication introduces temporal coupling where caller availability and latency depend directly on downstream services."
+        "variants": [
+          "Synchronous communication introduces temporal coupling where caller availability and latency depend directly on downstream services.",
+          "Synchronous calls create temporal coupling: the caller's availability and latency depend directly on downstream services.",
+          "With synchronous communication, caller latency and availability depend directly on downstream services being up and responsive."
+        ]
       }
     ],
     "correct": [
@@ -5082,19 +9912,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "When network firewalls block incoming TCP packets because client applications submit requests with invalid authorization headers."
+        "reasons": [
+          "A cache stampede is not a firewall dropping TCP packets because requests carry invalid authorization headers.",
+          "Replaying a cache log after restart is not the stampede, and it does not by itself present two values for one id.",
+          "LRU eviction does not delete the least recently used key on every read, and that behavior is not the stampede."
+        ],
+        "variants": [
+          "When network firewalls block incoming TCP packets because client applications submit requests with invalid authorization headers.",
+          "When a cache node restarts and replays its write-ahead log, duplicate keys can make readers observe two different values for one id.",
+          "When eviction deletes the least recently used key on every single read, a hot key can never stay resident in the cache."
+        ]
       },
       {
         "id": "B",
-        "text": "When a popular cached key expires, concurrent requests all miss the cache and overwhelm the database; mitigated using mutex locks or pre-expiration."
+        "variants": [
+          "When a popular cached key expires, concurrent requests all miss the cache and overwhelm the database; mitigated using mutex locks or pre-expiration.",
+          "A popular cached key expires, concurrent requests all miss and overwhelm the database; mutex locks or pre-expiration mitigate it.",
+          "When a popular cached key expires, concurrent misses all flood the database, and the mitigation is mutex locks or pre-expiration."
+        ]
       },
       {
         "id": "C",
-        "text": "When operating system memory runs out, causing the Linux kernel OOM killer to terminate Redis processes during peak traffic hours."
+        "reasons": [
+          "The stampede is not the Linux OOM killer stopping Redis because the machine has run out of memory.",
+          "Concurrent writers fighting over one key are a write race, not the thundering herd of readers after an expiry.",
+          "A cache hit does not go back to the database to refresh the TTL, and that pattern is not the stampede."
+        ],
+        "variants": [
+          "When operating system memory runs out, causing the Linux kernel OOM killer to terminate Redis processes during peak traffic hours.",
+          "When many clients write one key at once and every write is applied, so readers never observe a stable cached value.",
+          "When a cache hit still queries the database to refresh the TTL, multiplying reads by the number of application nodes."
+        ]
       },
       {
         "id": "D",
-        "text": "When multiple microservices write conflicting updates to the same database row without acquiring distributed pessimistic locks."
+        "reasons": [
+          "Conflicting writes to one row without pessimistic locks are a lost-update race, not a cache stampede.",
+          "A cache larger than the working set does not make every read miss, and index addressing is not the stampede.",
+          "Replica lag followed by a client delete is not the thundering-herd expiry problem."
+        ],
+        "variants": [
+          "When multiple microservices write conflicting updates to the same database row without acquiring distributed pessimistic locks.",
+          "When the cache is larger than the database working set, every read misses because the index cannot address that many keys.",
+          "When replication lag returns an empty value and the client then deletes the corresponding key on the primary."
+        ]
       }
     ],
     "correct": [
@@ -5110,23 +9971,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "In Cache-Aside (Lazy Loading), the application queries the cache first, reads from the database on a miss, and populates the cache."
+        "variants": [
+          "In Cache-Aside (Lazy Loading), the application queries the cache first, reads from the database on a miss, and populates the cache.",
+          "In Cache-Aside (lazy loading), the application checks the cache first, reads the database on a miss, and populates the cache.",
+          "With Cache-Aside, the application reads the cache first, loads from the database on a miss, and then fills the cache."
+        ]
       },
       {
         "id": "B",
-        "text": "In Write-Behind (Write-Back), the application writes to the cache immediately, and updates are queued to write to the database asynchronously."
+        "variants": [
+          "In Write-Behind (Write-Back), the application writes to the cache immediately, and updates are queued to write to the database asynchronously.",
+          "In Write-Behind (write-back), the application writes the cache immediately and queues the database update to run asynchronously.",
+          "In Write-Behind, the application updates the cache at once and queues the matching database write to happen asynchronously."
+        ]
       },
       {
         "id": "C",
-        "text": "Cache-Aside guarantees 100% strong transactional consistency between cache and database with zero possibility of stale reads."
+        "reasons": [
+          "Cache-Aside does not give strong transactional consistency or rule out stale reads between cache and database.",
+          "Cache-Aside does not defer database writes until expiry, and hot keys are not a reason updates skip the database.",
+          "In Cache-Aside the application queries the database on a miss; the cache does not load the row by itself."
+        ],
+        "variants": [
+          "Cache-Aside guarantees 100% strong transactional consistency between cache and database with zero possibility of stale reads.",
+          "Cache-Aside writes the database only after the cache entry expires, so updates never reach the database while the key stays hot.",
+          "In Cache-Aside the cache loads the missing row itself, and the application never queries the database directly after each miss."
+        ]
       },
       {
         "id": "D",
-        "text": "In Write-Through, the application updates the cache, and the cache synchronously writes to the database before acknowledging success."
+        "variants": [
+          "In Write-Through, the application updates the cache, and the cache synchronously writes to the database before acknowledging success.",
+          "In Write-Through, the application updates the cache, and the cache synchronously writes the database before acknowledging success.",
+          "Write-Through updates the cache and synchronously persists that change to the database before it acknowledges success."
+        ]
       },
       {
         "id": "E",
-        "text": "Write-Through caching stores all database records in client browser cookies to completely bypass server-side network memory."
+        "reasons": [
+          "Write-Through does not store database rows in browser cookies or bypass server-side memory.",
+          "Write-Through does not acknowledge success before the database write; the synchronous database update happens first.",
+          "Write-Through serves reads from the cache as well and does not flush a write buffer only once per process lifetime."
+        ],
+        "variants": [
+          "Write-Through caching stores all database records in client browser cookies to completely bypass server-side network memory.",
+          "Write-Through acknowledges the client before the database write completes, then updates the cache only if that later database write fails.",
+          "Write-Through skips the cache on reads and uses it only as a write buffer flushed once per process lifetime."
+        ]
       }
     ],
     "correct": [
@@ -5144,19 +10035,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A 'Covering Index' contains all columns referenced by a query (`SELECT`, `WHERE`, `ORDER BY`), avoiding secondary row data page lookups."
+        "variants": [
+          "A 'Covering Index' contains all columns referenced by a query (`SELECT`, `WHERE`, `ORDER BY`), avoiding secondary row data page lookups.",
+          "A covering index includes every column used by `SELECT`, `WHERE`, and `ORDER BY`, so the query avoids extra row-page lookups.",
+          "When an index holds all `SELECT`, `WHERE`, and `ORDER BY` columns, the engine can skip secondary lookups of the row data pages."
+        ]
       },
       {
         "id": "B",
-        "text": "Indexes on low-cardinality boolean columns are always the most efficient indexes because binary values consume minimal memory."
+        "reasons": [
+          "Low-cardinality boolean indexes are often poor selectors, and a binary column is not automatically the most efficient index.",
+          "A composite index can serve a query better than a single column, and planners are not limited to range-scanning one column.",
+          "Leading-column order in a composite index does change which queries can use that index."
+        ],
+        "variants": [
+          "Indexes on low-cardinality boolean columns are always the most efficient indexes because binary values consume minimal memory.",
+          "A single-column index is always strictly faster than any composite index, because the planner can range-scan only a single column at a time.",
+          "Every foreign key should be indexed alone, and column order in a composite index never changes which queries can use it."
+        ]
       },
       {
         "id": "C",
-        "text": "Composite indexes (e.g. `(status, created_at)`) follow the leftmost prefix rule: queries must filter by the leading column(s) to use the index."
+        "variants": [
+          "Composite indexes (e.g. `(status, created_at)`) follow the leftmost prefix rule: queries must filter by the leading column(s) to use the index.",
+          "A composite index such as `(status, created_at)` follows the leftmost prefix rule, so a query must filter on the leading column or columns.",
+          "Composite indexes such as `(status, created_at)` can be used only when the query filters by the leftmost column or columns."
+        ]
       },
       {
         "id": "D",
-        "text": "Adding an index to every column in a database table accelerates all `INSERT` and `UPDATE` operations by eliminating disk scans."
+        "reasons": [
+          "Indexing every column does not speed up `INSERT` and `UPDATE`; each extra index adds write and maintenance cost.",
+          "A unique index rejects duplicate keys; putting them in one transaction does not make the duplicates legal.",
+          "Dropping the primary-key index does not make equality lookups faster, and an insertion-order scan is not a substitute for that index."
+        ],
+        "variants": [
+          "Adding an index to every column in a database table accelerates all `INSERT` and `UPDATE` operations by eliminating disk scans.",
+          "A unique index still allows duplicate keys when those duplicates are written in one transaction and rolled back together.",
+          "Dropping the primary-key index speeds equality lookups on that key, because the table can then be scanned in insertion order."
+        ]
       }
     ],
     "correct": [
@@ -5173,23 +10090,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Clients supply a unique idempotency key (e.g. UUID in the `Idempotency-Key` HTTP header) representing the distinct business intent."
+        "variants": [
+          "Clients supply a unique idempotency key (e.g. UUID in the `Idempotency-Key` HTTP header) representing the distinct business intent.",
+          "The client sends a unique idempotency key, such as a UUID in the `Idempotency-Key` header, standing for that distinct business intent.",
+          "Clients name one business intent with a unique idempotency key, for example a UUID in the `Idempotency-Key` HTTP header."
+        ]
       },
       {
         "id": "B",
-        "text": "The server records the idempotency key in an atomic datastore (such as a database unique constraint or Redis `SET NX`) before processing."
+        "variants": [
+          "The server records the idempotency key in an atomic datastore (such as a database unique constraint or Redis `SET NX`) before processing.",
+          "Before processing, the server stores the idempotency key atomically, for example with a unique constraint or Redis `SET NX`.",
+          "The server first records the key atomically, via a database unique constraint or Redis `SET NX`, and only then processes the request."
+        ]
       },
       {
         "id": "C",
-        "text": "If a duplicate idempotency key is received after successful processing, the server returns the cached original response without recharging."
+        "variants": [
+          "If a duplicate idempotency key is received after successful processing, the server returns the cached original response without recharging.",
+          "After a successful charge, a repeated idempotency key makes the server return the cached original response without charging again.",
+          "When a duplicate key arrives after processing succeeded, the server returns the stored original response without recharging."
+        ]
       },
       {
         "id": "D",
-        "text": "Idempotency keys must be derived from the client device's physical MAC address to ensure operating system network compliance."
+        "reasons": [
+          "Idempotency keys are not required to be the device MAC address, and MAC addresses are not what makes a payment request idempotent.",
+          "Amount plus currency is not a unique business intent, so distinct orders with the same price must not share one key.",
+          "Retries of the same attempt must reuse the original key; generating a new key on each retry creates a new charge."
+        ],
+        "variants": [
+          "Idempotency keys must be derived from the client device's physical MAC address to ensure operating system network compliance.",
+          "The idempotency key should be the payment amount plus currency, so two different orders of the same price share one key.",
+          "A fresh idempotency key must be generated on every retry, including each retry of the same payment attempt."
+        ]
       },
       {
         "id": "E",
-        "text": "The server must automatically charge the user's payment method again whenever a duplicate idempotency key is detected."
+        "reasons": [
+          "A duplicate idempotency key must not cause another charge of the user's payment method.",
+          "A duplicate of a completed request should replay the original outcome, not fail with HTTP 409 and demand a new payment.",
+          "Ignoring the key after validation and charging again breaks idempotency and creates a second transaction."
+        ],
+        "variants": [
+          "The server must automatically charge the user's payment method again whenever a duplicate idempotency key is detected.",
+          "On any duplicate idempotency key the server should respond with HTTP 409 and require the client to pay again under a newly issued key.",
+          "After the first request passes validation, the server should ignore the key and run the charge again as a new transaction."
+        ]
       }
     ],
     "correct": [
@@ -5207,19 +10154,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Converting all relational SQL tables into non-relational document databases by deleting all primary key constraints."
+        "reasons": [
+          "Horizontal sharding does not mean converting SQL tables into document stores or deleting primary-key constraints.",
+          "Parallel index scans on a single server are not sharding, because the rows never leave that one instance.",
+          "Moving column families apart while leaving every row key on one primary is vertical placement, not horizontal sharding."
+        ],
+        "variants": [
+          "Converting all relational SQL tables into non-relational document databases by deleting all primary key constraints.",
+          "Horizontal sharding keeps every row on one server and splits each query into parallel index scans on that same instance.",
+          "Horizontal sharding places each column family on a different server while every row key stays on the original primary."
+        ]
       },
       {
         "id": "B",
-        "text": "Splitting database columns into separate tables on the same server to reduce disk footprint without altering network routing."
+        "reasons": [
+          "Splitting columns into tables on the same server is vertical partitioning, not horizontal sharding across servers.",
+          "Local index range partitions on one server do not place rows of the table onto multiple database servers.",
+          "Archiving old rows in the same database does not distribute the live table across servers by a shard key."
+        ],
+        "variants": [
+          "Splitting database columns into separate tables on the same server to reduce disk footprint without altering network routing.",
+          "Range-partitioning the secondary indexes of a table on a single server so that each partition file can be vacuumed on its own schedule.",
+          "Moving older rows into a compressed archive table in the same database and reading those rows back through a view."
+        ]
       },
       {
         "id": "C",
-        "text": "Partitioning rows of a table across multiple database servers based on a shard key; trade-off is complex cross-shard joins and transactions."
+        "variants": [
+          "Partitioning rows of a table across multiple database servers based on a shard key; trade-off is complex cross-shard joins and transactions.",
+          "Sharding places table rows across multiple servers by a shard key, and the trade-off is harder cross-shard joins and transactions.",
+          "Rows are split across database servers using a shard key, and the trade-off is complex joins and transactions that cross shards."
+        ]
       },
       {
         "id": "D",
-        "text": "Creating read replicas to offload read traffic from the primary master node without modifying write query distribution."
+        "reasons": [
+          "Read replicas offload reads from a primary; they do not partition a table's rows across servers by a shard key.",
+          "Failover to a standby keeps a single writable copy and does not shard rows across servers.",
+          "Placing child rows on a random server does not keep joins local, and it is not sharding by a shard key."
+        ],
+        "variants": [
+          "Creating read replicas to offload read traffic from the primary master node without modifying write query distribution.",
+          "Promoting a standby when the writer fails, without ever spreading one table's rows across more than one server.",
+          "Putting each child row on a random server unrelated to its parent so that joins stay local without a shard key."
+        ]
       }
     ],
     "correct": [
@@ -5235,19 +10213,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Sliding Window algorithms track timestamps or segmented counters, preventing burst abuse at window boundaries seen in Fixed Window."
+        "variants": [
+          "Sliding Window algorithms track timestamps or segmented counters, preventing burst abuse at window boundaries seen in Fixed Window.",
+          "Sliding-window limiters track timestamps or segmented counters and stop the boundary bursts that a fixed window allows.",
+          "A sliding window records timestamps or segmented counters, preventing the window-boundary burst abuse seen with Fixed Window."
+        ]
       },
       {
         "id": "B",
-        "text": "Token Bucket immediately terminates the application process whenever incoming request traffic exceeds ten calls per second."
+        "reasons": [
+          "Token Bucket does not kill the process, and it is not defined as a hard stop at ten calls per second.",
+          "Requests are admitted while tokens remain; the bucket does not refuse traffic until it is completely full.",
+          "A calendar-minute counter that resets at the minute boundary is fixed window, not Token Bucket."
+        ],
+        "variants": [
+          "Token Bucket immediately terminates the application process whenever incoming request traffic exceeds ten calls per second.",
+          "Token Bucket rejects every request until the bucket is completely full, so an idle client must wait for a full refill before sending.",
+          "Token Bucket counts calls in a fixed calendar minute and resets that counter to zero only when the minute ends."
+        ]
       },
       {
         "id": "C",
-        "text": "Token Bucket permits bursts of traffic up to the bucket capacity while enforcing a constant long-term token refill rate."
+        "variants": [
+          "Token Bucket permits bursts of traffic up to the bucket capacity while enforcing a constant long-term token refill rate.",
+          "Token Bucket allows a burst up to the bucket capacity while still enforcing a constant long-term token refill rate.",
+          "A token bucket absorbs bursts as large as its capacity, and tokens keep refilling at a constant long-term rate."
+        ]
       },
       {
         "id": "D",
-        "text": "Sliding Window rate limiting requires storing complete HTTP response payloads on local server disk drives indefinitely."
+        "reasons": [
+          "Sliding-window rate limiting does not require storing full HTTP response bodies on local disk forever.",
+          "A sliding window is what prevents a fresh burst at each window boundary, rather than allowing an unlimited one.",
+          "The limit is on request rate, not on response bytes, so small responses do not make the request rate unlimited."
+        ],
+        "variants": [
+          "Sliding Window rate limiting requires storing complete HTTP response payloads on local server disk drives indefinitely.",
+          "Sliding Window allows an unlimited burst at the start of each window whenever the previous window stayed under the limit.",
+          "Sliding Window limits only response bytes, so the request rate may grow without bound when responses stay small."
+        ]
       }
     ],
     "correct": [
@@ -5264,23 +10268,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "In the CLOSED state, requests pass through to the dependency while failure and slow-call rates are measured in a sliding window."
+        "variants": [
+          "In the CLOSED state, requests pass through to the dependency while failure and slow-call rates are measured in a sliding window.",
+          "While CLOSED, calls pass through to the dependency, and failure and slow-call rates are measured in a sliding window.",
+          "In the CLOSED state, requests reach the dependency while failure and slow-call rates are tracked over a sliding window."
+        ]
       },
       {
         "id": "B",
-        "text": "In the HALF-OPEN state, a limited trial number of probe requests are permitted through to verify if the downstream service has recovered."
+        "variants": [
+          "In the HALF-OPEN state, a limited trial number of probe requests are permitted through to verify if the downstream service has recovered.",
+          "In HALF-OPEN, a limited number of probe requests are let through to check whether the downstream service has recovered.",
+          "In HALF-OPEN, only a small trial set of probe calls is allowed, to verify that the downstream dependency has recovered."
+        ]
       },
       {
         "id": "C",
-        "text": "When failures exceed a configured threshold, the breaker trips to OPEN, immediately short-circuiting calls and invoking fallbacks."
+        "variants": [
+          "When failures exceed a configured threshold, the breaker trips to OPEN, immediately short-circuiting calls and invoking fallbacks.",
+          "If failures pass the configured threshold, the breaker opens, short-circuits calls immediately, and invokes fallbacks.",
+          "Past the failure threshold the breaker trips to OPEN, short-circuiting further calls at once and running fallbacks."
+        ]
       },
       {
         "id": "D",
-        "text": "In the OPEN state, all incoming HTTP requests are permanently routed to an unencrypted public FTP server."
+        "reasons": [
+          "OPEN does not permanently forward HTTP traffic to an unencrypted public FTP server.",
+          "OPEN short-circuits calls; it does not keep sending them to the dependency to recompute a failure percentage.",
+          "Successful probes in HALF-OPEN allow the breaker to return to CLOSED; HALF-OPEN is not permanent."
+        ],
+        "variants": [
+          "In the OPEN state, all incoming HTTP requests are permanently routed to an unencrypted public FTP server.",
+          "In the OPEN state the breaker keeps calling the dependency so it can gather a fresh failure percentage.",
+          "Once HALF-OPEN is entered, it never returns to CLOSED, even when every probe request succeeds."
+        ]
       },
       {
         "id": "E",
-        "text": "Circuit breakers eliminate the need to configure network connection timeouts or read timeouts on HTTP client libraries."
+        "reasons": [
+          "A circuit breaker does not remove the need for connection and read timeouts on the HTTP client.",
+          "CLOSED records failures in the window; it does not retry a failed call forever before counting it.",
+          "OPEN fails fast instead of blocking until the dependency returns, and it does not make bulkheads unnecessary."
+        ],
+        "variants": [
+          "Circuit breakers eliminate the need to configure network connection timeouts or read timeouts on HTTP client libraries.",
+          "While CLOSED, the breaker retries each failed call forever on the same thread before it records one failure.",
+          "With a breaker installed, OPEN calls still block the caller until the dependency returns, making separate bulkheads unnecessary."
+        ]
       }
     ],
     "correct": [
@@ -5298,19 +10332,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Active-active takes writes in a single region only, and active-passive takes writes in every region at once without any conflict handling at all."
+        "reasons": [
+          "That swaps the two designs: active-active is not single-region writes, and active-passive does not take writes in every region with no conflict handling.",
+          "Active-passive still accepts writes in the primary region; it does not refuse all writes until a manual promotion.",
+          "Active-active does not leave every region except one as DNS-only with no database."
+        ],
+        "variants": [
+          "Active-active takes writes in a single region only, and active-passive takes writes in every region at once without any conflict handling at all.",
+          "Active-passive serves all reads from every region and accepts writes in none of those regions until an operator manually promotes one chosen region.",
+          "Active-active stores its data in only one region and uses every other region merely as a DNS name that never holds a database replica of its own."
+        ]
       },
       {
         "id": "B",
-        "text": "Both forms take writes in every region, and they differ only in which region answers the health check."
+        "reasons": [
+          "The designs do not both accept writes in every region, and they are not distinguished only by which region answers a health check.",
+          "They are not write-disabled except during an outage, and failover time is not the only difference.",
+          "Active-active is not defined as synchronous replication to every region with automated failover disabled."
+        ],
+        "variants": [
+          "Both forms take writes in every region, and they differ only in which region answers the health check.",
+          "They differ only by failover duration, and both refuse writes except while an outage is underway.",
+          "Both replicate synchronously to every region, and active-active simply turns automated failover off."
+        ]
       },
       {
         "id": "C",
-        "text": "Active-passive keeps a writable copy in every region, and active-active is a read-only cache in front of one primary."
+        "reasons": [
+          "Active-passive does not keep a writable copy in every region, and active-active is not a read-only cache in front of one primary.",
+          "Two writable primaries on a consensus log are not active-passive, and active-active is not a cold spare restored from backups.",
+          "Active-active accepts writes in more than one healthy region; it is not a snapshot restore with writes disabled."
+        ],
+        "variants": [
+          "Active-passive keeps a writable copy in every region, and active-active is a read-only cache in front of one primary.",
+          "Active-passive runs two writable primaries coordinated by a consensus log, and active-active is a cold spare rebuilt from backups.",
+          "Active-active fails over by restoring a snapshot in the second region, and neither region writes while both stay healthy."
+        ]
       },
       {
         "id": "D",
-        "text": "Active-passive takes writes in one region and fails over, while active-active takes writes in more than one region and has to handle conflicts."
+        "variants": [
+          "Active-passive takes writes in one region and fails over, while active-active takes writes in more than one region and has to handle conflicts.",
+          "Active-passive takes writes in one region and fails over, while active-active takes writes in several regions and must handle conflicts.",
+          "With active-passive, one region accepts writes and can fail over; active-active accepts writes in more than one region and handles conflicts."
+        ]
       }
     ],
     "correct": [
@@ -5326,19 +10391,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The optimal pool size formula balances available CPU cores and disk spindles: Connections ~ (CPU Cores x 2) + Spindle Count."
+        "variants": [
+          "The optimal pool size formula balances available CPU cores and disk spindles: Connections ~ (CPU Cores x 2) + Spindle Count.",
+          "Available CPU cores and disk spindles are what the optimal pool-size formula balances: connections ~ (CPU cores x 2) + spindle count.",
+          "Connections ~ (CPU cores x 2) + spindle count is the optimal pool-size formula balancing available CPU cores and disk spindles."
+        ]
       },
       {
         "id": "B",
-        "text": "Pool sizes should be kept relatively small; excessively large pools increase CPU thread context switching and disk I/O contention."
+        "variants": [
+          "Pool sizes should be kept relatively small; excessively large pools increase CPU thread context switching and disk I/O contention.",
+          "Relatively small pools are the goal, because CPU thread context switching and disk I/O contention rise when a pool is excessively large.",
+          "An excessively large pool increases CPU thread context switching and disk I/O contention, so pool sizes should stay relatively small."
+        ]
       },
       {
         "id": "C",
-        "text": "Setting minimum idle connections to 10,000 ensures maximum performance by completely bypassing database connection validation."
+        "reasons": [
+          "A minimum idle size of 10,000 does not bypass connection validation and is far too large to be a performance best practice.",
+          "A connectionTimeout of zero makes checkout threads wait forever, which is not a sound response to an exhausted pool.",
+          "Turning off leak detection drops a useful warning and is not justified just because an application thread still holds the connection."
+        ],
+        "variants": [
+          "Setting minimum idle connections to 10,000 ensures maximum performance by completely bypassing database connection validation.",
+          "Setting connectionTimeout to zero is preferred so a thread waits forever instead of failing when the pool has no free connection.",
+          "Disabling leak detection is recommended, because a pool should not warn when an application thread still holds its connection."
+        ]
       },
       {
         "id": "D",
-        "text": "The connection pool size should always equal the maximum number of concurrent HTTP server threads (e.g. 500 connections for 500 threads)."
+        "reasons": [
+          "Matching the pool to the HTTP thread count, such as 500 connections for 500 threads, ignores database limits and tends to oversize the pool.",
+          "One connection per database core is a poor rule, because a connection often waits on disk and does not occupy a core by itself.",
+          "Consuming every max_connections slot leaves no room for other clients and creates an oversized pool that contends for the database."
+        ],
+        "variants": [
+          "The connection pool size should always equal the maximum number of concurrent HTTP server threads (e.g. 500 connections for 500 threads).",
+          "The pool ought to be fixed at one connection per database CPU core, on the view that each connection fully occupies that core by itself during a query.",
+          "Pool size should be set equal to the database max_connections limit so the application can consume every connection slot the server makes available."
+        ]
       }
     ],
     "correct": [
@@ -5355,23 +10446,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Generating consolidated cross-domain reports requires streaming data into a central data lake or analytics warehouse via CDC."
+        "variants": [
+          "Generating consolidated cross-domain reports requires streaming data into a central data lake or analytics warehouse via CDC.",
+          "Cross-domain reports that must be consolidated depend on streaming data, via CDC, into a central data lake or analytics warehouse.",
+          "CDC is the path for streaming data into a central data lake or analytics warehouse when consolidated cross-domain reports are required."
+        ]
       },
       {
         "id": "B",
-        "text": "Maintaining transactional consistency across multiple services requires eventual consistency mechanisms (Sagas) instead of ACID 2PC."
+        "variants": [
+          "Maintaining transactional consistency across multiple services requires eventual consistency mechanisms (Sagas) instead of ACID 2PC.",
+          "Across multiple services, transactional consistency requires eventual consistency mechanisms (Sagas) instead of ACID 2PC.",
+          "Eventual consistency mechanisms (Sagas), rather than ACID 2PC, maintain transactional consistency across multiple services."
+        ]
       },
       {
         "id": "C",
-        "text": "Cross-service queries cannot execute relational SQL `JOIN` operations and require API composition or event-driven read models."
+        "variants": [
+          "Cross-service queries cannot execute relational SQL `JOIN` operations and require API composition or event-driven read models.",
+          "Relational SQL `JOIN` operations cannot run on cross-service queries, which require API composition or event-driven read models.",
+          "API composition or event-driven read models are required, since cross-service queries cannot execute relational SQL `JOIN` operations."
+        ]
       },
       {
         "id": "D",
-        "text": "Microservice databases are strictly prohibited from implementing primary keys or foreign key constraints within their schemas."
+        "reasons": [
+          "Database-per-service does not forbid primary keys or foreign keys inside a service's own schema.",
+          "Separate databases can mint their own identifiers, so a shared global sequence generator is not required.",
+          "A service can migrate its own schema without taking a lock on every other service database."
+        ],
+        "variants": [
+          "Microservice databases are strictly prohibited from implementing primary keys or foreign key constraints within their schemas.",
+          "Each service is required to share one global sequence generator, because separate databases cannot mint unique identifiers on their own.",
+          "A service schema cannot be migrated on its own, because every other service database must be locked for that change."
+        ]
       },
       {
         "id": "E",
-        "text": "Operating systems completely disable all network communication between microservices that connect to different databases."
+        "reasons": [
+          "The operating system does not disable network communication between microservices that use different databases.",
+          "A service may open a remote connection to its own database, so that database is not required to sit on the same host.",
+          "A private database does not force every cache entry to be dropped on each local write, and caching remains possible."
+        ],
+        "variants": [
+          "Operating systems completely disable all network communication between microservices that connect to different databases.",
+          "Each service database must run on the same host, because the pattern forbids a service from opening a remote database connection.",
+          "A service cannot cache its query results, because a private database invalidates every cache entry on each local write that it performs."
+        ]
       }
     ],
     "correct": [
@@ -5389,19 +10510,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Records inside one partition stay in order, and a consumer group assigns each partition to one member so the members share the partitions."
+        "variants": [
+          "Records inside one partition stay in order, and a consumer group assigns each partition to one member so the members share the partitions.",
+          "A consumer group shares the partitions by assigning each partition to one member, while records inside one partition stay in order.",
+          "Inside a single partition the records stay in order, and a consumer group has members share the partitions by giving each partition to one member."
+        ]
       },
       {
         "id": "B",
-        "text": "A consumer group delivers every partition to every member, and the topic promises one order across all partitions."
+        "reasons": [
+          "A consumer group does not deliver every partition to every member, and a topic does not promise one order across all partitions.",
+          "A consumer group does not elect a single reader while other members merely copy that reader's offset in memory.",
+          "Rebalancing reassigns partitions, but it does not rewrite the order of records stored inside a partition."
+        ],
+        "variants": [
+          "A consumer group delivers every partition to every member, and the topic promises one order across all partitions.",
+          "A consumer group elects one member to read the log, and the other members only copy that member's offset in memory.",
+          "Rebalancing a consumer group rewrites the order of records inside each partition for the member that takes ownership."
+        ]
       },
       {
         "id": "C",
-        "text": "Order is global for the whole topic, and partitions exist only as the place where consumer offsets are stored."
+        "reasons": [
+          "Order is not global across a topic, and partitions are not merely the storage place for consumer offsets.",
+          "Offsets are not stored in the record key, and sorting keys after a read is not how a group restores partition order.",
+          "Members of a group fetch independently, so pausing one member does not pause the group through a shared fetch loop."
+        ],
+        "variants": [
+          "Order is global for the whole topic, and partitions exist only as the place where consumer offsets are stored.",
+          "Consumer offsets are stored in the record key, so a group restores order by sorting those keys after each read.",
+          "Pausing one member pauses the entire consumer group, because the members share a single fetch loop."
+        ]
       },
       {
         "id": "D",
-        "text": "Several members of one group may read the same partition at the same time, and that shared read is what keeps the records in that partition ordered."
+        "reasons": [
+          "Members of one group do not read the same partition concurrently, and a shared read is not what keeps that partition ordered.",
+          "The maximum poll records setting limits how many records a fetch returns and does not sort that batch to create partition order.",
+          "Synchronous or async commits do not reshuffle a partition, so commit style is not what keeps the records ordered."
+        ],
+        "variants": [
+          "Several members of one group may read the same partition at the same time, and that shared read is what keeps the records in that partition ordered.",
+          "Ordering inside a partition is produced by the consumer `max.poll.records` setting, which sorts each fetched batch before it is processed.",
+          "A partition stays ordered only when its consumer commits synchronously after every record, because an async commit reshuffles the records in that partition."
+        ]
       }
     ],
     "correct": [
@@ -5417,19 +10569,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "RPO measures the total monetary cost in cloud infrastructure billing incurred during a disaster recovery failover event."
+        "reasons": [
+          "RPO is not the cloud billing cost incurred while a disaster-recovery failover is in progress.",
+          "RPO does not count how many standby regions must be online before failover may start.",
+          "RPO is not a commit quorum of transactions that a standby must acknowledge before the primary commits."
+        ],
+        "variants": [
+          "RPO measures the total monetary cost in cloud infrastructure billing incurred during a disaster recovery failover event.",
+          "RPO counts how many standby regions must already be online before a disaster failover is allowed to begin at the recovery site.",
+          "RPO is the number of transactions a standby replica must acknowledge before the primary database is permitted to commit any write."
+        ]
       },
       {
         "id": "B",
-        "text": "RTO defines the percentage of network TCP packets dropped by firewalls during peak volumetric DDoS attacks."
+        "reasons": [
+          "RTO is not the percentage of TCP packets a firewall drops during a volumetric DDoS attack.",
+          "RTO does not measure replication lag during normal operation, which is outside the downtime target after a disaster.",
+          "RTO is not a success-rate target for requests after traffic moves to the recovery site."
+        ],
+        "variants": [
+          "RTO defines the percentage of network TCP packets dropped by firewalls during peak volumetric DDoS attacks.",
+          "RTO is the largest replication lag a standby is allowed to show while the system is still in normal operation.",
+          "RTO is the share of requests that must succeed after the recovery site has taken over production traffic."
+        ]
       },
       {
         "id": "C",
-        "text": "RTO defines the maximum acceptable duration of system downtime to restore operations and services after a disaster occurs."
+        "variants": [
+          "RTO defines the maximum acceptable duration of system downtime to restore operations and services after a disaster occurs.",
+          "After a disaster occurs, RTO is the maximum acceptable duration of system downtime to restore operations and services.",
+          "Restoring operations and services after a disaster is bounded by RTO, the maximum acceptable duration of system downtime."
+        ]
       },
       {
         "id": "D",
-        "text": "RPO defines the maximum acceptable amount of data loss measured in time (e.g. data lost between the last backup and disaster)."
+        "variants": [
+          "RPO defines the maximum acceptable amount of data loss measured in time (e.g. data lost between the last backup and disaster).",
+          "Measured in time, RPO is the maximum acceptable amount of data loss, such as data lost between the last backup and the disaster.",
+          "Data lost between the last backup and the disaster illustrates RPO, the maximum acceptable amount of data loss measured in time."
+        ]
       }
     ],
     "correct": [
@@ -5446,23 +10624,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Stateless verification allows downstream microservices to validate authenticity locally using a public key without querying a central auth server."
+        "variants": [
+          "Stateless verification allows downstream microservices to validate authenticity locally using a public key without querying a central auth server.",
+          "Downstream microservices validate authenticity locally with a public key under stateless verification, without querying a central auth server.",
+          "A public key is enough for downstream microservices to validate authenticity locally, since stateless verification skips a central auth server."
+        ]
       },
       {
         "id": "B",
-        "text": "Storing sensitive unencrypted secrets (such as plaintext database passwords) inside JWT payload claims is recommended standard practice."
+        "reasons": [
+          "Putting unencrypted secrets such as plaintext database passwords into JWT claims is not a recommended practice.",
+          "The `none` algorithm accepts an unsigned token, so it is not an acceptable signing choice even for internal callers.",
+          "Downstream services should not skip signature checks and trust a payload merely because a gateway might have verified it."
+        ],
+        "variants": [
+          "Storing sensitive unencrypted secrets (such as plaintext database passwords) inside JWT payload claims is recommended standard practice.",
+          "Signing a JWT with the `none` algorithm is treated as acceptable for internal services, because those callers are assumed to sit inside the trust boundary.",
+          "Only the edge gateway is expected to verify a JWT signature, so downstream services are told to trust the payload without checking the signature themselves."
+        ]
       },
       {
         "id": "C",
-        "text": "Because standard JWTs are stateless, immediate server-side revocation is challenging and typically requires token blacklisting or short TTLs."
+        "variants": [
+          "Because standard JWTs are stateless, immediate server-side revocation is challenging and typically requires token blacklisting or short TTLs.",
+          "Immediate server-side revocation is challenging because standard JWTs are stateless, so the usual tools are token blacklisting or short TTLs.",
+          "Token blacklisting or short TTLs are typically required, since immediate server-side revocation is challenging for stateless standard JWTs."
+        ]
       },
       {
         "id": "D",
-        "text": "The payload of a standard signed JWT is encrypted by default and completely unreadable by client browsers or proxies."
+        "reasons": [
+          "A standard signed JWT payload is encoded, not encrypted by default, so browsers and proxies can read it.",
+          "A signed JWT needs its signature section, so a header and payload alone are not a valid signed token.",
+          "The signature covers the header and the payload, so changing a claim invalidates the token even if the header is untouched."
+        ],
+        "variants": [
+          "The payload of a standard signed JWT is encrypted by default and completely unreadable by client browsers or proxies.",
+          "The signature section of a JWT is optional, so a header and a payload alone are still a valid signed token.",
+          "Editing a claim after signing is safe when the header is unchanged, because the signature covers only the header."
+        ]
       },
       {
         "id": "E",
-        "text": "A JWT consists of three Base64URL-encoded parts separated by periods: Header, Payload (claims), and Cryptographic Signature."
+        "variants": [
+          "A JWT consists of three Base64URL-encoded parts separated by periods: Header, Payload (claims), and Cryptographic Signature.",
+          "Header, payload (claims), and cryptographic signature are the three Base64URL-encoded parts of a JWT, and periods separate them.",
+          "Periods separate a JWT into three Base64URL-encoded parts: header, payload (claims), and cryptographic signature."
+        ]
       }
     ],
     "correct": [
@@ -5480,19 +10688,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Distributed brokers intentionally send every message multiple times to improve consumer throughput across CPU cores."
+        "reasons": [
+          "Brokers do not intentionally send every message multiple times in order to raise consumer throughput across CPU cores.",
+          "A consumer does not have to observe each message twice before an offset commit is allowed.",
+          "At-least-once is not a way for producers to skip ids while the broker deduplicates records by arrival time."
+        ],
+        "variants": [
+          "Distributed brokers intentionally send every message multiple times to improve consumer throughput across CPU cores.",
+          "At-least-once is the default because a consumer must see every message twice before its offset is allowed to commit.",
+          "Brokers default to at-least-once so producers can omit message ids and the broker can deduplicate by arrival time."
+        ]
       },
       {
         "id": "B",
-        "text": "Network acknowledgments (ACKs) can be lost or delayed, causing producers or brokers to retry delivery to guarantee no data loss."
+        "variants": [
+          "Network acknowledgments (ACKs) can be lost or delayed, causing producers or brokers to retry delivery to guarantee no data loss.",
+          "Producers or brokers retry delivery to guarantee no data loss when network acknowledgments (ACKs) are lost or delayed.",
+          "When network acknowledgments (ACKs) are lost or delayed, producers or brokers retry delivery to guarantee no data loss."
+        ]
       },
       {
         "id": "C",
-        "text": "Message consumers require receiving duplicate messages to calculate moving average metrics for load balancing algorithms."
+        "reasons": [
+          "Consumers do not need duplicate messages in order to compute moving averages for load-balancing algorithms.",
+          "Competing consumers in one group are not each supposed to process the same record, so duplicates are not required for that failover.",
+          "Committing the offset before handling the message risks losing the record, so that order does not provide at-least-once safety."
+        ],
+        "variants": [
+          "Message consumers require receiving duplicate messages to calculate moving average metrics for load balancing algorithms.",
+          "Duplicate delivery is required so that competing consumers in one group can each process the same record for failover.",
+          "At-least-once is chosen so a consumer can commit its offset before handling the message and still avoid lost records."
+        ]
       },
       {
         "id": "D",
-        "text": "Operating system network cards cannot verify checksums on TCP packets, requiring duplicate transmissions for error correction."
+        "reasons": [
+          "Network cards can verify TCP checksums, so duplicate broker delivery is not a substitute for that check.",
+          "TCP does retransmit lost packets, so brokers do not use at-least-once to replace a missing TCP retransmission.",
+          "A poll timeout does not always expire before the first copy is handled, and that is not why brokers default to at-least-once."
+        ],
+        "variants": [
+          "Operating system network cards cannot verify checksums on TCP packets, requiring duplicate transmissions for error correction.",
+          "At-least-once delivery is required because TCP itself does not retransmit a lost packet, so the broker is expected to send a second copy itself.",
+          "Brokers resend each message by default because a consumer poll timeout is assumed to expire before the first copy of that message is handled."
+        ]
       }
     ],
     "correct": [
@@ -5508,19 +10747,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "L4 load balancers parse GraphQL query bodies to route database queries across distributed read replicas."
+        "reasons": [
+          "An L4 balancer does not parse GraphQL query bodies to route database reads across replicas.",
+          "An L4 balancer does not terminate TLS or read an HTTP Host header, because that requires application-layer inspection.",
+          "An L4 balancer can see the client IP address and port, and it does not hash an HTTP body to pin a session."
+        ],
+        "variants": [
+          "L4 load balancers parse GraphQL query bodies to route database queries across distributed read replicas.",
+          "L4 load balancers terminate TLS and select a backend from the HTTP Host header before the handshake finishes.",
+          "L4 load balancers hash the HTTP request body to pin a session, because they cannot see the client IP address or port."
+        ]
       },
       {
         "id": "B",
-        "text": "L7 load balancers inspect HTTP headers, cookies, and URI paths, enabling content-based routing and SSL termination."
+        "variants": [
+          "L7 load balancers inspect HTTP headers, cookies, and URI paths, enabling content-based routing and SSL termination.",
+          "Content-based routing and SSL termination become possible because L7 load balancers inspect HTTP headers, cookies, and URI paths.",
+          "HTTP headers, cookies, and URI paths are what L7 load balancers inspect, enabling content-based routing and SSL termination."
+        ]
       },
       {
         "id": "C",
-        "text": "L4 load balancers route traffic based on IP address and TCP/UDP port without inspecting application-level HTTP data."
+        "variants": [
+          "L4 load balancers route traffic based on IP address and TCP/UDP port without inspecting application-level HTTP data.",
+          "Without inspecting application-level HTTP data, L4 load balancers route traffic based on IP address and TCP/UDP port.",
+          "IP address and TCP/UDP port decide where L4 load balancers send traffic, and they skip application-level HTTP data."
+        ]
       },
       {
         "id": "D",
-        "text": "L7 load balancers operate strictly on raw ethernet hardware packets and cannot inspect HTTP application protocols."
+        "reasons": [
+          "L7 balancers do not operate only on raw Ethernet frames, and they can inspect HTTP application protocols.",
+          "An L7 balancer is not limited to the destination port, and cookies and URI paths are available for routing decisions.",
+          "An L7 balancer can accept the client connection itself and does not require a separate TCP balancer in front of it."
+        ],
+        "variants": [
+          "L7 load balancers operate strictly on raw ethernet hardware packets and cannot inspect HTTP application protocols.",
+          "L7 load balancers can route only by destination port, because cookies and URI paths are stripped before that proxy reads them all.",
+          "An L7 balancer needs a TCP balancer in front, because it cannot accept the inbound client connection on its own."
+        ]
       }
     ],
     "correct": [
@@ -5537,19 +10802,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Open Addressing stores all entries directly in the table array, probing for the next open slot via linear or quadratic probing."
+        "variants": [
+          "Open Addressing stores all entries directly in the table array, probing for the next open slot via linear or quadratic probing.",
+          "Linear or quadratic probing locates the next open slot, while open addressing stores all entries directly in the table array.",
+          "All entries sit directly in the table array under open addressing, probing the next open slot by linear or quadratic probing."
+        ]
       },
       {
         "id": "B",
-        "text": "Chaining throws an `OutOfMemoryError` whenever two unequal keys produce identical 32-bit integer hash codes."
+        "reasons": [
+          "Chaining does not throw an `OutOfMemoryError` when two unequal keys happen to share a 32-bit hash code.",
+          "Chaining is built to keep several keys in one bucket, so a shared hash does not cause the second key to be rejected.",
+          "A collision in chaining does not force a full rehash whose goal is to leave every bucket with only one key."
+        ],
+        "variants": [
+          "Chaining throws an `OutOfMemoryError` whenever two unequal keys produce identical 32-bit integer hash codes.",
+          "Chaining rejects the second key when two keys share a hash, because each bucket is allowed to hold only one entry.",
+          "Chaining rehashes the whole table on every collision so that no two keys are left sitting in the same bucket."
+        ]
       },
       {
         "id": "C",
-        "text": "Chaining stores colliding elements in a secondary data structure (such as a linked list or red-black tree) at each bucket index."
+        "variants": [
+          "Chaining stores colliding elements in a secondary data structure (such as a linked list or red-black tree) at each bucket index.",
+          "At each bucket index, chaining places colliding elements in a secondary data structure like a linked list or red-black tree.",
+          "A linked list or red-black tree is a secondary data structure chaining uses, at each bucket index, for colliding elements."
+        ]
       },
       {
         "id": "D",
-        "text": "Open Addressing permits an infinite load factor greater than 1.0 without requiring array resizing or rehashing."
+        "reasons": [
+          "Open addressing cannot keep a load factor above one indefinitely, and a full table still has to be resized or rehashed.",
+          "A probe that finds a different key continues to another slot, and open addressing does not overwrite that older key.",
+          "An occupied slot holding a different key is not proof that the new key is already present, so probing does not stop there."
+        ],
+        "variants": [
+          "Open Addressing permits an infinite load factor greater than 1.0 without requiring array resizing or rehashing.",
+          "Open addressing overwrites the older key with the new key when the probed slot is already occupied by some other key.",
+          "Open addressing halts at the first occupied slot and treats that occupancy as proof the inserted key is already present inside."
+        ]
       }
     ],
     "correct": [
@@ -5566,19 +10857,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A Singly Linked List (for element traversal) paired with a Bloom Filter to test element presence in memory."
+        "reasons": [
+          "A singly linked list plus a Bloom filter does not give O(1) lookup together with O(1) removal and insertion at both ends.",
+          "Scanning a singly linked list to find the least recently used node is not O(1), so this pair misses the required bound.",
+          "A structure ordered only by insertion, plus a linear scan of values, cannot refresh recency and evict in O(1) time."
+        ],
+        "variants": [
+          "A Singly Linked List (for element traversal) paired with a Bloom Filter to test element presence in memory.",
+          "A hash set used for membership, paired with a singly linked list that must be scanned to find the least recently used node.",
+          "An insertion-ordered linked structure, paired with a linear scan of values to choose which entry should be evicted."
+        ]
       },
       {
         "id": "B",
-        "text": "A Min-Heap priority queue (for element ordering) paired with a contiguous dynamic array for key searching."
+        "reasons": [
+          "A min-heap plus a dynamic array does not provide O(1) key lookup and O(1) removal of an arbitrary recently used node.",
+          "A max-heap of access times is not O(1) to update for an arbitrary key, and a size-only hash map cannot return the cached value.",
+          "Binary search on an array is not O(1), and a FIFO queue evicts the oldest insert rather than the least recently used key."
+        ],
+        "variants": [
+          "A Min-Heap priority queue (for element ordering) paired with a contiguous dynamic array for key searching.",
+          "A max-heap ordered by last access time, paired with a hash map that stores only the current number of cached entries.",
+          "A FIFO queue of keys, paired with binary search over a sorted array of values, to locate the key on each read."
+        ]
       },
       {
         "id": "C",
-        "text": "A Hash Map (for O(1) key lookup) paired with a Doubly Linked List (for O(1) node removal and insertion at head/tail)."
+        "variants": [
+          "A Hash Map (for O(1) key lookup) paired with a Doubly Linked List (for O(1) node removal and insertion at head/tail).",
+          "O(1) key lookup comes from a hash map, while a doubly linked list gives O(1) node removal and insertion at head or tail.",
+          "Pair a doubly linked list for O(1) node removal and insertion at the head or tail with a hash map for O(1) key lookup."
+        ]
       },
       {
         "id": "D",
-        "text": "A Binary Search Tree (for sorted key lookup) paired with a circular queue for element eviction tracking."
+        "reasons": [
+          "A binary search tree plus a circular queue does not give O(1) key lookup or O(1) eviction of the least recently used entry.",
+          "Trie lookup follows the key length and a per-node counter does not remove an arbitrary LRU node in O(1) time.",
+          "Moving a key between two stacks by linear search is not O(1) for both get and put."
+        ],
+        "variants": [
+          "A Binary Search Tree (for sorted key lookup) paired with a circular queue for element eviction tracking.",
+          "A trie of cache keys, paired with a counter on each node that chooses which entry is evicted when the cache is full.",
+          "Two stacks of keys, one for recent entries and one for evicted entries, with linear search to move a key between them."
+        ]
       }
     ],
     "correct": [
@@ -5594,23 +10916,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Binary search requires the underlying search space or predicate to be monotonic (e.g. sorted data or boolean monotonicity)."
+        "variants": [
+          "Binary search requires the underlying search space or predicate to be monotonic (e.g. sorted data or boolean monotonicity).",
+          "Monotonicity of the search space or predicate is required for binary search, for example sorted data or boolean monotonicity.",
+          "Sorted data or boolean monotonicity is the kind of monotonic search space or predicate that binary search requires."
+        ]
       },
       {
         "id": "B",
-        "text": "Calculating midpoint via `mid = low + (high - low) / 2` (or `(low + high) >>> 1`) prevents 32-bit signed integer overflow."
+        "variants": [
+          "Calculating midpoint via `mid = low + (high - low) / 2` (or `(low + high) >>> 1`) prevents 32-bit signed integer overflow.",
+          "32-bit signed integer overflow is avoided by taking the midpoint as `mid = low + (high - low) / 2` or `(low + high) >>> 1`.",
+          "Prevent 32-bit signed integer overflow by calculating the midpoint via `mid = low + (high - low) / 2` (or `(low + high) >>> 1`)."
+        ]
       },
       {
         "id": "C",
-        "text": "To find the first occurrence (lower bound) of a duplicate target, the search range must continue contracting left when `arr[mid] == target`."
+        "variants": [
+          "To find the first occurrence (lower bound) of a duplicate target, the search range must continue contracting left when `arr[mid] == target`.",
+          "When `arr[mid] == target`, the search range keeps contracting left for the first occurrence (lower bound) of a duplicate target.",
+          "The first occurrence (lower bound) of a duplicate target needs the search range to contract left whenever `arr[mid] == target`."
+        ]
       },
       {
         "id": "D",
-        "text": "Binary search can locate the maximum element in an unsorted random array in O(log n) worst-case time complexity."
+        "reasons": [
+          "Binary search cannot find the maximum of an unsorted random array in O(log n) worst-case time, because the space is not monotonic.",
+          "Sorting only the even indexes does not make the search space monotonic, and the midpoint is not guaranteed to land on an even index.",
+          "A successful search returns the matching index, and low crossing high is the usual signal that the target is absent."
+        ],
+        "variants": [
+          "Binary search can locate the maximum element in an unsorted random array in O(log n) worst-case time complexity.",
+          "Binary search still applies when only the even indexes are sorted, because the midpoint is assumed to land on an even index.",
+          "When the search succeeds, low and high are supposed to cross, and that crossing is what returns the matching element."
+        ]
       },
       {
         "id": "E",
-        "text": "Binary search requires dynamically allocating a secondary heap array on every recursive or iterative division step."
+        "reasons": [
+          "Binary search does not allocate a secondary heap array on every recursive or iterative split of the range.",
+          "The midpoint comes from the index range, not from a hash code, so the element type does not need to implement hashing.",
+          "Once the space is known to be monotonic, binary search does not rescan the left of mid after every comparison."
+        ],
+        "variants": [
+          "Binary search requires dynamically allocating a secondary heap array on every recursive or iterative division step.",
+          "Binary search is valid only when the element type implements hashing, because the midpoint index is taken from that hash code value.",
+          "After every comparison, each element left of mid must be rescanned to confirm that half of the array stayed sorted."
+        ]
       }
     ],
     "correct": [
@@ -5628,19 +10980,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "DFS traverses as deep as possible along each branch using a Stack (or recursion), making it ideal for topological sort and cycle detection."
+        "variants": [
+          "DFS traverses as deep as possible along each branch using a Stack (or recursion), making it ideal for topological sort and cycle detection.",
+          "A stack (or recursion) lets DFS traverse as deep as possible along each branch, which suits topological sort and cycle detection.",
+          "Topological sort and cycle detection fit DFS, which goes as deep as possible along each branch using a stack (or recursion)."
+        ]
       },
       {
         "id": "B",
-        "text": "BFS traverses vertices level by level using a Queue, guaranteeing the shortest path in unweighted graphs."
+        "variants": [
+          "BFS traverses vertices level by level using a Queue, guaranteeing the shortest path in unweighted graphs.",
+          "A queue lets BFS traverse vertices level by level and guarantee the shortest path in unweighted graphs.",
+          "The shortest path in an unweighted graph is guaranteed when BFS traverses vertices level by level using a queue."
+        ]
       },
       {
         "id": "C",
-        "text": "BFS consumes O(1) auxiliary memory because it does not require tracking visited vertices during graph exploration."
+        "reasons": [
+          "BFS does not use O(1) auxiliary memory, and it does need to track visited vertices while exploring the graph.",
+          "The BFS frontier can hold a whole level of vertices, so auxiliary memory is not limited to a single edge.",
+          "The first dequeue of a vertex finalizes its distance in an unweighted graph, so a parent can and should be recorded then."
+        ],
+        "variants": [
+          "BFS consumes O(1) auxiliary memory because it does not require tracking visited vertices during graph exploration.",
+          "BFS stores only the current frontier edge, so its auxiliary memory is claimed to stay constant however wide each given level gets.",
+          "Distance is still unknown on the first dequeue, so BFS is said not to record a parent pointer for that vertex at all."
+        ]
       },
       {
         "id": "D",
-        "text": "DFS guarantees finding the shortest path between any two vertices in an unweighted graph faster than BFS."
+        "reasons": [
+          "DFS does not guarantee the shortest path in an unweighted graph, and it is not faster than BFS at that task.",
+          "DFS does not reuse a single stack frame for every neighbor, and the recursion depth can reach the number of vertices.",
+          "A back edge to an ancestor that is not the start vertex is still a cycle, so DFS is not limited to detecting a return to the start."
+        ],
+        "variants": [
+          "DFS guarantees finding the shortest path between any two vertices in an unweighted graph faster than BFS.",
+          "DFS reuses one stack frame for every neighbor, so its auxiliary stack stays smaller than the number of vertices.",
+          "DFS reports a cycle only when the walk returns to the start vertex, so a back edge to another ancestor is not a cycle."
+        ]
       }
     ],
     "correct": [
@@ -5657,19 +11035,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "By modifying node pointers to point backwards towards the list head and checking if the traversal returns to index zero."
+        "reasons": [
+          "Floyd's algorithm does not reverse node pointers toward the head or test whether the walk returns to index zero.",
+          "Node values are not indexes, and a repeated value can occur in an acyclic list, so it does not prove a cycle.",
+          "A single pointer stepping by three and waiting to land on the head is not how the tortoise and hare test works."
+        ],
+        "variants": [
+          "By modifying node pointers to point backwards towards the list head and checking if the traversal returns to index zero.",
+          "By writing each node's position into its stored value and later treating a repeated value on the walk as proof that a cycle is present.",
+          "By stepping a single pointer three nodes at a time and declaring that a cycle exists once that pointer lands on the head again."
+        ]
       },
       {
         "id": "B",
-        "text": "By allocating an auxiliary array of size N on the heap and verifying that no node pointer appears more than once."
+        "reasons": [
+          "Floyd's method does not allocate an array of size N to check that each node pointer appears only once.",
+          "Comparing a node with the node N steps ahead is a different test, and it is not the tortoise and hare meeting rule.",
+          "A singly linked list does not offer a tail start for a second pointer, and crossing those pointers is not Floyd's test."
+        ],
+        "variants": [
+          "By allocating an auxiliary array of size N on the heap and verifying that no node pointer appears more than once.",
+          "By comparing each node with the node a fixed distance N ahead and declaring a cycle when those two references match.",
+          "By starting one pointer at the head and another at a presumed tail until they cross, which is taken to prove a cycle."
+        ]
       },
       {
         "id": "C",
-        "text": "By calculating the cryptographic MD5 hash of each node's memory address and checking for hash collisions in a set."
+        "reasons": [
+          "Floyd's algorithm does not hash each node's memory address with MD5 or look for those hashes in a set.",
+          "A repeated checksum of values can come from duplicate data in an acyclic list, so it does not establish a cycle.",
+          "Sorting addresses is not the tortoise and hare procedure, and a cycle prevents a simple walk from finishing that collection."
+        ],
+        "variants": [
+          "By calculating the cryptographic MD5 hash of each node's memory address and checking for hash collisions in a set.",
+          "By keeping a running checksum of node values and treating a repeated checksum as evidence that a cycle exists.",
+          "By sorting the nodes' addresses and treating two equal addresses beside each other as the cycle signal."
+        ]
       },
       {
         "id": "D",
-        "text": "Using two pointers where the slow pointer moves 1 step and the fast pointer moves 2 steps; if they meet, a cycle exists."
+        "variants": [
+          "Using two pointers where the slow pointer moves 1 step and the fast pointer moves 2 steps; if they meet, a cycle exists.",
+          "A cycle exists if the two pointers meet: the fast pointer moves 2 steps and the slow pointer moves 1 step.",
+          "Meeting of two pointers shows a cycle: the slow pointer moves 1 step and the fast pointer moves 2 steps."
+        ]
       }
     ],
     "correct": [
@@ -5685,23 +11094,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It reduces time complexity from O(n^2) brute-force subsegment checks down to O(n) linear time by updating state incrementally."
+        "variants": [
+          "It reduces time complexity from O(n^2) brute-force subsegment checks down to O(n) linear time by updating state incrementally.",
+          "Updating state incrementally brings those brute-force subsegment checks from O(n^2) down to O(n) linear time.",
+          "Brute-force subsegment checks cost O(n^2) until this technique updates state incrementally and reaches O(n) linear time."
+        ]
       },
       {
         "id": "B",
-        "text": "The sliding window pattern requires sorting the entire input array before any pointer movements can be performed."
+        "reasons": [
+          "Sliding window does not require the whole input to be sorted before the pointers are allowed to move.",
+          "The technique includes dynamic windows whose width changes, so a fixed width is not required for the whole scan.",
+          "The point of the technique is to update state as the window moves, not to recompute the aggregate from scratch on every slide."
+        ],
+        "variants": [
+          "The sliding window pattern requires sorting the entire input array before any pointer movements can be performed.",
+          "The window width must stay fixed for the whole scan, because a changing width would invalidate the incremental state.",
+          "Every slide must recompute the window aggregate from scratch, because keeping the previous sum is outside the technique."
+        ]
       },
       {
         "id": "C",
-        "text": "The left pointer must move backwards towards index zero on every iteration to re-validate previous window elements."
+        "reasons": [
+          "The left pointer does not have to move backward toward index zero on every iteration to recheck earlier elements.",
+          "The right pointer is not stuck until left stays at zero, and the window does not have to keep starting at the first element.",
+          "The pointers do not jump by half the length like binary search, and that motion is not what makes the scan logarithmic."
+        ],
+        "variants": [
+          "The left pointer must move backwards towards index zero on every iteration to re-validate previous window elements.",
+          "The right pointer may advance only while left stays at index zero, forcing every window to start on the first element of the array.",
+          "Both pointers must jump by half the current span each step, as in binary search, so the scan stays logarithmic."
+        ]
       },
       {
         "id": "D",
-        "text": "It maintains a contiguous window of elements bounded by two pointers (`left` and `right`) moving in the same direction."
+        "variants": [
+          "It maintains a contiguous window of elements bounded by two pointers (`left` and `right`) moving in the same direction.",
+          "Two pointers, `left` and `right`, bound a contiguous window of elements and both move in the same direction.",
+          "Moving in the same direction, the pointers `left` and `right` bound one contiguous window of elements."
+        ]
       },
       {
         "id": "E",
-        "text": "In dynamic windows, the right pointer expands the window to satisfy a condition, and the left pointer contracts it to find optimal bounds."
+        "variants": [
+          "In dynamic windows, the right pointer expands the window to satisfy a condition, and the left pointer contracts it to find optimal bounds.",
+          "Optimal bounds come as the left pointer contracts a dynamic window that the right pointer expanded to satisfy a condition.",
+          "After the right pointer expands a dynamic window to satisfy a condition, the left pointer contracts it to find optimal bounds."
+        ]
       }
     ],
     "correct": [
@@ -5719,19 +11158,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "`O(N log K)` time, because frequency map construction takes O(N) and maintaining a heap bounded at size K takes O(N log K)."
+        "variants": [
+          "`O(N log K)` time, because frequency map construction takes O(N) and maintaining a heap bounded at size K takes O(N log K).",
+          "A heap bounded at size K costs O(N log K) and the frequency map costs O(N), which together are `O(N log K)` time.",
+          "Time is `O(N log K)`: the frequency map is constructed in O(N), and the heap bounded at size K takes O(N log K)."
+        ]
       },
       {
         "id": "B",
-        "text": "`O(1)` constant time, because heaps store all element frequencies directly inside hardware CPU cache lines."
+        "reasons": [
+          "A min-heap of size K does not answer this problem in O(1), and heap entries are not frequencies stored in CPU cache lines.",
+          "Counting N items and then reading a heap of size K is not O(N + K), because each heap update among the items costs O(log K).",
+          "The top K items are not known before the frequencies are processed, so the algorithm cannot insert only K items and skip the rest."
+        ],
+        "variants": [
+          "`O(1)` constant time, because heaps store all element frequencies directly inside hardware CPU cache lines.",
+          "`O(N + K)` time, because each of the N items is counted once and the heap of size K is then read off in linear time.",
+          "`O(K)` time, because only the K most frequent items are inserted and the other items are skipped after a first pass."
+        ]
       },
       {
         "id": "C",
-        "text": "`O(K log N)` time, because finding top elements requires sorting the entire collection of N items in descending order."
+        "reasons": [
+          "The min-heap-of-size-K method is not O(K log N), and it does not sort the entire collection of N items into descending order.",
+          "Placing every distinct frequency in a balanced tree is a different, slower approach and is not the cost of a heap bounded at size K.",
+          "A heap update compares along a path of length O(log K), not against all K stored entries, so the cost is not O(N * K)."
+        ],
+        "variants": [
+          "`O(K log N)` time, because finding top elements requires sorting the entire collection of N items in descending order.",
+          "`O(N log N)` time, because every distinct frequency must be inserted into a balanced tree before the top K frequencies can be read.",
+          "`O(N * K)` time, because each of the N items is compared with all K entries currently stored in the heap."
+        ]
       },
       {
         "id": "D",
-        "text": "`O(N^2)` quadratic time, because inserting an element into a heap requires shifting all elements across an internal array."
+        "reasons": [
+          "Inserting into a binary heap is not a full shift of every element, so this method is not O(N^2).",
+          "After the frequency map is built, each distinct item may be offered to the size-K heap, so the heap cost is not limited to K insertions.",
+          "Each heap update does not rebuild the frequency map, so the running time is not O(N^2 log K)."
+        ],
+        "variants": [
+          "`O(N^2)` quadratic time, because inserting an element into a heap requires shifting all elements across an internal array.",
+          "`O(K log K)` time, because after the O(N) count only K items are inserted and each of those insertions costs O(log K).",
+          "`O(N^2 log K)` time, because each insertion rebuilds the frequency map from scratch before the heap of size K is updated."
+        ]
       }
     ],
     "correct": [
@@ -5747,19 +11217,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "QuickSort guarantees O(n) linear time in the worst case when the input array is already completely sorted."
+        "reasons": [
+          "QuickSort does not guarantee O(n) time in the worst case on an already sorted array, where a naive pivot can degrade to O(n^2).",
+          "Standard QuickSort is not stable, so equal keys are not guaranteed to keep their order across a partition.",
+          "In-place QuickSort does not copy each subarray, and its extra memory is the recursion stack rather than a full O(n) buffer."
+        ],
+        "variants": [
+          "QuickSort guarantees O(n) linear time in the worst case when the input array is already completely sorted.",
+          "QuickSort is a stable sort, so equal keys keep the relative order they had before partitioning around the pivot.",
+          "The usual in-place QuickSort needs O(n) extra memory, because every partition copies the current subarray."
+        ]
       },
       {
         "id": "B",
-        "text": "TimSort is an unstable sorting algorithm that discards duplicate elements during merge operations to minimize memory consumption."
+        "reasons": [
+          "TimSort is not an unstable sort that drops duplicate elements during merges in order to save memory.",
+          "TimSort does not fall back to QuickSort, and its merge path is not reserved for input that is already fully sorted.",
+          "TimSort does not allocate O(n^2) auxiliary memory or give each run a private array before insertion sort."
+        ],
+        "variants": [
+          "TimSort is an unstable sorting algorithm that discards duplicate elements during merge operations to minimize memory consumption.",
+          "TimSort is said to switch to QuickSort whenever the input looks random, because its merge path is reserved for arrays that are already fully sorted.",
+          "TimSort is claimed to need quadratic auxiliary memory, because each detected run is copied into a private array before insertion sort runs on it."
+        ]
       },
       {
         "id": "C",
-        "text": "MergeSort is a stable divide-and-conquer algorithm with guaranteed O(n log n) worst-case time, requiring O(n) auxiliary memory."
+        "variants": [
+          "MergeSort is a stable divide-and-conquer algorithm with guaranteed O(n log n) worst-case time, requiring O(n) auxiliary memory.",
+          "Guaranteed O(n log n) worst-case time and O(n) auxiliary memory come with MergeSort, a stable divide-and-conquer algorithm.",
+          "MergeSort requires O(n) auxiliary memory and, as a stable divide-and-conquer algorithm, guarantees O(n log n) worst-case time."
+        ]
       },
       {
         "id": "D",
-        "text": "Java's `Arrays.sort(Object[])` uses TimSort, an adaptive stable hybrid of MergeSort and InsertionSort optimized for real-world partially sorted data."
+        "variants": [
+          "Java's `Arrays.sort(Object[])` uses TimSort, an adaptive stable hybrid of MergeSort and InsertionSort optimized for real-world partially sorted data.",
+          "TimSort, an adaptive stable hybrid of MergeSort and InsertionSort used by Java's `Arrays.sort(Object[])`, targets partially sorted real-world data.",
+          "Java's `Arrays.sort(Object[])` runs TimSort, an adaptive stable hybrid of MergeSort and InsertionSort, for partially sorted real-world data."
+        ]
       }
     ],
     "correct": [
@@ -5776,19 +11272,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Post-order traversal (Left -> Right -> Root)."
+        "reasons": [
+          "Post-order visits Left, then Right, then Root, which does not list the keys of a BST in ascending order.",
+          "Reverse in-order visits Right, then Root, then Left, which lists BST keys in descending rather than ascending order.",
+          "Diagonal order groups nodes by a column sum and does not walk a BST so that keys come out in ascending order."
+        ],
+        "variants": [
+          "Post-order traversal (Left -> Right -> Root).",
+          "Reverse in-order goes Right, then Root, then Left.",
+          "Diagonal order groups nodes by their column sum."
+        ]
       },
       {
         "id": "B",
-        "text": "In-order traversal (Left -> Root -> Right)."
+        "variants": [
+          "In-order traversal (Left -> Root -> Right).",
+          "Left, then Root, then Right is in-order.",
+          "In-order means Left, then Root, then Right."
+        ]
       },
       {
         "id": "C",
-        "text": "Level-order traversal (Breadth-First Search row by row)."
+        "reasons": [
+          "Level-order traversal walks the tree row by row and does not visit BST nodes in ascending key order.",
+          "Zigzag level order still walks by rows, only reversing direction, so it does not emit BST keys in ascending order.",
+          "Vertical order clusters nodes by column and does not produce the ascending key sequence of a BST."
+        ],
+        "variants": [
+          "Level-order traversal (Breadth-First Search row by row).",
+          "Zigzag level order alternates direction on each successive row.",
+          "Vertical order groups nodes that share one column index."
+        ]
       },
       {
         "id": "D",
-        "text": "Pre-order traversal (Root -> Left -> Right)."
+        "reasons": [
+          "Pre-order visits Root, then Left, then Right, which does not list BST keys in ascending order.",
+          "An Euler tour records nodes on entry and exit and does not emit each BST key once in ascending order.",
+          "Boundary order follows the left edge and the leaves, which is not an ascending walk of BST keys."
+        ],
+        "variants": [
+          "Pre-order traversal (Root -> Left -> Right).",
+          "An Euler tour records the node on every visit.",
+          "Boundary order walks the left edge, then leaves."
+        ]
       }
     ],
     "correct": [
@@ -5804,23 +11331,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A Trie consumes strictly less memory than a `HashSet` when storing small sets of completely disjoint strings."
+        "reasons": [
+          "A Trie does not use strictly less memory than a `HashSet` for a small set of strings that share no prefixes.",
+          "Each edge or node represents a character step, so the tree does not store one node per word with height equal to the word count.",
+          "Trie lookup walks the characters of the word and is not an O(1) hash from the full string stored at the root."
+        ],
+        "variants": [
+          "A Trie consumes strictly less memory than a `HashSet` when storing small sets of completely disjoint strings.",
+          "A Trie stores one node for each whole word, so the height of the tree equals the number of words rather than their length.",
+          "Lookup in a Trie is O(1) because the root maps each full string to a boolean through a single hash bucket."
+        ]
       },
       {
         "id": "B",
-        "text": "Nodes represent characters, and strings sharing common prefixes share the same ancestor path from the root."
+        "variants": [
+          "Nodes represent characters, and strings sharing common prefixes share the same ancestor path from the root.",
+          "A common prefix means those strings share one ancestor path from the root, and each node represents a character.",
+          "From the root, strings that share a prefix follow one ancestor path, and nodes represent characters."
+        ]
       },
       {
         "id": "C",
-        "text": "Deleting a word from a Trie requires recursively deallocating and rebuilding the entire tree structure from scratch."
+        "reasons": [
+          "Deleting a word does not require deallocating and rebuilding the entire Trie from scratch.",
+          "A new word that shares no prefix adds a new branch, and the root is not limited to a single child.",
+          "An internal node may be marked as the end of a word, so words are not restricted to leaves."
+        ],
+        "variants": [
+          "Deleting a word from a Trie requires recursively deallocating and rebuilding the entire tree structure from scratch.",
+          "Inserting a word with no shared prefix must replace the root, because the root is allowed to have only one child.",
+          "A word can be stored only at a leaf, because an internal node is not allowed to be marked as the end of a word."
+        ]
       },
       {
         "id": "D",
-        "text": "It is standardly used for autocomplete search suggestions, predictive text input, and IP network routing tables."
+        "variants": [
+          "It is standardly used for autocomplete search suggestions, predictive text input, and IP network routing tables.",
+          "Autocomplete search suggestions, predictive text input, and IP network routing tables are standard uses of a trie.",
+          "IP network routing tables, predictive text input, and autocomplete search suggestions are standard trie applications."
+        ]
       },
       {
         "id": "E",
-        "text": "Searching, inserting, or prefix-matching a word of length L takes O(L) time, independent of total words N stored."
+        "variants": [
+          "Searching, inserting, or prefix-matching a word of length L takes O(L) time, independent of total words N stored.",
+          "A word of length L is searched, inserted, or prefix-matched in O(L) time, independent of the total words N stored.",
+          "Independent of how many words N are stored, searching, inserting, or prefix-matching a word of length L takes O(L) time."
+        ]
       }
     ],
     "correct": [
@@ -5838,23 +11395,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Depth-First Search (DFS) back-edge cycle detection is standardly implemented using an unbuffered FIFO Queue."
+        "reasons": [
+          "DFS back-edge cycle detection is not standardly implemented with an unbuffered FIFO queue.",
+          "Last-in, first-out scheduling needs a stack, so an unbuffered FIFO queue does not provide that order.",
+          "Merging several sorted lists is not done in one linear pass over a single unsorted array with no heap."
+        ],
+        "variants": [
+          "Depth-First Search (DFS) back-edge cycle detection is standardly implemented using an unbuffered FIFO Queue.",
+          "Scheduling work that must run in last-in, first-out order is standardly implemented with an unbuffered FIFO queue.",
+          "Merging several sorted lists in a single linear pass is standardly implemented with one unsorted array and no heap."
+        ]
       },
       {
         "id": "B",
-        "text": "Breadth-First Search (BFS) level-order traversal and asynchronous task buffering uses a Queue (FIFO)."
+        "variants": [
+          "Breadth-First Search (BFS) level-order traversal and asynchronous task buffering uses a Queue (FIFO).",
+          "A queue (FIFO) covers BFS level-order traversal, and also asynchronous task buffering.",
+          "Both BFS level-order traversal and asynchronous task buffering are done with a queue (FIFO)."
+        ]
       },
       {
         "id": "C",
-        "text": "Finding the median element in an unsorted array in O(1) time is implemented using a single FIFO Queue."
+        "reasons": [
+          "The median of an unsorted array cannot be found in O(1) time by placing the elements in a single FIFO queue.",
+          "Following only the head of a linked list does not reach an arbitrary index in O(1) time.",
+          "Inserting into one sorted array is not O(1), so that layout does not maintain a running median in constant time."
+        ],
+        "variants": [
+          "Finding the median element in an unsorted array in O(1) time is implemented using a single FIFO Queue.",
+          "Reading an arbitrary index of a linked list in O(1) time is done by following only the head pointer.",
+          "A running median under insertions is kept in O(1) time by storing the values in one sorted array."
+        ]
       },
       {
         "id": "D",
-        "text": "Validating balanced parentheses (e.g. `{[()]}`) or evaluating Reverse Polish Notation expressions uses a Stack (LIFO)."
+        "variants": [
+          "Validating balanced parentheses (e.g. `{[()]}`) or evaluating Reverse Polish Notation expressions uses a Stack (LIFO).",
+          "A stack (LIFO) validates balanced parentheses (e.g. `{[()]}`) and evaluates Reverse Polish Notation expressions.",
+          "Balanced parentheses (e.g. `{[()]}`) and Reverse Polish Notation expressions are both handled by a stack (LIFO)."
+        ]
       },
       {
         "id": "E",
-        "text": "Tracking the minimum element in constant O(1) time alongside push and pop operations uses an auxiliary Min-Stack."
+        "variants": [
+          "Tracking the minimum element in constant O(1) time alongside push and pop operations uses an auxiliary Min-Stack.",
+          "An auxiliary min-stack keeps the minimum element available in O(1) time during push and pop operations.",
+          "Push and pop stay accompanied by an O(1) minimum when an auxiliary min-stack tracks that element."
+        ]
       }
     ],
     "correct": [
@@ -5872,19 +11459,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "When all vertices are represented by floating-point numbers rather than discrete integer identifiers."
+        "reasons": [
+          "Preferring an adjacency list does not depend on vertices being floating-point values rather than integer identifiers.",
+          "An adjacency matrix can represent a one-way arc, so a directed graph is not a reason to reject the matrix.",
+          "A matrix can store a self-loop on its diagonal, so loops do not require a side table or force an adjacency list."
+        ],
+        "variants": [
+          "When all vertices are represented by floating-point numbers rather than discrete integer identifiers.",
+          "When the graph is directed, because an adjacency matrix cannot represent an arc that points in only one direction.",
+          "When every vertex has a self-loop, because a matrix diagonal cannot store a loop without an extra side table."
+        ]
       },
       {
         "id": "B",
-        "text": "In dense graphs where edge existence checks between any two arbitrary vertices must execute in O(1) time."
+        "reasons": [
+          "Dense graphs that need O(1) edge-existence checks are a setting where a matrix is usually preferred, not an adjacency list.",
+          "A complete graph is dense, so the space advantage of an adjacency list disappears and it is not the preferred representation.",
+          "String labels can be mapped to integer indexes, so they do not prevent an adjacency matrix from being used."
+        ],
+        "variants": [
+          "In dense graphs where edge existence checks between any two arbitrary vertices must execute in O(1) time.",
+          "When the graph is complete, because walking neighbors is treated as cheaper once nearly every vertex pair has an edge.",
+          "When vertex labels are strings, because a matrix subscript is assumed to accept only an integer and never a string key."
+        ]
       },
       {
         "id": "C",
-        "text": "In sparse graphs (where E << V^2), because it consumes O(V + E) space and enables faster iteration over a vertex's neighbors."
+        "variants": [
+          "In sparse graphs (where E << V^2), because it consumes O(V + E) space and enables faster iteration over a vertex's neighbors.",
+          "Faster iteration over its neighbors and O(V + E) space make it the choice for sparse graphs (where E << V^2).",
+          "Sparse graphs (where E << V^2) prefer it because its space is O(V + E) and neighbor iteration stays faster."
+        ]
       },
       {
         "id": "D",
-        "text": "When the graph has negative edge weights that cause adjacency matrix memory buffers to experience arithmetic overflow."
+        "reasons": [
+          "Negative edge weights do not overflow an adjacency-matrix buffer, and they are not a reason to prefer an adjacency list.",
+          "A matrix can store several connected components in one buffer, so disconnection does not rule the matrix out.",
+          "A matrix cell can store a numeric weight, not only a bit, so weights above one do not force an adjacency list."
+        ],
+        "variants": [
+          "When the graph has negative edge weights that cause adjacency matrix memory buffers to experience arithmetic overflow.",
+          "When the graph may be disconnected, because one matrix buffer cannot hold more than a single connected component.",
+          "When edge weights are larger than one, because a matrix cell can store only a bit that says whether an edge exists."
+        ]
       }
     ],
     "correct": [
@@ -5900,19 +11518,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Declaring the instance as `private static volatile Singleton instance;` and checking `if (instance == null)` twice inside a synchronized block guarantees thread visibility and prevents instruction reordering hazards."
+        "variants": [
+          "Declaring the instance as `private static volatile Singleton instance;` and checking `if (instance == null)` twice inside a synchronized block guarantees thread visibility and prevents instruction reordering hazards.",
+          "Thread visibility is guaranteed, and instruction reordering hazards are prevented, by `private static volatile Singleton instance;` together with checking `if (instance == null)` twice inside a synchronized block.",
+          "Checking `if (instance == null)` twice inside a synchronized block, on `private static volatile Singleton instance;`, guarantees thread visibility and prevents instruction reordering hazards."
+        ]
       },
       {
         "id": "B",
-        "text": "Bill Pugh's Initialization-on-demand Holder idiom relies on JVM classloader guarantees to load the static inner holder class only when `getInstance()` is called, achieving lazy loading without synchronization overhead."
+        "variants": [
+          "Bill Pugh's Initialization-on-demand Holder idiom relies on JVM classloader guarantees to load the static inner holder class only when `getInstance()` is called, achieving lazy loading without synchronization overhead.",
+          "Lazy loading without synchronization overhead comes from Bill Pugh's initialization-on-demand holder idiom, using JVM classloader guarantees so the static inner holder class loads only when `getInstance()` is called.",
+          "Only a call to `getInstance()` loads the static inner holder class under Bill Pugh's initialization-on-demand holder idiom, whose JVM classloader guarantees give lazy loading without synchronization overhead."
+        ]
       },
       {
         "id": "C",
-        "text": "A simple non-volatile double-checked locking idiom is safe across all multi-core JVMs because the JIT compiler guarantees CPU memory barrier flushes automatically."
+        "reasons": [
+          "Non-volatile double-checked locking is not safe on every multi-core JVM, and the JIT does not automatically insert the needed memory barriers.",
+          "Synchronizing only the write still lets a reader observe a partially constructed object, which is not a safe publication of the Singleton.",
+          "A static initializer runs when the class is initialized, not when the first instance method runs, so that field is not created lazily inside getInstance."
+        ],
+        "variants": [
+          "A simple non-volatile double-checked locking idiom is safe across all multi-core JVMs because the JIT compiler guarantees CPU memory barrier flushes automatically.",
+          "Synchronizing only the write of the instance field is enough, because a reader on another core can safely observe a partially constructed Singleton.",
+          "A public static final field set in a static block is lazy, because the JVM waits to run that block until the first instance method is called."
+        ]
       },
       {
         "id": "D",
-        "text": "Single-element `enum` singletons are vulnerable to reflection instantiation attacks via `Constructor.setAccessible(true)` and require a custom `readResolve()` method for deserialization safety."
+        "reasons": [
+          "A single-element enum singleton is protected from reflective construction through setAccessible, and serialization does not need a custom readResolve method.",
+          "Calling values returns the enum constants that already exist and does not allocate a new singleton instance on each call.",
+          "Enum constants are created when the enum class is initialized, not unconditionally before main starts, so that timing claim is wrong."
+        ],
+        "variants": [
+          "Single-element `enum` singletons are vulnerable to reflection instantiation attacks via `Constructor.setAccessible(true)` and require a custom `readResolve()` method for deserialization safety.",
+          "An enum singleton is believed to allocate a fresh instance on every call to `values()`, so the caller is expected to cache the first constant rather than reuse what the enum returns.",
+          "Declaring the singleton as an enum is said to block lazy initialization, because every enum constant is assumed to be constructed before `main` starts, even if nothing has asked for the instance yet inside this process."
+        ]
       }
     ],
     "correct": [
@@ -5929,19 +11573,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Provide an interface for creating families of related or dependent objects without specifying their concrete classes."
+        "reasons": [
+          "Creating families of related objects without naming their concrete classes is the intent of Abstract Factory, not Factory Method.",
+          "A single shared instance with a global access point is the Singleton intent, not the Factory Method intent.",
+          "Wrapping an object to add behavior behind the same interface is the Decorator intent, not the Factory Method intent."
+        ],
+        "variants": [
+          "Provide an interface for creating families of related or dependent objects without specifying their concrete classes.",
+          "Ensure a class has only one instance and expose a global access point, while keeping the constructor hidden from ordinary callers.",
+          "Add behavior by wrapping an object, while the wrapper presents the same interface the client already uses."
+        ]
       },
       {
         "id": "B",
-        "text": "Define an interface for creating an object, but let subclasses decide which class to instantiate, deferring instantiation to subclasses."
+        "variants": [
+          "Define an interface for creating an object, but let subclasses decide which class to instantiate, deferring instantiation to subclasses.",
+          "Subclasses decide which class to instantiate, because this pattern defines an interface for creating an object and defers instantiation to those subclasses.",
+          "Instantiation is deferred to subclasses, which decide which class to instantiate behind an interface for creating an object."
+        ]
       },
       {
         "id": "C",
-        "text": "Separate the construction of a complex object from its representation so that the same construction process can create different representations."
+        "reasons": [
+          "Separating construction of a complex object from its representation is the Builder intent, not the Factory Method intent.",
+          "Adapting one interface to the interface a client already expects is the Adapter intent, not the Factory Method intent.",
+          "Pushing state changes out to dependents without coupling them to the subject is the Observer intent, not the Factory Method intent."
+        ],
+        "variants": [
+          "Separate the construction of a complex object from its representation so that the same construction process can create different representations.",
+          "Convert an existing class's interface into a different interface the client already expects, so that class can be reused without editing its source code at all.",
+          "Push a notification to its registered dependents whenever a subject's state changes, without coupling that subject to the concrete classes of the dependents."
+        ]
       },
       {
         "id": "D",
-        "text": "Wrap multiple loosely coupled subsystems behind a single simplified facade interface."
+        "reasons": [
+          "Hiding many subsystems behind one simplified facade is the Facade intent, not the Factory Method intent.",
+          "Saving and restoring internal state without exposing it is the Memento intent, not the Factory Method intent.",
+          "Packaging a request as an object so the sender need not name the receiver is the Command intent, not the Factory Method intent."
+        ],
+        "variants": [
+          "Wrap multiple loosely coupled subsystems behind a single simplified facade interface.",
+          "Save internal state for a later restore without exposing how that state is represented.",
+          "Package each request as an object so the sender need not name the receiver."
+        ]
       }
     ],
     "correct": [
@@ -5957,19 +11632,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "When one product varies by subclass, and that subclass's factory method creates only that product rather than a matched family."
+        "reasons": [
+          "One product that varies by subclass, with a factory method that creates only that product, is a Factory Method case rather than Abstract Factory.",
+          "Copying one existing object without naming its concrete class is a Prototype case, not a reason to choose Abstract Factory over Factory Method.",
+          "Moving behavior into state classes as internal state changes is the State pattern, not Abstract Factory."
+        ],
+        "variants": [
+          "When one product varies by subclass, and that subclass's factory method creates only that product rather than a matched family.",
+          "When one existing object must be copied, and the client should not depend on the concrete class of the instance being copied.",
+          "When behavior must change with an object's internal state, and each state-specific behavior lives in its own state class."
+        ]
       },
       {
         "id": "B",
-        "text": "When related products must be created together, such as a button and a scrollbar from one theme, without the client naming the concrete classes."
+        "variants": [
+          "When related products must be created together, such as a button and a scrollbar from one theme, without the client naming the concrete classes.",
+          "A button and a scrollbar from one theme must be created together as related products, and the client does not name the concrete classes.",
+          "The client does not name the concrete classes when related products such as a button and a scrollbar from one theme must be created together."
+        ]
       },
       {
         "id": "C",
-        "text": "When the client picks one algorithm at runtime and the context delegates to that interchangeable implementation of a shared interface."
+        "reasons": [
+          "Picking an algorithm at runtime and delegating to an interchangeable implementation is the Strategy pattern, not Abstract Factory.",
+          "Packaging an action so it can be queued, logged, or undone is the Command pattern, not a reason to prefer Abstract Factory.",
+          "Hiding a subsystem behind one entry point is the Facade pattern, not Abstract Factory."
+        ],
+        "variants": [
+          "When the client picks one algorithm at runtime and the context delegates to that interchangeable implementation of a shared interface.",
+          "When an action should be queued, logged, or undone, and that action is packaged as an object handed to an invoker.",
+          "When a group of subsystem types should stay hidden behind one entry point so clients are not coupled to those inner types."
+        ]
       },
       {
         "id": "D",
-        "text": "When one complex object is assembled step by step, so the same construction process can produce different representations of that finished object."
+        "reasons": [
+          "Assembling one complex object step by step so one construction process can yield different representations is the Builder pattern, not Abstract Factory.",
+          "Adding operations over a tree without editing the element classes is the Visitor pattern, not Abstract Factory.",
+          "Routing colleague communication through a mediator is the Mediator pattern, not a case for Abstract Factory over Factory Method."
+        ],
+        "variants": [
+          "When one complex object is assembled step by step, so the same construction process can produce different representations of that finished object.",
+          "When a tree of element objects must accept brand-new operations over them without modifying the classes that define those elements in the tree.",
+          "When colleague objects communicate only through one mediator object, so none of them keeps a direct reference to any of the others in the group."
+        ]
       }
     ],
     "correct": [
@@ -5985,19 +11691,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It builds an immutable object that has many optional parameters without a telescoping constructor for every combination."
+        "variants": [
+          "It builds an immutable object that has many optional parameters without a telescoping constructor for every combination.",
+          "Many optional parameters fit on an immutable object without a telescoping constructor for every combination.",
+          "No telescoping constructor is required for every combination when building an immutable object that has many optional parameters."
+        ]
       },
       {
         "id": "B",
-        "text": "It can check required fields and cross-field invariants inside build() before the product is instantiated."
+        "variants": [
+          "It can check required fields and cross-field invariants inside build() before the product is instantiated.",
+          "Before the product is instantiated, `build()` can check required fields and cross-field invariants.",
+          "Cross-field invariants and required fields get checked inside `build()` before the product is instantiated."
+        ]
       },
       {
         "id": "C",
-        "text": "It writes each setter straight into a shared product, so other threads can observe that object before build() returns."
+        "reasons": [
+          "A builder does not write each setter into a shared product that other threads can observe before `build()` returns.",
+          "Leaving the product mutable after `build()` so callers skip a new builder is not an architectural advantage of the pattern.",
+          "The pattern does not replace constructors with reflection that writes fields after `build()` returns."
+        ],
+        "variants": [
+          "It writes each setter straight into a shared product, so other threads can observe that object before build() returns.",
+          "It leaves the finished product mutable after `build()` returns, so callers can keep changing fields without allocating another builder.",
+          "It skips constructors on the product, because the builder assigns fields by reflection after `build()` has already returned."
+        ]
       },
       {
         "id": "D",
-        "text": "It returns one cached product for every caller, so a later build() call does not allocate a new object."
+        "reasons": [
+          "A builder does not hand every caller the same cached product, and a later `build()` call can allocate a new object.",
+          "The pattern does not force a single process-wide builder or serialize concurrent `build()` calls by itself.",
+          "A failed `build()` should not publish a partial product for the caller to inspect."
+        ],
+        "variants": [
+          "It returns one cached product for every caller, so a later build() call does not allocate a new object.",
+          "It enforces one process-wide builder, so concurrent `build()` calls are serialized by the pattern itself.",
+          "A failed `build()` still returns the partial product so the caller can inspect fields that failed checks."
+        ]
       }
     ],
     "correct": [
@@ -6014,19 +11746,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Object.clone() deep-copies every nested object in the graph by default, so the clone cannot share a mutable child and the only cost is the extra allocation."
+        "reasons": [
+          "The clone method on Object does not deep-copy every nested object by default, so a clone can still share a mutable child.",
+          "Once a class implements Cloneable, the clone method on Object does not always throw CloneNotSupportedException.",
+          "The object returned by cloning has the same runtime class as the original, so overridden subclass methods remain in place."
+        ],
+        "variants": [
+          "Object.clone() deep-copies every nested object in the graph by default, so the clone cannot share a mutable child and the only cost is the extra allocation.",
+          "`Object.clone()` is said to always throw `CloneNotSupportedException`, even after the class implements `Cloneable`, so the caller can never be given a returned copy.",
+          "A copy produced by `Object.clone()` is treated as a different runtime class from the original source object, so overridden methods on the subclass are lost."
+        ]
       },
       {
         "id": "B",
-        "text": "Cloneable does not declare clone(), and Object.clone() copies fields without calling constructors, so checks can be skipped and mutable children shared."
+        "variants": [
+          "Cloneable does not declare clone(), and Object.clone() copies fields without calling constructors, so checks can be skipped and mutable children shared.",
+          "Checks can be skipped and mutable children shared, because `Object.clone()` copies fields without calling constructors and `Cloneable` does not declare `clone()`.",
+          "Mutable children stay shared and checks can be skipped: `Cloneable` does not declare `clone()`, and `Object.clone()` copies fields without calling constructors."
+        ]
       },
       {
         "id": "C",
-        "text": "A public clone() that calls super.clone() still runs the subclass constructor, so invariants set there are applied to the copy."
+        "reasons": [
+          "A public clone method that calls the superclass clone does not run the subclass constructor, so invariants assigned there are not applied to the copy.",
+          "The superclass clone copies reference fields by sharing the same objects, and it does not clear those fields to null for a constructor to fill in.",
+          "Cloning uses the runtime class of the receiver, so a superclass-typed reference does not yield a superclass instance that drops subclass fields."
+        ],
+        "variants": [
+          "A public clone() that calls super.clone() still runs the subclass constructor, so invariants set there are applied to the copy.",
+          "`super.clone()` copies only primitive fields, so every reference field is left null and must be filled by a constructor.",
+          "Calling `clone()` through a superclass reference returns a new instance of that superclass and drops the subclass fields."
+        ]
       },
       {
         "id": "D",
-        "text": "Implementing Cloneable by itself publishes clone() to callers, so no public override on the class is required for them to call it."
+        "reasons": [
+          "Implementing `Cloneable` does not publish `clone()` to callers, and a public override is still required for them to call it.",
+          "`Cloneable` does not extend `Serializable`, and cloning does not copy the object by running it through the serialization stream.",
+          "Implementing `Cloneable` does not forbid subclasses, and the marker interface does not freeze copying for the whole hierarchy."
+        ],
+        "variants": [
+          "Implementing Cloneable by itself publishes clone() to callers, so no public override on the class is required for them to call it.",
+          "`Cloneable` extends `Serializable`, so cloning writes the object through the serialization stream instead of copying its fields.",
+          "A class that implements `Cloneable` cannot be subclassed, because the marker interface freezes how copying works."
+        ]
       }
     ],
     "correct": [
@@ -6042,19 +11805,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It wraps an object in another of the same interface and adds behavior at runtime, without a new subclass for each combination."
+        "variants": [
+          "It wraps an object in another of the same interface and adds behavior at runtime, without a new subclass for each combination.",
+          "Behavior is added at runtime by wrapping an object in another of the same interface, and no new subclass is needed for each combination.",
+          "Each combination needs no new subclass, because the pattern wraps an object of the same interface and adds behavior."
+        ]
       },
       {
         "id": "B",
-        "text": "It subclasses the target for each added behavior, so every combination of features is still a new class in the hierarchy."
+        "reasons": [
+          "Decorator does not subclass the target for each added behavior, and combinations do not each become a new class in the hierarchy.",
+          "A decorator holds a reference to the wrapped object rather than copying its fields, so it is not isolated from later changes by a field copy.",
+          "The wrapped class does not need to be final, and decorators can be stacked around an existing wrapper."
+        ],
+        "variants": [
+          "It subclasses the target for each added behavior, so every combination of features is still a new class in the hierarchy.",
+          "The decorator copies the wrapped object's fields, so a later mutation of the original instance would stay invisible to the wrapper.",
+          "The wrapped class is required to be final, which would stop a second decorator from being placed around an existing wrapper."
+        ]
       },
       {
         "id": "C",
-        "text": "It changes the wrapped object's class at runtime, so the extra behavior replaces the original methods in place rather than wrapping them."
+        "reasons": [
+          "Decorator does not change the wrapped object's class at runtime, and it does not replace the original methods in place.",
+          "Decorator does not rewrite the wrapped class bytecode, so the added behavior does not appear on every instance of that class.",
+          "Decoration is applied by wrapping an object and is not limited to code that runs inside a constructor."
+        ],
+        "variants": [
+          "It changes the wrapped object's class at runtime, so the extra behavior replaces the original methods in place rather than wrapping them.",
+          "It rewrites the wrapped class bytecode to include the decorator methods, so every existing instance of that class gains the added behavior.",
+          "It can add the extra behavior only inside a constructor, so an object that already exists cannot be decorated after it has already been built."
+        ]
       },
       {
         "id": "D",
-        "text": "It converts a legacy interface into the one the client already expects, and leaves the wrapped object's behavior unchanged."
+        "reasons": [
+          "Converting a legacy interface into the one the client expects, while leaving behavior unchanged, describes Adapter rather than Decorator.",
+          "Holding an interchangeable algorithm is the Strategy pattern, and it is not how Decorator extends behavior.",
+          "Hiding subsystem calls behind one method is the Facade pattern, and it does not wrap a single object to add behavior."
+        ],
+        "variants": [
+          "It converts a legacy interface into the one the client already expects, and leaves the wrapped object's behavior unchanged.",
+          "It chooses one algorithm at runtime, and the decorator's role is only to hold that interchangeable strategy.",
+          "It hides a set of subsystem calls behind one method, and that method does not add behavior onto a single wrapped object."
+        ]
       }
     ],
     "correct": [
@@ -6070,19 +11864,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It hides every subsystem type, so client code cannot name those classes even when it needs a finer-grained call."
+        "reasons": [
+          "A facade does not prevent client code from naming subsystem classes when a finer-grained call is actually needed.",
+          "Creating subsystem objects only on the first request is lazy construction, not the objective of the facade pattern.",
+          "Keeping old method names so clients can skip a newer API is compatibility versioning, not what a facade is for."
+        ],
+        "variants": [
+          "It hides every subsystem type, so client code cannot name those classes even when it needs a finer-grained call.",
+          "It takes ownership of subsystem construction and creates each object only when the client first requests it.",
+          "It keeps the previous method names available so existing clients can skip moving onto a newer subsystem API."
+        ]
       },
       {
         "id": "B",
-        "text": "It offers one higher-level interface over a subsystem, which simplifies the common path without forbidding the lower-level types."
+        "variants": [
+          "It offers one higher-level interface over a subsystem, which simplifies the common path without forbidding the lower-level types.",
+          "Clients get one higher-level interface over a subsystem, making the common path simpler without forbidding lower-level types.",
+          "It exposes one coarser interface over a subsystem, easing the usual path without ruling out the lower-level types."
+        ]
       },
       {
         "id": "C",
-        "text": "It intercepts each subsystem call to add logging or a security check, while the subsystem's own interfaces stay unchanged."
+        "reasons": [
+          "Intercepting each call to add logging or a security check is a proxy or decorator concern, not the facade's objective.",
+          "Gathering several client calls into one remote request is a batching choice, not the facade pattern.",
+          "Collapsing checked exceptions into one unchecked type is an error-policy decision, not the role of a facade."
+        ],
+        "variants": [
+          "It intercepts each subsystem call to add logging or a security check, while the subsystem's own interfaces stay unchanged.",
+          "It gathers several separate client calls and ships them to the subsystem as one combined remote request.",
+          "It rewrites each checked exception raised by the subsystem into one unchecked type, which is the only error the client receives."
+        ]
       },
       {
         "id": "D",
-        "text": "It lets the client treat a single subsystem object and a group of those objects uniformly, through that same part-whole interface."
+        "reasons": [
+          "Letting the client treat one object and a group through the same part-whole interface is the composite pattern, not the facade.",
+          "A facade is how the client reaches the subsystem, not a type the subsystem uses to call back into the client.",
+          "Selecting among subsystems at runtime with a client-supplied rule is a strategy, not a facade."
+        ],
+        "variants": [
+          "It lets the client treat a single subsystem object and a group of those objects uniformly, through that same part-whole interface.",
+          "It sits inside the subsystem and lets that subsystem call back into the client through one shared callback interface at runtime too.",
+          "It chooses among several subsystems at runtime by applying a selection rule that the client supplies with every individual call."
+        ]
       }
     ],
     "correct": [
@@ -6098,19 +11923,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It adapts one node type so a client written for a different node type can call it without changing either node."
+        "reasons": [
+          "Adapting one node type so a client written for another type can call it is the adapter pattern, not composite.",
+          "Flattening children into a single list removes the nested tree, which is not how composite models a part-whole structure.",
+          "Giving every node a direct link to the root is a navigation shortcut, not the problem composite is meant to solve."
+        ],
+        "variants": [
+          "It adapts one node type so a client written for a different node type can call it without changing either node.",
+          "It flattens every nested child into one list so the client can iterate the tree without walking parent links.",
+          "It gives each node a direct link to the root so any node can reach the whole tree without using its parent."
+        ]
       },
       {
         "id": "B",
-        "text": "It lets the client treat a leaf and a group of children through one interface, so a part-whole tree does not special-case the two."
+        "variants": [
+          "It lets the client treat a leaf and a group of children through one interface, so a part-whole tree does not special-case the two.",
+          "A client treats a leaf and a group of children through one interface, so the part-whole tree does not special-case them.",
+          "One shared interface covers both a leaf and a group of children, so a part-whole tree does not special-case those two."
+        ]
       },
       {
         "id": "C",
-        "text": "It notifies every registered dependent when a node changes, without the node keeping a direct reference to each of those dependents."
+        "reasons": [
+          "Notifying dependents when a node changes, without the node referencing each dependent, is the observer pattern.",
+          "Pushing a full copy of the tree to every node on each edit is replication, not the composite structure.",
+          "Having children poll their parents on a timer is a refresh scheme, not what composite contributes."
+        ],
+        "variants": [
+          "It notifies every registered dependent when a node changes, without the node keeping a direct reference to each of those dependents.",
+          "It stores the whole tree on the client and pushes a full copy out to every node whenever the client edits that structure.",
+          "It has each child poll its parent on a fixed timer so the child can refresh its own state after the parent has changed."
+        ]
       },
       {
         "id": "D",
-        "text": "It passes a request from a node up to its parent until some ancestor handles it, rather than the client picking a handler."
+        "reasons": [
+          "Passing a request up to ancestors until one handles it is chain of responsibility, not composite.",
+          "Broadcasting one request to every node and waiting for all of them is scatter-gather, not composite.",
+          "Starting at the deepest leaf and walking upward is a traversal order, not the composite pattern."
+        ],
+        "variants": [
+          "It passes a request from a node up to its parent until some ancestor handles it, rather than the client picking a handler.",
+          "It delivers the same request to every node at once and waits until all of those nodes have returned a result.",
+          "It asks the deepest leaf before any ancestor, so the walk runs from the leaves back upward toward the root."
+        ]
       }
     ],
     "correct": [
@@ -6126,19 +11982,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It lets the abstraction hierarchy and the implementation hierarchy vary separately, instead of one subclass for each combination."
+        "variants": [
+          "It lets the abstraction hierarchy and the implementation hierarchy vary separately, instead of one subclass for each combination.",
+          "The abstraction hierarchy and the implementation hierarchy vary separately, rather than one subclass for every combination.",
+          "It lets the abstraction hierarchy and the implementation hierarchy change separately, instead of a subclass for each combination."
+        ]
       },
       {
         "id": "B",
-        "text": "It shares one implementation instance across every abstraction, in the same way a flyweight shares intrinsic state."
+        "reasons": [
+          "Sharing one implementation instance across every abstraction, as a flyweight shares intrinsic state, is not what bridge does.",
+          "Copying the implementation into each abstraction keeps combinations coupled, which is the inheritance problem bridge avoids.",
+          "A factory that returns a new subclass of the abstraction still grows that hierarchy instead of separating implementation."
+        ],
+        "variants": [
+          "It shares one implementation instance across every abstraction, in the same way a flyweight shares intrinsic state.",
+          "It copies the implementation into each abstraction so that copy can change without affecting the other abstractions.",
+          "It hides the implementation behind a factory that always returns a fresh subclass of the abstraction itself."
+        ]
       },
       {
         "id": "C",
-        "text": "It stacks extra behavior onto the abstraction at runtime, so each feature you add does not require another subclass in the hierarchy."
+        "reasons": [
+          "Stacking extra behavior onto the abstraction at runtime without new subclasses is the decorator pattern, not bridge.",
+          "Freezing both hierarchies and editing the base class to add a variant is the opposite of letting the two hierarchies vary separately.",
+          "Moving every implementation method up into the abstraction collapses the two hierarchies bridge is designed to keep apart."
+        ],
+        "variants": [
+          "It stacks extra behavior onto the abstraction at runtime, so each feature you add does not require another subclass in the hierarchy.",
+          "It freezes both the abstraction and implementation hierarchies at compile time, so a new variant is added only by editing the base class.",
+          "It lifts every implementation method into the abstraction, so clients depend on one hierarchy and never on a second one."
+        ]
       },
       {
         "id": "D",
-        "text": "It stands in for the real implementation and controls access to it, while the client keeps calling the same interface."
+        "reasons": [
+          "Standing in for the real implementation and controlling access to it, while the client keeps the same interface, is a proxy.",
+          "One subclass selected by a constructor flag still encodes every combination in a single type, which bridge exists to avoid.",
+          "Branching one concrete class on an enum of abstraction and implementation does not let the two hierarchies vary separately."
+        ],
+        "variants": [
+          "It stands in for the real implementation and controls access to it, while the client keeps calling the same interface.",
+          "It builds one subclass for all combinations and selects the active combination with a flag on the constructor.",
+          "It uses one concrete class whose methods branch on an enum that names both the abstraction and the implementation."
+        ]
       }
     ],
     "correct": [
@@ -6154,19 +12041,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It shares one mutable flyweight and lets each client store its own context in that instance's fields."
+        "reasons": [
+          "A single mutable flyweight whose fields hold each client's own context would mix those contexts, so that is not how flyweight saves memory.",
+          "Creating a fresh flyweight per call and discarding it never shares intrinsic state, so it does not yield the flyweight's savings.",
+          "A thread-local slot cleared at the end of the request does not share one intrinsic state across many fine-grained objects."
+        ],
+        "variants": [
+          "It shares one mutable flyweight and lets each client store its own context in that instance's fields.",
+          "It creates a new flyweight for every call and discards it immediately, so only one instance exists at a time.",
+          "It stores flyweights in a thread-local slot and clears that slot when the client thread finishes the request."
+        ]
       },
       {
         "id": "B",
-        "text": "It keeps shareable intrinsic state in the flyweight and passes context-specific extrinsic state in on each call."
+        "variants": [
+          "It keeps shareable intrinsic state in the flyweight and passes context-specific extrinsic state in on each call.",
+          "Shareable intrinsic state stays in the flyweight, and each call is given the context-specific extrinsic state.",
+          "The flyweight keeps intrinsic state that can be shared, while each call receives extrinsic state for that context."
+        ]
       },
       {
         "id": "C",
-        "text": "It interns only the object's identity, so two flyweights with the same key still each keep a full copy of the intrinsic data."
+        "reasons": [
+          "Interning only identity while each flyweight still stores a full copy of the intrinsic data does not share that data.",
+          "A weak map that drops instances when the calling method returns cannot retain the shared flyweights the pattern depends on.",
+          "Keeping one flyweight per thread and removing it when the thread leaves does not share intrinsic state across the logical objects."
+        ],
+        "variants": [
+          "It interns only the object's identity, so two flyweights with the same key still each keep a full copy of the intrinsic data.",
+          "It keeps the flyweights in a weak map that drops every cached instance as soon as the calling method returns.",
+          "It limits the shared cache to one flyweight per client thread and removes that instance when the thread leaves the pool."
+        ]
       },
       {
         "id": "D",
-        "text": "It moves the extrinsic context into a static cache inside the flyweight, so callers stop passing that context on each call."
+        "reasons": [
+          "Caching extrinsic context in a static field and stopping callers from passing it mixes contexts, which breaks the flyweight split.",
+          "Writing intrinsic state to a file and keeping a path is external storage, not the flyweight's sharing of intrinsic state.",
+          "Packing objects into a primitive array avoids headers, but that layout is not the intrinsic-versus-extrinsic split."
+        ],
+        "variants": [
+          "It moves the extrinsic context into a static cache inside the flyweight, so callers stop passing that context on each call.",
+          "It writes the intrinsic state out to a file and keeps only that file path in memory for each fine-grained object.",
+          "It stores the fine-grained objects as packed rows in one primitive array so each object can avoid its own header."
+        ]
       }
     ],
     "correct": [
@@ -6182,19 +12100,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "java.lang.reflect.Proxy can only implement interfaces, so it cannot subclass a concrete class that has none."
+        "variants": [
+          "java.lang.reflect.Proxy can only implement interfaces, so it cannot subclass a concrete class that has none.",
+          "`java.lang.reflect.Proxy` implements interfaces only, and it cannot extend a concrete class that declares none.",
+          "A `java.lang.reflect.Proxy` is limited to interfaces, so it cannot subclass a concrete class with no interface."
+        ]
       },
       {
         "id": "B",
-        "text": "CGLIB and Byte Buddy subclass the target, so they can proxy a class with no interface, but not a final class or a final method."
+        "variants": [
+          "CGLIB and Byte Buddy subclass the target, so they can proxy a class with no interface, but not a final class or a final method.",
+          "Subclassing the target lets CGLIB and Byte Buddy proxy a class with no interface, but not a final class or a final method.",
+          "CGLIB and Byte Buddy extend the target, which lets them proxy a class with no interface, except a final class or final method."
+        ]
       },
       {
         "id": "C",
-        "text": "A JDK dynamic proxy subclasses the concrete target, so it can intercept calls on a class that implements no interface."
+        "reasons": [
+          "A JDK dynamic proxy does not subclass the concrete target, so it cannot intercept a class that implements no interface.",
+          "`java.lang.reflect.Proxy` cannot wrap a final class as a sibling, because it only generates a class that implements interfaces.",
+          "`java.lang.reflect.Proxy` does not rewrite the target's bytecode, and it cannot intercept private methods of a concrete class."
+        ],
+        "variants": [
+          "A JDK dynamic proxy subclasses the concrete target, so it can intercept calls on a class that implements no interface.",
+          "A JDK dynamic proxy can wrap a final class, because the generated proxy is a sibling of that class rather than a subclass of it.",
+          "`java.lang.reflect.Proxy` rewrites the target class's bytecode in place, which lets it intercept that target's private methods."
+        ]
       },
       {
         "id": "D",
-        "text": "CGLIB can proxy a final class by generating a subclass, as long as the methods you intercept are not private."
+        "reasons": [
+          "CGLIB cannot proxy a final class by subclassing it, because a final class cannot be extended even when the methods are not private.",
+          "CGLIB and Byte Buddy are not limited to interfaces; subclassing is how they proxy a concrete class that has no interface.",
+          "Byte Buddy does not proxy a final method by inlining it, and a final method cannot be overridden by the generated subclass."
+        ],
+        "variants": [
+          "CGLIB can proxy a final class by generating a subclass, as long as the methods you intercept are not private.",
+          "CGLIB and Byte Buddy proxy interfaces only, and they reject a concrete class even when that class is not final.",
+          "Byte Buddy proxies a final method by inlining its body at each call site, so the final modifier does not matter."
+        ]
       }
     ],
     "correct": [
@@ -6211,19 +12155,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "An object adapter subclasses the adaptee, while a class adapter holds the adaptee and forwards each call to it."
+        "reasons": [
+          "The directions are reversed: an object adapter holds the adaptee, and a class adapter is the one that subclasses the adaptee.",
+          "Neither adapter inherits the client or wraps the client; the adapter sits between the client and the adaptee.",
+          "An object adapter does not copy the adaptee's fields as its defining structure, and a class adapter does not share the adaptee's class object."
+        ],
+        "variants": [
+          "An object adapter subclasses the adaptee, while a class adapter holds the adaptee and forwards each call to it.",
+          "An object adapter inherits the target and wraps the client; a class adapter inherits the client and wraps the target.",
+          "An object adapter copies the adaptee's fields into its own state; a class adapter shares the adaptee's runtime class object."
+        ]
       },
       {
         "id": "B",
-        "text": "An object adapter holds the adaptee and forwards calls; a class adapter subclasses the adaptee and implements the target interface."
+        "variants": [
+          "An object adapter holds the adaptee and forwards calls; a class adapter subclasses the adaptee and implements the target interface.",
+          "An object adapter holds the adaptee and forwards each call; a class adapter extends the adaptee and implements the target interface.",
+          "An object adapter keeps the adaptee and forwards each call to it; a class adapter subclasses the adaptee while implementing the target interface."
+        ]
       },
       {
         "id": "C",
-        "text": "An object adapter implements the adaptee and is subclassed by the client; a class adapter implements the target and is stored inside the adaptee."
+        "reasons": [
+          "An object adapter does not implement the adaptee for the client to subclass, and a class adapter is not stored inside the adaptee.",
+          "An object adapter is not the adaptee's superclass, and a class adapter is not a nested type the target instantiates on every call.",
+          "An object adapter does not swap methods through a map, and a class adapter is not produced by a compiler plugin."
+        ],
+        "variants": [
+          "An object adapter implements the adaptee and is subclassed by the client; a class adapter implements the target and is stored inside the adaptee.",
+          "An object adapter is the adaptee's superclass and is not composed of it; a class adapter is a nested type the target creates on every call.",
+          "An object adapter replaces the adaptee's methods through a lookup map; a class adapter emits those methods from a compiler plugin at build time."
+        ]
       },
       {
         "id": "D",
-        "text": "An object adapter requires the target and the adaptee to share a superclass; a class adapter is used when they share only a method name."
+        "reasons": [
+          "Neither form requires a shared superclass or a shared method name; the split is composition versus subclassing the adaptee.",
+          "An object adapter does not require the target and adaptee to be the same class, and a class adapter is not limited to different packages.",
+          "Generics do not define an object adapter, and a class adapter is not restricted to classes that declare no constructors."
+        ],
+        "variants": [
+          "An object adapter requires the target and the adaptee to share a superclass; a class adapter is used when they share only a method name.",
+          "An object adapter applies only when target and adaptee are the same class; a class adapter applies only when those types sit in different packages.",
+          "An object adapter must be generic over both types; a class adapter is usable only with classes that declare no constructors at all."
+        ]
       }
     ],
     "correct": [
@@ -6239,19 +12214,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A base class fixes the pricing steps, and each subclass overrides only the discount step while the sequence stays in the base class."
+        "reasons": [
+          "Fixing the step sequence in a base class and overriding only one step is the template method, not the idiomatic strategy.",
+          "Selecting a private method by reflecting on a string keeps the rules inside one class instead of injecting interface implementations.",
+          "Overload resolution does not use the runtime type of a primitive, and that mechanism is not the strategy pattern."
+        ],
+        "variants": [
+          "A base class fixes the pricing steps, and each subclass overrides only the discount step while the sequence stays in the base class.",
+          "Each pricing rule is a private method on the cart, selected at checkout by reflecting on a string name rather than by a subclass.",
+          "The discount is chosen by overloading one method, with the overload picked from the runtime type of a primitive shipping code."
+        ]
       },
       {
         "id": "B",
-        "text": "A switch on shipping or discount rules is replaced by implementations of one interface, chosen and injected at runtime."
+        "variants": [
+          "A switch on shipping or discount rules is replaced by implementations of one interface, chosen and injected at runtime.",
+          "Shipping or discount rules move off a switch and onto implementations of one interface, selected and injected at runtime.",
+          "Implementations of one interface, chosen and injected at runtime, replace a switch on shipping or discount rules."
+        ]
       },
       {
         "id": "C",
-        "text": "The cart notifies every registered pricing listener when it changes, and the cart does not know the concrete listeners."
+        "reasons": [
+          "Notifying registered listeners that the cart does not know concretely is the observer pattern, not strategy.",
+          "Letting SQL text choose the discount moves the rule into the query, rather than into an injected strategy interface.",
+          "Defining a new cart subclass per order fixes the rule in the type hierarchy instead of selecting an implementation at runtime."
+        ],
+        "variants": [
+          "The cart notifies every registered pricing listener when it changes, and the cart does not know the concrete listeners.",
+          "The cart loads pricing rules as rows through JDBC, and the SQL text itself decides which discount applies.",
+          "Each order defines a new cart subclass, so the pricing rule is fixed once that subclass has been loaded."
+        ]
       },
       {
         "id": "D",
-        "text": "A legacy shipping API is wrapped in the interface checkout already calls, without changing how the cost is calculated."
+        "reasons": [
+          "Wrapping a legacy API in the interface checkout already calls, without changing the calculation, is an adapter, not strategy.",
+          "An anonymous class that only logs the cost does not replace shipping or discount rules with an injected strategy.",
+          "Adding an enum constant and recompiling fixes the rule at compile time, rather than injecting an implementation at runtime."
+        ],
+        "variants": [
+          "A legacy shipping API is wrapped in the interface checkout already calls, without changing how the cost is calculated.",
+          "Checkout wraps the shipping cost in an anonymous class whose only job is to log the number before returning it.",
+          "A shipping enum stores the rate on each constant, so a new rule means another constant and a recompiled enum."
+        ]
       }
     ],
     "correct": [
@@ -6267,19 +12273,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The subject and the observer deadlock, because each waits for the other's update() to return before it releases its lock."
+        "reasons": [
+          "The usual risk is not a deadlock where each side waits for the other's update to return; it is a listener kept by a strong reference.",
+          "Storing listeners in a thread-local is not the usual observer leak, and it is not fixed by unregistering or by a weak reference.",
+          "Copying the listener list on every notification does not by itself pin an abandoned listener for the life of the subject."
+        ],
+        "variants": [
+          "The subject and the observer deadlock, because each waits for the other's update() to return before it releases its lock.",
+          "Listeners are stored in a thread-local on the subject, so each one outlives the request thread that registered it.",
+          "Every notification copies the full listener list onto the heap, and those copies accumulate until memory runs out."
+        ]
       },
       {
         "id": "B",
-        "text": "The subject keeps a strong reference to a listener that is no longer used; unregister it, or hold it with a WeakReference."
+        "variants": [
+          "The subject keeps a strong reference to a listener that is no longer used; unregister it, or hold it with a WeakReference.",
+          "The subject holds a strong reference to a listener that is no longer used; unregister it, or retain it with a `WeakReference`.",
+          "An unused listener stays reachable through the subject's strong reference; drop that registration, or keep a `WeakReference`."
+        ]
       },
       {
         "id": "C",
-        "text": "The subject copies its listener list when the first listener registers, so a listener added later never receives events."
+        "reasons": [
+          "The subject does not freeze its listener list at the first registration, so a listener added later is not inherently dropped.",
+          "Observer lists are not fixed-capacity arrays that silently discard registrations past the original size.",
+          "One throwing listener does not cause the subject to permanently drop every listener that was registered after it."
+        ],
+        "variants": [
+          "The subject copies its listener list when the first listener registers, so a listener added later never receives events.",
+          "Listeners sit in a fixed array that never grows, so a registration past the original capacity is silently discarded.",
+          "If one listener throws, the subject drops every listener registered after it and never notifies those later listeners."
+        ]
       },
       {
         "id": "D",
-        "text": "Notify always fails with ConcurrentModificationException, because a listener is allowed to register again while the list is walked."
+        "reasons": [
+          "Notify does not always fail with ConcurrentModificationException merely because a listener may register again during the walk.",
+          "Observer notification is not dispatched on a class-initializer thread, so that stall is not the long-running risk being asked about.",
+          "The subject does not serialize listeners to disk during notify, and serializability is not the leak this pattern is known for."
+        ],
+        "variants": [
+          "Notify always fails with ConcurrentModificationException, because a listener is allowed to register again while the list is walked.",
+          "Notifications are dispatched on the listener's class-initializer thread, so a long-running process can stall while that class initializes.",
+          "The subject serializes every listener to disk inside notify, so a listener that is not serializable brings the process down."
+        ]
       }
     ],
     "correct": [
@@ -6295,19 +12332,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Requests can be queued, logged, or run later, including on another thread, because the request itself is an object."
+        "variants": [
+          "Requests can be queued, logged, or run later, including on another thread, because the request itself is an object.",
+          "Because the request itself is an object, it can be queued, logged, or run later, including on another thread.",
+          "A request can be queued, logged, or executed later, even on another thread, since the request itself is an object."
+        ]
       },
       {
         "id": "B",
-        "text": "Undo and redo can reverse work, because each command can store the inverse of what execute() did."
+        "variants": [
+          "Undo and redo can reverse work, because each command can store the inverse of what execute() did.",
+          "Undo and redo can reverse that work, because each command can keep the inverse of what `execute()` performed.",
+          "Each command can store the inverse of what `execute()` did, which lets undo and redo reverse that work."
+        ]
       },
       {
         "id": "C",
-        "text": "The invoker calls the receiver itself, and the command object only records the call after the receiver has finished."
+        "reasons": [
+          "The invoker does not call the receiver itself while the command only records the call afterward; the invoker executes the command.",
+          "The command does not replace the receiver; it holds the receiver and invokes it when execute runs.",
+          "The receiver does not create the command after the work as a mere audit record; the command is the request the invoker runs."
+        ],
+        "variants": [
+          "The invoker calls the receiver itself, and the command object only records the call after the receiver has finished.",
+          "The command replaces the receiver entirely, so the invoker calls the command and no separate receiver object remains.",
+          "The receiver builds the command only after the work has finished, and the invoker keeps that object only as an audit record."
+        ]
       },
       {
         "id": "D",
-        "text": "One command instance is shared by every invoker, because a command must not close over the arguments of a single request."
+        "reasons": [
+          "A command is not required to be one shared instance that refuses a single request's arguments; it usually closes over that request.",
+          "Commands can be stored and run later; they are not required to finish on the invoker's stack before the invoker returns.",
+          "Arguments are normally captured by the command object, not reread from thread-local storage when the command runs."
+        ],
+        "variants": [
+          "One command instance is shared by every invoker, because a command must not close over the arguments of a single request.",
+          "A command cannot be stored for later, because its method must finish on the invoker's call stack before the invoker returns.",
+          "A command may reference only the receiver's type, and it reads that call's arguments from thread-local storage when it runs."
+        ]
       }
     ],
     "correct": [
@@ -6324,19 +12387,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Every handler in the chain must process the request, and none of them is allowed to stop the chain early."
+        "reasons": [
+          "Handlers are not all required to process the request, and a handler is allowed to stop the chain early.",
+          "Later handlers are not limited to the case where the first handler throws; any handler may handle, forward, or both.",
+          "The chain does not require concurrent execution or identical results from every handler."
+        ],
+        "variants": [
+          "Every handler in the chain must process the request, and none of them is allowed to stop the chain early.",
+          "The first handler alone handles the request, and later handlers run only if that first handler throws.",
+          "The handlers run concurrently, and the request is accepted only when every handler returns the same result."
+        ]
       },
       {
         "id": "B",
-        "text": "The request walks a sequence of handlers, and each one may handle it, forward it, or do both."
+        "variants": [
+          "The request walks a sequence of handlers, and each one may handle it, forward it, or do both.",
+          "The request moves through a sequence of handlers, and each handler may handle it, forward it, or do both.",
+          "Handlers form a sequence the request walks, and any one of them may process it, pass it on, or do both."
+        ]
       },
       {
         "id": "C",
-        "text": "The client looks up one handler by request type and runs only that handler, with no forwarding to another."
+        "reasons": [
+          "The client does not look up a single handler by request type and stop; the request can be forwarded along the chain.",
+          "Chain of responsibility does not rebuild and sort the chain from a client-computed priority on every request.",
+          "Forwarding goes to the next handler in the chain, not only to child handlers that the current handler created."
+        ],
+        "variants": [
+          "The client looks up one handler by request type and runs only that handler, with no forwarding to another.",
+          "The chain is rebuilt and sorted on every request, using a priority number the client calculates for that request.",
+          "A handler may forward the request only to child handlers it created, and never to the next handler beside it."
+        ]
       },
       {
         "id": "D",
-        "text": "The client already names the concrete handler, and the client itself loops over the remaining handlers."
+        "reasons": [
+          "The client does not name the concrete handler and then loop over the rest; handlers forward along the chain themselves.",
+          "The pattern does not scan the classpath and invoke handlers in fully qualified name order.",
+          "Forwarding is not done by returning a class for the client to construct; the handler passes the request onward."
+        ],
+        "variants": [
+          "The client already names the concrete handler, and the client itself loops over the remaining handlers.",
+          "The runtime scans the classpath for handler types and invokes them in order of their fully qualified class names.",
+          "A handler forwards work by returning the next handler's class, which the client then constructs and invokes itself."
+        ]
       }
     ],
     "correct": [
@@ -6352,19 +12446,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Strategy changes the context when the context's own data changes; State is chosen once by the client and then stays fixed."
+        "reasons": [
+          "Strategy is not what changes the context when the context's data changes, and state is not chosen once by the client and then frozen.",
+          "Strategy is not required to extend State or to implement the context's transition methods.",
+          "State does not keep the algorithm in a one-time client field while strategy loads it from a static map keyed by context class."
+        ],
+        "variants": [
+          "Strategy changes the context when the context's own data changes; State is chosen once by the client and then stays fixed.",
+          "Every Strategy must extend State, so each strategy is also required to implement the context's state-transition methods.",
+          "State stores the chosen algorithm in a field the client sets once, while Strategy loads it from a static map keyed by the context class."
+        ]
       },
       {
         "id": "B",
-        "text": "Both delegate through an interface, but the client picks a Strategy, while a State often moves the context on to the next state itself."
+        "variants": [
+          "Both delegate through an interface, but the client picks a Strategy, while a State often moves the context on to the next state itself.",
+          "Both patterns delegate through an interface, but the client selects a Strategy, while a State switches to the next state.",
+          "Both hand work off through an interface; a Strategy is chosen by the client, while a State moves the context on to the next state."
+        ]
       },
       {
         "id": "C",
-        "text": "State objects are shared and hold no per-context data; Strategy objects are singletons created once when the process starts."
+        "reasons": [
+          "The split is not that state objects are shared with no per-context data while strategies are singletons created when the process starts.",
+          "Neither pattern is restricted to an enum or forbidden from being an enum; that is not how the two patterns differ.",
+          "The context does not extend its current state, and a strategy class does not extend the client that selected it."
+        ],
+        "variants": [
+          "State objects are shared and hold no per-context data; Strategy objects are singletons created once when the process starts.",
+          "State is permitted only as an enum nested inside the context, and Strategy is permitted only as subclasses, never as an enum.",
+          "The context class extends whichever State is current, and each Strategy class extends the client that originally selected it."
+        ]
       },
       {
         "id": "D",
-        "text": "State is implemented as a subclass of the context for each mode; Strategy instead wraps that context and adds behavior around the call."
+        "reasons": [
+          "State is not a subclass of the context for each mode, and strategy does not wrap the context to add behavior around the call.",
+          "The patterns are not split by overload resolution on the context versus lookup of a string method name.",
+          "State changes are not tied to a process restart, and strategy changes are not defined as rereading a configuration file on each call."
+        ],
+        "variants": [
+          "State is implemented as a subclass of the context for each mode; Strategy instead wraps that context and adds behavior around the call.",
+          "A State is chosen by overloading on the context argument's runtime type, while a Strategy is chosen by a string method name at runtime.",
+          "A State is replaced only when the whole process restarts, while a Strategy is replaced on every single call by rereading a configuration file from disk."
+        ]
       }
     ],
     "correct": [
@@ -6380,19 +12505,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The subclass chooses the step order, and the base class only offers hooks that do not form a fixed sequence."
+        "reasons": [
+          "The subclass does not choose the step order while the base class only offers unsequenced hooks; the base class owns the sequence.",
+          "Publishing steps for the client to call in its own order inverts the template method, where the base class calls the steps.",
+          "Hooks are not required to be final and empty; subclasses are expected to replace selected steps."
+        ],
+        "variants": [
+          "The subclass chooses the step order, and the base class only offers hooks that do not form a fixed sequence.",
+          "The base class exposes each step as a public method, and the client builds the algorithm by calling those methods itself.",
+          "The hook methods are final and empty, so a subclass can observe the algorithm but cannot replace any individual step."
+        ]
       },
       {
         "id": "B",
-        "text": "The base class fixes the step order in a template method and calls hooks; subclasses replace steps, not the sequence."
+        "variants": [
+          "The base class fixes the step order in a template method and calls hooks; subclasses replace steps, not the sequence.",
+          "Hooks are called from a template method whose order the base class fixes, and subclasses may replace steps but not that order.",
+          "The base class template method fixes the step order and calls hooks; subclasses override steps, not the sequence."
+        ]
       },
       {
         "id": "C",
-        "text": "The client injects each step as a strategy, so the base class never calls a method that a subclass implements."
+        "reasons": [
+          "The client does not inject each step as a strategy so the base never calls a subclass method; the template method calls the hooks.",
+          "If the subclass calls the base and the base never calls the subclass, the base is not driving the algorithm.",
+          "Leaving the template method abstract so the subclass writes the whole algorithm removes the fixed sequence the base should own."
+        ],
+        "variants": [
+          "The client injects each step as a strategy, so the base class never calls a method that a subclass implements.",
+          "The subclass calls the base-class steps from its own method, and the base class never invokes a method the subclass wrote.",
+          "The template method stays abstract, so the subclass writes the whole algorithm and the base sets no step order."
+        ]
       },
       {
         "id": "D",
-        "text": "Subclasses register for a callback when the algorithm finishes, instead of the base class calling hooks while it runs."
+        "reasons": [
+          "Subclasses do not merely register for a callback when the algorithm finishes; the base class calls hooks while it runs.",
+          "Polling a status flag after the algorithm finishes is not how template-method hooks are invoked.",
+          "Reading a result queue after the fact replaces the base class calling subclass hooks during the algorithm."
+        ],
+        "variants": [
+          "Subclasses register for a callback when the algorithm finishes, instead of the base class calling hooks while it runs.",
+          "Each subclass polls a status flag on the base class and runs its extra work after the flag reports that the algorithm has finished.",
+          "The base class enqueues the finished result for later, and subclasses read the queue rather than being called while the algorithm runs."
+        ]
       }
     ],
     "correct": [
@@ -6408,19 +12564,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Fail-fast iterators throw ConcurrentModificationException when modCount changes outside the iterator; fail-safe ones snapshot or tolerate updates and do not throw."
+        "variants": [
+          "Fail-fast iterators throw ConcurrentModificationException when modCount changes outside the iterator; fail-safe ones snapshot or tolerate updates and do not throw.",
+          "A fail-fast iterator throws `ConcurrentModificationException` when `modCount` changes; a fail-safe iterator snapshots or tolerates updates and does not throw.",
+          "Outside changes to `modCount` make fail-fast iterators throw `ConcurrentModificationException`; fail-safe iterators snapshot or tolerate updates and do not throw."
+        ]
       },
       {
         "id": "B",
-        "text": "Fail-fast iterators lock the collection until the traversal ends; fail-safe iterators never see a structural change made after they are created."
+        "reasons": [
+          "Fail-fast iterators do not lock the collection until traversal ends, and fail-safe iterators are not defined as never seeing a later structural change.",
+          "Fail-fast iterators do not catch a conflict and retry the walk, and fail-safe iterators do not work by interrupting the writer thread.",
+          "Fail-fast iterators are not defined by skipping removed elements, and fail-safe iterators do not block writers until hasNext returns false."
+        ],
+        "variants": [
+          "Fail-fast iterators lock the collection until the traversal ends; fail-safe iterators never see a structural change made after they are created.",
+          "Fail-fast iterators catch a conflicting write and retry the walk from the start; fail-safe iterators interrupt the thread that changed the collection.",
+          "Fail-fast iterators skip any elements removed during the walk; fail-safe iterators block writers until `hasNext()` returns false."
+        ]
       },
       {
         "id": "C",
-        "text": "Fail-fast iterators throw if you remove() through the iterator itself; fail-safe iterators throw only when another thread modifies the collection."
+        "reasons": [
+          "Fail-fast iterators do not throw when you remove through the iterator itself, and fail-safe iterators are not defined as throwing only for another thread.",
+          "Fail-fast versus fail-safe is not a split between List and Set or Map.",
+          "Neither kind detects modification by comparing element hash codes or by the collection object's identity."
+        ],
+        "variants": [
+          "Fail-fast iterators throw if you remove() through the iterator itself; fail-safe iterators throw only when another thread modifies the collection.",
+          "Fail-fast iterators are offered only by `List` types; fail-safe iterators are offered only by `Set` implementations and by `Map`.",
+          "Fail-fast iterators detect an edit by comparing element hash codes; fail-safe iterators detect it from the collection object's identity."
+        ]
       },
       {
         "id": "D",
-        "text": "Fail-fast behavior comes from copying the collection's elements when iterator() is called; fail-safe behavior comes from checking modCount every time next() is called."
+        "reasons": [
+          "The mechanisms are reversed: fail-fast iterators check modCount, while copying or tolerating updates is the fail-safe side.",
+          "Collections.synchronizedList does not refuse iterator, and the iterators it returns are not the fail-safe kind.",
+          "Fail-fast collections are not required to stay immutable, and fail-safe behavior is not defined as taking a fair lock on every mutator."
+        ],
+        "variants": [
+          "Fail-fast behavior comes from copying the collection's elements when iterator() is called; fail-safe behavior comes from checking modCount every time next() is called.",
+          "Fail-fast iterators refuse calls to `iterator()` whenever the collection is a `Collections.synchronizedList` wrapper; fail-safe iterators are exactly the iterators that wrapper returns.",
+          "Fail-fast behavior requires the collection to stay fully immutable for its lifetime in that running JVM; fail-safe behavior requires every mutator to take one fair lock before it runs."
+        ]
       }
     ],
     "correct": [
@@ -6436,19 +12623,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It replaces direct links among colleagues with a mediator they call, so those colleagues do not reference one another."
+        "variants": [
+          "It replaces direct links among colleagues with a mediator they call, so those colleagues do not reference one another.",
+          "Colleagues call a mediator instead of keeping direct links, so those colleagues do not reference one another.",
+          "Direct links among colleagues are replaced by calls to a mediator, and the colleagues do not reference one another."
+        ]
       },
       {
         "id": "B",
-        "text": "Each colleague keeps references to the others and forwards calls itself, while the mediator only records the interaction."
+        "reasons": [
+          "Colleagues do not keep direct references and forward calls while the mediator only records the interaction.",
+          "The mediator does not subclass every colleague so one instance can play all of their roles.",
+          "A shared topic name is not a mediator, and the pattern is not just a string the colleagues already share."
+        ],
+        "variants": [
+          "Each colleague keeps references to the others and forwards calls itself, while the mediator only records the interaction.",
+          "The mediator subclasses every colleague, so a single instance plays all of their roles and stores no links between them.",
+          "Colleagues already share one message topic, and the mediator object is only the string name of that shared topic."
+        ]
       },
       {
         "id": "C",
-        "text": "Every colleague registers with the others and is told about their changes, which keeps the mediator off the call path."
+        "reasons": [
+          "Colleagues do not register with each other and receive change notices while the mediator stays off the call path.",
+          "A marker interface leaves the calls on the concrete colleagues, so it does not replace their direct links.",
+          "Electing one colleague as a hub and storing that choice still leaves a colleague on the communication path."
+        ],
+        "variants": [
+          "Every colleague registers with the others and is told about their changes, which keeps the mediator off the call path.",
+          "The mediator is only a marker interface placed on each colleague, and the real calls still go to those colleagues' concrete classes.",
+          "One colleague is elected as the hub while the system runs, and the mediator merely records which colleague won that election."
+        ]
       },
       {
         "id": "D",
-        "text": "A request moves from one colleague to the next until one of them handles it, and that chain of colleagues is the mediator."
+        "reasons": [
+          "A chain of colleagues passing a request is chain of responsibility, not a mediator those colleagues call.",
+          "Copying every colleague's fields and never calling them removes the collaboration the mediator is supposed to coordinate.",
+          "Constructing colleagues and then discarding them leaves no colleagues for the mediator to coordinate."
+        ],
+        "variants": [
+          "A request moves from one colleague to the next until one of them handles it, and that chain of colleagues is the mediator.",
+          "The mediator copies every colleague's fields into itself and answers each request without calling any of those colleagues.",
+          "The mediator creates the colleagues and then discards them, because later calls use only methods declared on the mediator."
+        ]
       }
     ],
     "correct": [
@@ -6464,23 +12682,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Originator, the object that writes a snapshot of its own state and later restores itself from that snapshot."
+        "variants": [
+          "Originator, the object that writes a snapshot of its own state and later restores itself from that snapshot.",
+          "The originator is what captures a snapshot of its own state and, later, uses that snapshot to restore itself.",
+          "Saving a snapshot of its own state, then restoring itself from that snapshot, is the originator's role."
+        ]
       },
       {
         "id": "B",
-        "text": "Memento, the object that stores the snapshot and exposes the full state only back to the originator."
+        "variants": [
+          "Memento, the object that stores the snapshot and exposes the full state only back to the originator.",
+          "The snapshot lives in the memento, and that full state is shown only back to the originator.",
+          "The memento keeps the snapshot and exposes the full state only back to the originator that created it."
+        ]
       },
       {
         "id": "C",
-        "text": "Caretaker, the object that holds mementos and must not read or change what is stored inside them."
+        "variants": [
+          "Caretaker, the object that holds mementos and must not read or change what is stored inside them.",
+          "Holding mementos without reading or changing the state stored inside them is the caretaker's role.",
+          "The caretaker holds those mementos and is not allowed to read or change the state stored inside them."
+        ]
       },
       {
         "id": "D",
-        "text": "Director, the object that reads the memento's fields and runs the originator's construction steps from them."
+        "reasons": [
+          "Director is a builder-pattern role, and it does not read a memento in order to run the originator's construction steps.",
+          "Builder is not a memento role; the originator writes and restores its own snapshot without a builder filling that snapshot.",
+          "Prototype is not a memento role; a clone of the originator is not the opaque snapshot a caretaker is meant to hold."
+        ],
+        "variants": [
+          "Director, the object that reads the memento's fields and runs the originator's construction steps from them.",
+          "Builder, the object that accumulates the snapshot field by field and then asks the originator to validate that snapshot.",
+          "Prototype, the object that clones the live originator and stores that clone as the snapshot for a later restore."
+        ]
       },
       {
         "id": "E",
-        "text": "Observer, the object that is notified whenever a field stored inside the memento changes."
+        "reasons": [
+          "Observer is not a memento role, and a memento does not notify anyone when a stored field changes.",
+          "Command is a different pattern; the memento stores state for the originator to restore, not operations to replay.",
+          "Proxy is not part of memento, and nothing in the pattern lazily loads a field when the originator reads it."
+        ],
+        "variants": [
+          "Observer, the object that is notified whenever a field stored inside the memento changes.",
+          "Command, the object that stores the snapshot so the originator can undo by replaying operations.",
+          "Proxy, the object that guards the snapshot and loads a field only when the originator reads it."
+        ]
       }
     ],
     "correct": [
@@ -6498,19 +12746,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The client calls an overloaded visitor.visit(element), and Java selects that overload using the runtime type of the element argument."
+        "reasons": [
+          "Java selects an overload of visit from the compile-time type of the argument, not from the element's runtime type.",
+          "A table of method handles keyed by class, invoked by the client, is not the accept callback that selects both types.",
+          "Binding visit with invokedynamic on the element interface skips the callback visitor uses to recover the element type."
+        ],
+        "variants": [
+          "The client calls an overloaded visitor.visit(element), and Java selects that overload using the runtime type of the element argument.",
+          "The visitor stores one method handle per element class, and the client calls the handle whose key is that element's class.",
+          "The visit overload is bound with `invokedynamic` against the element interface, so the element never calls back into the visitor."
+        ]
       },
       {
         "id": "B",
-        "text": "The element accepts the visitor and calls back visitor.visit(this), so both the element type and the operation are selected."
+        "variants": [
+          "The element accepts the visitor and calls back visitor.visit(this), so both the element type and the operation are selected.",
+          "After the element accepts the visitor, it calls `visitor.visit(this)`, selecting both the element type and the operation.",
+          "The element accepts the visitor and then calls `visitor.visit(this)`, so both the element type and the operation get selected."
+        ]
       },
       {
         "id": "C",
-        "text": "Each new operation is added to the element interface, so every element class is edited when that operation is introduced."
+        "reasons": [
+          "Adding each new operation to the element interface, and editing every element class, is what visitor avoids rather than how it dispatches.",
+          "Calling visit with getClass and switching on that class object is a manual type test, not the visit(this) callback.",
+          "Reflectively matching a method name to the element type is not the double-dispatch accept and visit callback."
+        ],
+        "variants": [
+          "Each new operation is added to the element interface, so every element class is edited when that operation is introduced.",
+          "The element calls `visitor.visit(this.getClass())`, and the visitor switches on that class object to choose the operation.",
+          "Reflection finds a visitor method whose name equals the element type's name, and that method alone is the selected operation."
+        ]
       },
       {
         "id": "D",
-        "text": "The visitor subclasses the element, so one virtual call on the visitor selects both the element type and the operation."
+        "reasons": [
+          "The visitor does not subclass the element, and one virtual call on the visitor alone cannot select both the element type and the operation.",
+          "A chain of `instanceof` tests inside one visit method is a manual type switch, not double dispatch through accept and visit.",
+          "Default methods on the element interface put the operation back on the element, which is the coupling visitor avoids."
+        ],
+        "variants": [
+          "The visitor subclasses the element, so one virtual call on the visitor selects both the element type and the operation.",
+          "`instanceof` tests inside one visit method choose the operation, so the concrete element class itself never takes part in that dispatch.",
+          "Each operation is a default method on the element interface, so a further operation is just another interface that element extends."
+        ]
       }
     ],
     "correct": [
@@ -6526,19 +12805,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The problem is a small language whose sentences follow a grammar, and an abstract syntax tree evaluates those sentences."
+        "variants": [
+          "The problem is a small language whose sentences follow a grammar, and an abstract syntax tree evaluates those sentences.",
+          "It fits a small language whose sentences follow a grammar, with an abstract syntax tree that evaluates those sentences.",
+          "Use it for a small language whose sentences follow a grammar, where an abstract syntax tree evaluates those sentences."
+        ]
       },
       {
         "id": "B",
-        "text": "The request is passed along a chain of handlers until one of them interprets the message and chooses to stop the chain."
+        "reasons": [
+          "Passing a request along handlers until one interprets it and stops is chain of responsibility, not the interpreter pattern.",
+          "Loading a class per token and reflecting on interpret is not an abstract syntax tree built from a grammar.",
+          "Mapping configuration strings to classes that handle requests is a registry, not interpretation of a small language."
+        ],
+        "variants": [
+          "The request is passed along a chain of handlers until one of them interprets the message and chooses to stop the chain.",
+          "It fits when each input token is a class loaded by name, and reflection invokes a method called `interpret` on that class.",
+          "It fits a configuration map from strings to classes, where each class is constructed to handle one incoming request."
+        ]
       },
       {
         "id": "C",
-        "text": "A family of algorithms shares a single interface, and the client selects which of those algorithms interprets each input."
+        "reasons": [
+          "A family of algorithms behind one interface, with the client picking which one reads the input, is strategy, not interpreter.",
+          "A large language maintained as branches of a central switch is a poor fit for the interpreter pattern.",
+          "Hand-parsed binary messages with no grammar are not the small language and syntax tree interpreter targets."
+        ],
+        "variants": [
+          "A family of algorithms shares a single interface, and the client selects which of those algorithms interprets each input.",
+          "It fits a large, often-changing language in which every new grammar rule is added as one more branch of a central switch.",
+          "It fits a binary message protocol parsed by hand from fixed byte offsets, with no grammar defining those messages."
+        ]
       },
       {
         "id": "D",
-        "text": "The object structure stays fixed while new operations are added as visitors, rather than being added as grammar rules."
+        "reasons": [
+          "Keeping the object structure fixed and adding operations as visitors is the visitor pattern, not interpreter.",
+          "One class that switches on a token enum does not give each grammar rule its own node in a syntax tree.",
+          "Re-parsing raw strings on every evaluation, with no syntax tree retained, skips the tree the pattern uses."
+        ],
+        "variants": [
+          "The object structure stays fixed while new operations are added as visitors, rather than being added as grammar rules.",
+          "It fits a single expression class that evaluates every sentence by switching on an enum of the language's token kinds.",
+          "It fits when each sentence is kept as a raw string and parsed from scratch on every evaluation, with no syntax tree kept."
+        ]
       }
     ],
     "correct": [
@@ -6554,19 +12864,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A class has one responsibility when it exposes a single public method, even if several actors request changes to that method."
+        "reasons": [
+          "One public method is not Martin's responsibility, because several actors can still have reasons to change that method.",
+          "Private fields are encapsulation, and they do not mean the class has only one actor's reason to change.",
+          "Being the only type in a package says nothing about whether several actors have reasons to change the class."
+        ],
+        "variants": [
+          "A class has one responsibility when it exposes a single public method, even if several actors request changes to that method.",
+          "A class has one responsibility when all of its fields stay private and no other class is permitted to read them.",
+          "A class has one responsibility when it is the sole type in its package and no type outside that package depends on it."
+        ]
       },
       {
         "id": "B",
-        "text": "A responsibility is one actor's reason to change, so a class should serve one actor and not mix the changes those actors request."
+        "variants": [
+          "A responsibility is one actor's reason to change, so a class should serve one actor and not mix the changes those actors request.",
+          "A class should serve one actor, since a responsibility is that actor's reason to change and not a mix of other actors' changes.",
+          "One actor's reason to change defines a responsibility, so a class should serve one actor and not mix those actors' change requests."
+        ]
       },
       {
         "id": "C",
-        "text": "A class has one responsibility when its methods all use one database table, no matter which team requests the change."
+        "reasons": [
+          "Sharing one database table is not a single responsibility, because different actors can still request changes to that class.",
+          "A shared verb in the method names does not identify one actor's reason to change.",
+          "Compiling to one class file does not stop several teams' reasons to change from landing in the same class."
+        ],
+        "variants": [
+          "A class has one responsibility when its methods all use one database table, no matter which team requests the change.",
+          "A class has one responsibility when every method name shares a single verb, regardless of which actor requests the change.",
+          "A class has one responsibility when it compiles to one class file, even if a different team owns each of its methods."
+        ]
       },
       {
         "id": "D",
-        "text": "A class has one responsibility when it both calculates a result and stores it, because those two steps are assumed to change together."
+        "reasons": [
+          "Calculating a result and storing it are not one responsibility merely because those two steps are assumed to change together.",
+          "A single author does not make a class serve one actor when several actors later request changes.",
+          "Tests that cover one use case do not erase the extra actors who each have a reason to change the class."
+        ],
+        "variants": [
+          "A class has one responsibility when it both calculates a result and stores it, because those two steps are assumed to change together.",
+          "A class has one responsibility whenever one developer wrote it, even when several actors later ask for changes to that class.",
+          "A class has one responsibility when its tests cover only one use case, even if several actors are each a separate reason for that class to change."
+        ]
       }
     ],
     "correct": [
@@ -6582,19 +12923,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "New payment methods are added as further case branches in the existing switch, and the method's signature stays the same."
+        "reasons": [
+          "Adding case branches to an existing switch edits that code, so the class is not closed to modification.",
+          "Editing every caller to construct a new class modifies existing code instead of extending it behind an interface already in use.",
+          "Copying the payment class and retargeting callers duplicates and edits code instead of adding a type behind a stable interface."
+        ],
+        "variants": [
+          "New payment methods are added as further case branches in the existing switch, and the method's signature stays the same.",
+          "New payment methods are introduced by editing each caller so it constructs the new class, while the payment interface stays unchanged.",
+          "Every payment variant is a source copy of the payment class, and each caller is updated to construct the copy it needs."
+        ]
       },
       {
         "id": "B",
-        "text": "New behavior is a new type behind an interface the existing code already calls, so the tested classes are not edited."
+        "variants": [
+          "New behavior is a new type behind an interface the existing code already calls, so the tested classes are not edited.",
+          "The new behavior is introduced as a new type behind an interface existing code already calls, and the tested classes stay unedited.",
+          "A new type, placed behind an interface that existing code already calls, adds the behavior without editing the tested classes."
+        ]
       },
       {
         "id": "C",
-        "text": "The existing payment class is edited for each new method, but its public signatures stay stable so callers do not have to recompile."
+        "reasons": [
+          "Editing the existing payment class for each new method modifies that class, even when the public signatures stay stable.",
+          "Adding a boolean parameter changes the existing method, so the class is not left closed while behavior is extended.",
+          "A subclass that only changes a field initializer and overrides nothing does not introduce the new behavior as an extension."
+        ],
+        "variants": [
+          "The existing payment class is edited for each new method, but its public signatures stay stable so callers do not have to recompile.",
+          "Each new payment method arrives as another boolean parameter with a default, so existing callers still compile against that same method.",
+          "New payment behavior is added by a subclass that changes only a protected field initializer and overrides no method of the parent."
+        ]
       },
       {
         "id": "D",
-        "text": "Every variant lives in one class behind a flag that defaults to the old behavior, so no new type is introduced."
+        "reasons": [
+          "Putting every variant behind a flag in one class, with no new type, modifies that class for each variant.",
+          "Regenerating classes from a template still replaces the implementation when a method is added.",
+          "Declaring the class final and writing new methods in the caller pushes changes onto clients instead of extending via a new type."
+        ],
+        "variants": [
+          "Every variant lives in one class behind a flag that defaults to the old behavior, so no new type is introduced.",
+          "The payment classes are regenerated from a template whenever a method is added, so people do not edit that generated source.",
+          "Marking the payment class final is treated as closing it, and each later payment method is implemented inside the caller."
+        ]
       }
     ],
     "correct": [
@@ -6610,19 +12982,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A `Square` subclass inherits from `Rectangle` and overrides `setWidth(w)` to also mutate `height`, violating callers' expectations that changing width leaves height invariant."
+        "variants": [
+          "A `Square` subclass inherits from `Rectangle` and overrides `setWidth(w)` to also mutate `height`, violating callers' expectations that changing width leaves height invariant.",
+          "A `Square` subclass of `Rectangle` overrides `setWidth(w)` so it also mutates `height`, breaking callers that expect a width change to leave height invariant.",
+          "Callers that expect changing width to leave height invariant are broken when a `Square` subclass of `Rectangle` overrides `setWidth(w)` and also mutates `height`."
+        ]
       },
       {
         "id": "B",
-        "text": "A subclass throws an unexpected `UnsupportedOperationException` when overriding an inherited method that callers expect to perform work successfully according to the base contract."
+        "variants": [
+          "A subclass throws an unexpected `UnsupportedOperationException` when overriding an inherited method that callers expect to perform work successfully according to the base contract.",
+          "A subclass that throws an unexpected `UnsupportedOperationException` from an inherited method breaks callers the base contract tells to expect successful work.",
+          "Throwing an unexpected `UnsupportedOperationException` from an override of an inherited method breaks callers who expect that method to do its work under the base contract."
+        ]
       },
       {
         "id": "C",
-        "text": "A subclass returns a more specific subtype (covariant return type) of the base method's declared return type."
+        "reasons": [
+          "A covariant return type is still usable as the base return type, so that scenario does not violate LSP.",
+          "Promising non-null where the base method allowed null strengthens the postcondition, which LSP permits.",
+          "An extra method on the subclass does not break callers who depend on the base contract, so it is not an LSP violation."
+        ],
+        "variants": [
+          "A subclass returns a more specific subtype (covariant return type) of the base method's declared return type.",
+          "A subclass strengthens the postcondition by returning non-null where the base method was still allowed to return null.",
+          "A subclass adds a method the base type does not declare, while every inherited method continues to honor the base contract."
+        ]
       },
       {
         "id": "D",
-        "text": "A subclass accepts broader argument types (contravariant parameters) than specified in the base contract."
+        "reasons": [
+          "Accepting broader argument types weakens the precondition, which substitution allows, so this is not an LSP violation.",
+          "Declaring fewer checked exceptions stays safe for callers of the base type, so it does not violate LSP.",
+          "Keeping the same preconditions and postconditions while touching only unmentioned private fields preserves the contract."
+        ],
+        "variants": [
+          "A subclass accepts broader argument types (contravariant parameters) than specified in the base contract.",
+          "A subclass declares fewer checked exceptions than the base method, so callers of the base type still compile.",
+          "A subclass keeps the same preconditions and postconditions and changes only unmentioned private fields."
+        ]
       }
     ],
     "correct": [
@@ -6639,19 +13037,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "High-level modules depend on concrete low-level classes, and only those low-level classes depend on abstractions."
+        "reasons": [
+          "High-level modules must not depend on concrete low-level classes; both levels should depend on abstractions.",
+          "Pointing high-level modules at low-level modules, with abstractions only in the low-level package, leaves the high level tied to details.",
+          "Letting concrete modules depend on each other, and adding an abstraction only for a third caller, never inverts the dependency."
+        ],
+        "variants": [
+          "High-level modules depend on concrete low-level classes, and only those low-level classes depend on abstractions.",
+          "Low-level modules are what high-level modules depend on, and abstractions are added only inside the low-level package.",
+          "Concrete modules depend on other concrete modules, and an abstraction appears only when a third module must call both."
+        ]
       },
       {
         "id": "B",
-        "text": "High-level and low-level modules both depend on abstractions, and those abstractions do not depend on concrete details."
+        "variants": [
+          "High-level and low-level modules both depend on abstractions, and those abstractions do not depend on concrete details.",
+          "High-level modules, like the low-level ones, depend on abstractions that do not depend on concrete details.",
+          "The abstractions do not depend on concrete details, and both high-level and low-level modules depend on them."
+        ]
       },
       {
         "id": "C",
-        "text": "The abstraction is defined next to the SQL implementation, and the use case depends on that persistence-owned interface."
+        "reasons": [
+          "An abstraction defined beside the SQL and owned by persistence makes the use case depend on a detail.",
+          "Putting SQL in the use case and pointing the database package at a concrete repository keeps both sides on concrete types.",
+          "A shared kernel that imports every concrete module makes the abstraction depend on details, which DIP forbids."
+        ],
+        "variants": [
+          "The abstraction is defined next to the SQL implementation, and the use case depends on that persistence-owned interface.",
+          "The use case class owns the SQL strings, while the database package depends on that use case's concrete repository type.",
+          "Abstractions live in a shared kernel that imports every concrete module, so each detail is free to reference the other details."
+        ]
       },
       {
         "id": "D",
-        "text": "Injecting concrete classes through a container is enough, even when the use case's constructor names those concrete types."
+        "reasons": [
+          "A container that injects concrete classes does not satisfy DIP when the use-case constructor still names those concrete types.",
+          "A final class is still a concrete detail, so depending on it does not invert the dependency onto an abstraction.",
+          "A service locator that returns concrete classes by class literal still makes the use case depend on those concrete types."
+        ],
+        "variants": [
+          "Injecting concrete classes through a container is enough, even when the use case's constructor names those concrete types.",
+          "Depending on a concrete class satisfies the rule when that class is final, because a final class can have only one implementation.",
+          "Looking concrete types up from a service locator, by class literal, is treated as enough to invert the dependency."
+        ]
       }
     ],
     "correct": [
@@ -6667,19 +13096,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "An entity is identified by its attributes, so two users with the same name are one entity; a value object is identified by a persistent id."
+        "reasons": [
+          "Identity is reversed here: an entity is not identified by matching attributes, and a value object is not identified by a persistent id.",
+          "Being stored in a repository does not define an entity, and never being passed to a repository does not define a value object.",
+          "An entity need not be an aggregate root, and a value object need not be a primitive field on that root."
+        ],
+        "variants": [
+          "An entity is identified by its attributes, so two users with the same name are one entity; a value object is identified by a persistent id.",
+          "An entity is defined as any object a repository is willing to store; a value object is defined as any object the domain never passes to a repository.",
+          "An entity must be an aggregate root with a repository of its own; a value object must be a primitive field carried on that root."
+        ]
       },
       {
         "id": "B",
-        "text": "An entity keeps a stable identity as its state changes; a value object has no identity and is equal when its attributes match."
+        "variants": [
+          "An entity keeps a stable identity as its state changes; a value object has no identity and is equal when its attributes match.",
+          "State can change on an entity without changing its identity; a value object has none, and equals another when its attributes match.",
+          "Identity stays put for an entity across state changes, while a value object has no identity and matches another when the attributes match."
+        ]
       },
       {
         "id": "C",
-        "text": "An entity is immutable and compared by reference; a value object is mutable and is compared by a database primary key."
+        "reasons": [
+          "An entity is not defined as immutable and compared by reference, and a value object is not mutable and compared by a primary key.",
+          "Occupying a table versus matching a column type is a schema mapping, not the identity difference between entity and value object.",
+          "Persistence is not required before an entity can be compared, and a value object is not comparable only while an entity points at it."
+        ],
+        "variants": [
+          "An entity is immutable and compared by reference; a value object is mutable and is compared by a database primary key.",
+          "An entity is defined as the object that occupies one table; a value object is defined as the type of one column in that table.",
+          "An entity may be compared only after persistence; a value object may be compared only while some entity still points at it."
+        ]
       },
       {
         "id": "D",
-        "text": "An entity holds only data; a value object holds the identity and the lifecycle of the aggregate that contains it."
+        "reasons": [
+          "An entity is not mere data, and a value object does not hold the identity and lifecycle of the surrounding aggregate.",
+          "A stateless row-loading service is not an entity, and a row mapper is not a value object.",
+          "Choosing a business key versus a surrogate key is not the rule that entities have identity and value objects match by attributes."
+        ],
+        "variants": [
+          "An entity holds only data; a value object holds the identity and the lifecycle of the aggregate that contains it.",
+          "An entity is a stateless service that loads rows; a value object is the mapper that turns one of those rows into a return value.",
+          "An entity is equal only through a business key a user can read; a value object is equal only through a database surrogate key."
+        ]
       }
     ],
     "correct": [
@@ -6695,19 +13155,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Objects outside the aggregate reference the root only, not an entity that lives inside the boundary."
+        "variants": [
+          "Objects outside the aggregate reference the root only, not an entity that lives inside the boundary.",
+          "Code outside the aggregate may point only at the root, never at an entity that lives inside the boundary.",
+          "Outside objects may reference the aggregate root only, not an entity living inside that aggregate's boundary."
+        ]
       },
       {
         "id": "B",
-        "text": "A change inside the boundary must leave the root's invariants true before the transaction commits."
+        "variants": [
+          "A change inside the boundary must leave the root's invariants true before the transaction commits.",
+          "Any change made inside the boundary has to leave the root's invariants true before the transaction commits.",
+          "Before the transaction commits, a change inside the boundary must leave the root's invariants still true."
+        ]
       },
       {
         "id": "C",
-        "text": "One transaction should update every aggregate the use case touches, using a distributed commit so rules can span roots."
+        "reasons": [
+          "One transaction should not update every aggregate the use case touches, and invariants are not meant to span roots through a distributed commit.",
+          "Taking other roots' repositories so one use case updates every aggregate couples roots that should commit separately.",
+          "Publishing setters on internal entities lets outsiders bypass the root, which breaks the aggregate boundary."
+        ],
+        "variants": [
+          "One transaction should update every aggregate the use case touches, using a distributed commit so rules can span roots.",
+          "Each root should take the other roots' repositories so a single use case can update every aggregate before it returns to the caller.",
+          "A root should publish setters for its internal entities so outside code can modify those children without calling through the root."
+        ]
       },
       {
         "id": "D",
-        "text": "Other aggregates may reference internal entities if they load those entities through the same repository as the root."
+        "reasons": [
+          "Loading an internal entity through the same repository does not allow another aggregate to reference that internal entity.",
+          "Invariants are not checked only at creation; a later change inside the boundary must still leave them true at commit.",
+          "A later domain event does not excuse committing while the root's invariants are already false."
+        ],
+        "variants": [
+          "Other aggregates may reference internal entities if they load those entities through the same repository as the root.",
+          "Invariants on the root are enforced only at creation time, and any later change inside the boundary skips that check entirely.",
+          "The transaction is allowed to commit with a broken invariant when a later domain event is expected to repair that root."
+        ]
       }
     ],
     "correct": [
@@ -6724,19 +13210,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Domain events are the contract other contexts consume; integration events stay inside the aggregate and may use its internal types."
+        "reasons": [
+          "The audiences are swapped: other contexts consume integration events, while domain events stay inside one bounded context.",
+          "A domain event is not written to another context's outbox, and an integration event is not applied only to the aggregate that raised it.",
+          "Typing domain events with public DTOs and integration events with private fields swaps which event may carry the internal model."
+        ],
+        "variants": [
+          "Domain events are the contract other contexts consume; integration events stay inside the aggregate and may use its internal types.",
+          "Domain events get written into another bounded context's outbox; integration events get applied only on the aggregate that originally raised them.",
+          "Domain events are payload-typed with the public API's DTOs; integration events are payload-typed with the aggregate's private fields."
+        ]
       },
       {
         "id": "B",
-        "text": "Domain events record a change inside one bounded context; integration events cross contexts and must not leak the internal model."
+        "variants": [
+          "Domain events record a change inside one bounded context; integration events cross contexts and must not leak the internal model.",
+          "Inside one bounded context, a domain event records a change; an integration event crosses contexts and must not leak the internal model.",
+          "Crossing contexts without leaking the internal model is an integration event; a domain event records the change inside one bounded context."
+        ]
       },
       {
         "id": "C",
-        "text": "Domain events must stay compatible forever once published; integration events can change with the aggregate because only that context reads them."
+        "reasons": [
+          "Compatibility is reversed: integration events are the cross-context contract, while domain events stay inside one context and can change with it.",
+          "Domain events are not the disposable in-process stream, and integration events are not the log replayed to rebuild that same aggregate.",
+          "Neither event is defined by carrying a full snapshot versus carrying only an id and a timestamp."
+        ],
+        "variants": [
+          "Domain events must stay compatible forever once published; integration events can change with the aggregate because only that context reads them.",
+          "Domain events may be dropped inside one process; integration events are the log that same process replays to rebuild its aggregate.",
+          "Each domain event is required to contain the entire aggregate snapshot; each integration event is required to contain only an id and a timestamp."
+        ]
       },
       {
         "id": "D",
-        "text": "Domain events are replayed to rebuild state; integration events replace them so the aggregate does not keep a history of its own."
+        "reasons": [
+          "Replaying domain events to rebuild state is event sourcing, and integration events do not exist to replace that history.",
+          "Domain events are not inbound commands from another context, and integration events are not merely acknowledgements sent back.",
+          "A domain event is not confined to the raising method, and renaming it for a broker does not make it an integration event."
+        ],
+        "variants": [
+          "Domain events are replayed to rebuild state; integration events replace them so the aggregate does not keep a history of its own.",
+          "Domain events are inbound commands from another context; integration events are the acknowledgements that context receives in return.",
+          "Domain events never escape the method that raised them; integration events are those events renamed when they reach the message broker."
+        ]
       }
     ],
     "correct": [
@@ -6752,19 +13269,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A repository is a table-level API of insert and update methods; a DAO is the collection of aggregate roots the domain loads and saves."
+        "reasons": [
+          "The definitions are swapped: the table-level insert and update API is the DAO, and the collection of aggregate roots is the repository.",
+          "A dirty-row session is a persistence context, not a repository, and judging aggregate consistency is not what makes a type a DAO.",
+          "A stored procedure per use case is not the repository contract, and exposing invariant checks to the database is not what a DAO is."
+        ],
+        "variants": [
+          "A repository is a table-level API of insert and update methods; a DAO is the collection of aggregate roots the domain loads and saves.",
+          "A repository is the session that tracks dirty rows; a DAO is the domain service that judges whether an aggregate is still consistent.",
+          "A repository exposes one stored procedure for each use case; a DAO exposes the aggregate's invariants so the database can run those checks."
+        ]
       },
       {
         "id": "B",
-        "text": "A repository loads and saves whole aggregate roots as a collection; a DAO is organized around tables, SQL, and row-level CRUD."
+        "variants": [
+          "A repository loads and saves whole aggregate roots as a collection; a DAO is organized around tables, SQL, and row-level CRUD.",
+          "Whole aggregate roots are loaded and saved as a collection by a repository; a DAO stays organized around tables, SQL, and row-level CRUD.",
+          "Collection-style load and save of whole aggregate roots belongs to a repository; tables, SQL, and row-level CRUD belong to a DAO."
+        ]
       },
       {
         "id": "C",
-        "text": "A repository may return a child entity for the caller to update; a DAO is allowed to return only the aggregate root."
+        "reasons": [
+          "A repository should not hand a child entity back for the caller to update, and a DAO is not the type limited to returning only the root.",
+          "Who opens the transaction does not separate a repository from a DAO, and the aggregate root is not the component that commits.",
+          "Detached UI projections are not the repository result, and forbidding a DAO from loading a root reverses the usual split."
+        ],
+        "variants": [
+          "A repository may return a child entity for the caller to update; a DAO is allowed to return only the aggregate root.",
+          "A repository is required to open and commit the transaction itself; a DAO is required to leave that commit to the aggregate root.",
+          "A repository may return only detached UI projections; a DAO returns those projections as well and is not allowed to load a root."
+        ]
       },
       {
         "id": "D",
-        "text": "A repository exposes only findAll; the domain's query language belongs on the DAO instead of on the repository."
+        "reasons": [
+          "A repository is not limited to findAll, and the domain query language is not required to live on the DAO instead.",
+          "A repository is expected to save aggregate roots; writing them back is not reserved entirely for the DAO.",
+          "The two are not the same role under different names, because a repository speaks in aggregates and a DAO speaks in rows."
+        ],
+        "variants": [
+          "A repository exposes only findAll; the domain's query language belongs on the DAO instead of on the repository.",
+          "A repository must not offer save; persisting an aggregate after a change is left entirely to the DAO.",
+          "A repository and a DAO differ in name only, and either one may own the SQL together with the aggregate's invariants."
+        ]
       }
     ],
     "correct": [
@@ -6780,19 +13328,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Every team shares one model of Customer, so a field added for billing is required in sales and in shipping as well."
+        "reasons": [
+          "A single shared Customer model would force a billing field into sales and shipping, which is the coupling a bounded context is meant to remove.",
+          "Separate storage does not create a bounded context when every context still enforces the same Customer invariants.",
+          "Separate release cadences still leave one shared Customer aggregate, so the teams do not hold distinct models."
+        ],
+        "variants": [
+          "Every team shares one model of Customer, so a field added for billing is required in sales and in shipping as well.",
+          "Bounded contexts matter so each team can store Customer apart while every context still enforces the same Customer invariants.",
+          "They exist so sales, billing, and shipping can release alone while still reading and writing one shared Customer aggregate."
+        ]
       },
       {
         "id": "B",
-        "text": "It bounds where one ubiquitous language applies, so Customer can mean different things in sales, billing, and shipping."
+        "variants": [
+          "It bounds where one ubiquitous language applies, so Customer can mean different things in sales, billing, and shipping.",
+          "Inside that boundary one ubiquitous language applies, so Customer may mean different things in sales, billing, and shipping.",
+          "It confines one ubiquitous language to that boundary, so Customer can differ in meaning across sales, billing, and shipping."
+        ]
       },
       {
         "id": "C",
-        "text": "It is only the process boundary, so two models may share one language as long as they are deployed as different services."
+        "reasons": [
+          "A bounded context is a language boundary, not only a process boundary, so deploying separate services does not let those models share one ubiquitous language.",
+          "A Git repository does not define a bounded context, and identical Customer words across services still mean one language.",
+          "A latency budget is not a context boundary, and call timing does not decide whether two teams share a model."
+        ],
+        "variants": [
+          "It is only the process boundary, so two models may share one language as long as they are deployed as different services.",
+          "A bounded context is the team's Git repository, so separate repos are enough even when every service uses the same Customer words.",
+          "It is the latency budget between services, and two teams stay one context whenever their calls remain under that time limit."
+        ]
       },
       {
         "id": "D",
-        "text": "It is a package inside one enterprise model that still uses the shared type for every noun the teams have in common."
+        "reasons": [
+          "A bounded context is not a package inside one enterprise model, and it does not keep one shared type for every noun the teams have in common.",
+          "An identity type does not put every module in one context, and a shared Customer id does not unify their models.",
+          "A database transaction is not a bounded context, so committing together does not give two models one language."
+        ],
+        "variants": [
+          "It is a package inside one enterprise model that still uses the shared type for every noun the teams have in common.",
+          "A bounded context is the aggregate's identity type, so one Customer id already puts every module inside the same context.",
+          "It is the database transaction around a use case, so two models that commit together are treated as one context."
+        ]
       }
     ],
     "correct": [
@@ -6808,19 +13387,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The new domain types extend the legacy types, so the legacy field names become part of the new ubiquitous language."
+        "reasons": [
+          "Extending the legacy types would pull legacy field names into the new ubiquitous language, which an anti-corruption layer is there to prevent.",
+          "Calling the monolith in process does not translate legacy types, and it still couples the new domain to legacy methods.",
+          "Retries and timeouts protect availability, but they do not stop legacy meanings from entering the new model."
+        ],
+        "variants": [
+          "The new domain types extend the legacy types, so the legacy field names become part of the new ubiquitous language.",
+          "It lets the new service call the monolith in process, so the new domain invokes legacy methods without a remote API.",
+          "Its purpose is to retry and time out calls to the monolith, so the new model stays available when the legacy system is slow."
+        ]
       },
       {
         "id": "B",
-        "text": "It translates the legacy model's types and meanings into the new domain model, so those legacy terms do not leak inward."
+        "variants": [
+          "It translates the legacy model's types and meanings into the new domain model, so those legacy terms do not leak inward.",
+          "It maps the legacy model's types and meanings onto the new domain model, so those legacy terms do not enter the new model.",
+          "It converts the legacy model's types and meanings into the new domain model, keeping those legacy terms from leaking inward."
+        ]
       },
       {
         "id": "C",
-        "text": "A facade over the legacy API still returns the legacy objects, and the new model depends on those objects directly."
+        "reasons": [
+          "A facade that still returns legacy objects leaves the new model depending on those objects, so the legacy model has not been translated.",
+          "Importing the monolith's DTO jar shares the legacy contract instead of translating it into the new domain model.",
+          "Generating the new language from the legacy API document adopts the legacy model rather than protecting the new one from it."
+        ],
+        "variants": [
+          "A facade over the legacy API still returns the legacy objects, and the new model depends on those objects directly.",
+          "The layer is a shared library of the monolith's DTOs that the new service imports, so both sides compile against one contract jar.",
+          "It publishes the legacy API document as the new context's model, so the new ubiquitous language is generated from that document."
+        ]
       },
       {
         "id": "D",
-        "text": "The two stores are kept aligned table for table, so the new context persists the same schema that the monolith already uses."
+        "reasons": [
+          "Keeping the stores aligned table for table would persist the monolith's schema in the new context, so the legacy model would leak in.",
+          "A distributed transaction coordinates commits, but it does not translate legacy types into the new domain model.",
+          "Reusing the monolith's primary keys copies legacy identity instead of translating it into the new model's terms."
+        ],
+        "variants": [
+          "The two stores are kept aligned table for table, so the new context persists the same schema that the monolith already uses.",
+          "The layer enlists both databases in one distributed transaction, so a new-service write commits or rolls back together with the monolith.",
+          "It copies every legacy row into the new service under the same primary keys, so the new model never translates an identifier."
+        ]
       }
     ],
     "correct": [
@@ -6836,19 +13446,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A domain service holds rules that span entities and does not know about transactions; an application service runs the use case around those calls."
+        "variants": [
+          "A domain service holds rules that span entities and does not know about transactions; an application service runs the use case around those calls.",
+          "A domain service holds rules spanning entities and stays unaware of transactions; an application service runs the use case around those calls.",
+          "A domain service owns cross-entity rules and does not know about transactions; an application service executes the use case around those calls."
+        ]
       },
       {
         "id": "B",
-        "text": "A domain service opens the transaction and loads the repositories; an application service is what holds the business rule that spans the entities."
+        "reasons": [
+          "Opening the transaction and loading repositories is application-service work, and the rule that spans entities belongs in the domain service.",
+          "A domain service can apply rules to entities, and the application service is not the only layer allowed to load aggregates.",
+          "Publishing integration events is not what defines a domain service, and an application service may coordinate more than one aggregate."
+        ],
+        "variants": [
+          "A domain service opens the transaction and loads the repositories; an application service is what holds the business rule that spans the entities.",
+          "A domain service is a pure calculator with no access to entities; an application service is the only layer allowed to load and change aggregates.",
+          "A domain service publishes integration events to other contexts; an application service is forbidden from touching more than one aggregate."
+        ]
       },
       {
         "id": "C",
-        "text": "A domain service is the class that handles the HTTP request; an application service is the entity method that changes a single aggregate."
+        "reasons": [
+          "A domain service is not the HTTP handler, and an application service is not the entity method that changes a single aggregate.",
+          "A repository interface is not a domain service, and implementing SQL is not the role of an application service.",
+          "Row mapping is a persistence concern, and validating a request body in a controller is not what an application service is for."
+        ],
+        "variants": [
+          "A domain service is the class that handles the HTTP request; an application service is the entity method that changes a single aggregate.",
+          "A domain service is the repository interface, and an application service is the class that implements the SQL for that interface.",
+          "A domain service maps database rows onto objects, and an application service is the controller that validates the incoming request body."
+        ]
       },
       {
         "id": "D",
-        "text": "A domain service may read the current user and the HTTP session; an application service must depend on neither."
+        "reasons": [
+          "A domain service should not read the current user or the HTTP session, and an application service is the layer that may depend on those delivery details.",
+          "Neither service is defined by whether the container scans it, so a bean stereotype is not the boundary between them.",
+          "Starting threads is not the domain service's role, and the application service is not defined by staying on the calling thread."
+        ],
+        "variants": [
+          "A domain service may read the current user and the HTTP session; an application service must depend on neither.",
+          "A domain service must be a container-managed bean, and an application service must be a plain class the container does not scan.",
+          "A domain service may start threads and schedule jobs, and an application service is required to run only on the calling thread."
+        ]
       }
     ],
     "correct": [
@@ -6864,19 +13505,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Each query becomes its own repository method, so a rule is reused by adding methods rather than by combining objects."
+        "reasons": [
+          "Putting each query in its own repository method duplicates the rule, whereas a specification is reused by combining predicate objects.",
+          "A specification is an in-memory predicate object, not a stored procedure compiled once for every caller.",
+          "A free-form filter string is not a specification, and the pattern does not execute caller text as the query."
+        ],
+        "variants": [
+          "Each query becomes its own repository method, so a rule is reused by adding methods rather than by combining objects.",
+          "Each specification is compiled once into a stored procedure, and the database reuses that procedure for every later caller.",
+          "The pattern lets the caller send a free-form filter string, which the repository executes directly without building a predicate object."
+        ]
       },
       {
         "id": "B",
-        "text": "A business predicate becomes an object you can combine with and, or, and not, and use both in memory and in a query."
+        "variants": [
+          "A business predicate becomes an object you can combine with and, or, and not, and use both in memory and in a query.",
+          "You make the business predicate an object, combine that object with and, or, and not, and use it both in memory and in a query.",
+          "A business rule becomes a predicate object composed with and, or, and not, and you can use it in memory and in a query."
+        ]
       },
       {
         "id": "C",
-        "text": "The rule is checked once inside the aggregate constructor, so the same predicate is not also used to build a query."
+        "reasons": [
+          "A specification is not limited to a one-time check in the aggregate constructor, and the same predicate can also build a query.",
+          "A specification does not replace the aggregate, and it is not the store for the entity's fields.",
+          "A specification is not deferred until after commit, so it is not a check that has already lost the chance to reject a write."
+        ],
+        "variants": [
+          "The rule is checked once inside the aggregate constructor, so the same predicate is not also used to build a query.",
+          "A specification replaces the aggregate, so the predicate object is the only place where that entity's fields are stored.",
+          "The predicate runs only after the transaction commits, so a failing specification cannot roll back a write that already landed."
+        ]
       },
       {
         "id": "D",
-        "text": "The query is generated from the entity's field names, so the caller does not compose a predicate at all."
+        "reasons": [
+          "A specification is a predicate the caller composes, not a query generated only from the entity's field names.",
+          "Caching a query plan is a database optimization, not what the specification pattern contributes to the model.",
+          "A check constraint is not a specification, and pushing the rule into the database does not remove the need to express that predicate in the model."
+        ],
+        "variants": [
+          "The query is generated from the entity's field names, so the caller does not compose a predicate at all.",
+          "The specification caches the last query plan, so the next identical search skips parsing on the database.",
+          "It moves the rule into a check constraint, so the application no longer evaluates that predicate in memory."
+        ]
       }
     ],
     "correct": [
@@ -6892,19 +13564,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Each setter writes that entity to the database immediately, and commit only closes the transaction."
+        "reasons": [
+          "Writing on each setter would persist changes before the business transaction commits, so the unit of work would not keep those writes together.",
+          "A connection per entity that commits on its own does not track new, dirty, and deleted objects for one business transaction.",
+          "Appending to a log as the setter runs still writes before commit, and marking the log complete is not the unit of work's flush."
+        ],
+        "variants": [
+          "Each setter writes that entity to the database immediately, and commit only closes the transaction.",
+          "It opens one connection per changed entity, and each of those connections commits on its own.",
+          "Each setter appends its change to a log table, and the business transaction only marks that log complete."
+        ]
       },
       {
         "id": "B",
-        "text": "It tracks new, dirty, and deleted objects and writes them together when the business transaction commits."
+        "variants": [
+          "It tracks new, dirty, and deleted objects and writes them together when the business transaction commits.",
+          "It records which objects are new, dirty, or deleted and writes that set when the transaction commits.",
+          "It keeps a list of new, dirty, and deleted objects, then persists them together at the business transaction's commit."
+        ]
       },
       {
         "id": "C",
-        "text": "It remembers the original rows, but each flush writes only the last entity the application changed."
+        "reasons": [
+          "Remembering the original rows is only how dirtiness is detected, and a flush writes every new, dirty, and deleted object, not only the last one.",
+          "Loading an entity does not flush pending changes, and the writes wait until the business transaction commits.",
+          "Comparing to the database on read is not the unit of work, and a mismatch does not replace the grouped write at commit."
+        ],
+        "variants": [
+          "It remembers the original rows, but each flush writes only the last entity the application changed.",
+          "It flushes pending changes as soon as the entity loads, before the business transaction commits.",
+          "It compares each loaded object with its row, and a mismatch aborts the transaction before any write."
+        ]
       },
       {
         "id": "D",
-        "text": "The entity's own save() records the change, and the unit of work is only the JDBC connection that is open."
+        "reasons": [
+          "The entity's own `save()` is not what records the change for a unit of work, and the unit of work is more than the open `JDBC` connection.",
+          "A history trigger copies rows after a statement, but it does not track new, dirty, and deleted objects until the business transaction commits.",
+          "An isolation level constrains concurrent reads, and it is not the mechanism that writes the tracked objects together at commit."
+        ],
+        "variants": [
+          "The entity's own save() records the change, and the unit of work is only the JDBC connection that is open.",
+          "The unit of work is the database trigger that copies each updated row into a history table when the statement ends.",
+          "It is the isolation level on the connection, and raising that level is what groups those statements into a single commit."
+        ]
       }
     ],
     "correct": [
@@ -6920,19 +13623,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Active Record keeps SQL out of the domain, and save() on the entity is the mapper; Data Mapper puts save() and delete() on the entity."
+        "reasons": [
+          "Active Record does not keep persistence out of the domain by treating `save()` as a mapper, and Data Mapper does not put `save()` and `delete()` on the entity.",
+          "Data Mapper keeps SQL out of the entity, and Active Record is the pattern in which the entity knows how it is stored.",
+          "One column per field does not require Data Mapper, and an entity that spans tables is not what makes the pattern Active Record."
+        ],
+        "variants": [
+          "Active Record keeps SQL out of the domain, and save() on the entity is the mapper; Data Mapper puts save() and delete() on the entity.",
+          "Data Mapper keeps the SQL in private methods on the entity, and Active Record forbids that entity from knowing its table name.",
+          "Data Mapper fits only a model where each field is exactly one column, and Active Record fits an entity that is spread over several tables."
+        ]
       },
       {
         "id": "B",
-        "text": "Data Mapper maps entities from the outside and keeps them free of persistence; Active Record puts save() and delete() on the entity."
+        "variants": [
+          "Data Mapper maps entities from the outside and keeps them free of persistence; Active Record puts save() and delete() on the entity.",
+          "Persistence stays outside the entity because Data Mapper maps it from there; Active Record puts `save()` and `delete()` on the entity.",
+          "Mapped from the outside, Data Mapper entities stay free of persistence; Active Record puts `save()` and `delete()` on the entity."
+        ]
       },
       {
         "id": "C",
-        "text": "Data Mapper fits a model that is a thin row wrapper; Active Record fits a domain that must not import a persistence API."
+        "reasons": [
+          "Data Mapper fits a domain that stays free of the persistence API, and Active Record fits the simpler case where the entity itself carries `save()` and `delete()`.",
+          "Neither pattern is limited to stored procedures or to SQL that lives only in a repository.",
+          "A getter does not flush a row in Data Mapper, and Active Record does not wait until process exit to write."
+        ],
+        "variants": [
+          "Data Mapper fits a model that is a thin row wrapper; Active Record fits a domain that must not import a persistence API.",
+          "Data Mapper can be used only through stored procedures, and Active Record can be used only with SQL written inside a repository.",
+          "Data Mapper writes the row from inside the getter, and Active Record writes the row only when the process is about to exit."
+        ]
       },
       {
         "id": "D",
-        "text": "Both keep SQL out of the domain, but only Active Record uses a separate mapper class, and Data Mapper does not."
+        "reasons": [
+          "Data Mapper is the pattern with the separate mapper, and Active Record is the one that puts persistence operations on the entity itself.",
+          "Active Record often ties the entity to a persistence base, and Data Mapper is what leaves the entity free of that session machinery.",
+          "The transaction is not placed on the entity by both patterns, and a Data Mapper's job is to map state, not merely to open a transaction."
+        ],
+        "variants": [
+          "Both keep SQL out of the domain, but only Active Record uses a separate mapper class, and Data Mapper does not.",
+          "Active Record keeps the entity free of a session, and Data Mapper requires the entity to extend a persistence base class.",
+          "Both patterns put the transaction on the entity, and only Data Mapper adds a mapper class whose job is to open that transaction."
+        ]
       }
     ],
     "correct": [
@@ -6948,19 +13682,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Commands and queries share one model and one store, and the split is only different methods on that same model."
+        "reasons": [
+          "Sharing one model and one store, with the split limited to methods, is not CQRS, because the write and read models are supposed to diverge.",
+          "Synchronous commands and asynchronous queries can share one model, so that timing split alone is not CQRS.",
+          "Separating the teams does not create a write model and a read model, which is the boundary CQRS draws."
+        ],
+        "variants": [
+          "Commands and queries share one model and one store, and the split is only different methods on that same model.",
+          "CQRS keeps commands synchronous and queries asynchronous, while both sides still share the same entities and the same tables.",
+          "It separates authors of commands from authors of queries, without giving those sides different models or stores."
+        ]
       },
       {
         "id": "B",
-        "text": "Commands use a write model and queries use a separate read model, so each side can be shaped for its own access pattern."
+        "variants": [
+          "Commands use a write model and queries use a separate read model, so each side can be shaped for its own access pattern.",
+          "Commands use a write model and queries a read model, so each side can be shaped for its access pattern.",
+          "A write model handles commands and a separate read model handles queries, so each side can match its own access pattern."
+        ]
       },
       {
         "id": "C",
-        "text": "Queries update a denormalized view and commands read that view, so the write side does not validate invariants."
+        "reasons": [
+          "Queries do not update the denormalized view while commands read it, and the write side still has to enforce its invariants.",
+          "Commands belong on the write model, and queries are not required to rebuild state by scanning the write tables.",
+          "The write model is not a cache of the read model, and a command is not accepted only after the query side has stored the new state."
+        ],
+        "variants": [
+          "Queries update a denormalized view and commands read that view, so the write side does not validate invariants.",
+          "Commands write straight into the read model, and queries must rebuild that model by scanning the tables on the write side.",
+          "The write model is a cache of the read model, so a command is accepted only after the query side has stored the new state."
+        ]
       },
       {
         "id": "D",
-        "text": "CQRS requires event sourcing underneath, so a command that writes one table while a query reads another table is not yet CQRS."
+        "reasons": [
+          "CQRS does not require event sourcing, and a command that writes one model while a query reads another can already be CQRS.",
+          "CQRS does not limit you to a single query model, and different screens may use different read models.",
+          "Neither side has to use a particular storage technology, so a relational write model and a document read model are not required."
+        ],
+        "variants": [
+          "CQRS requires event sourcing underneath, so a command that writes one table while a query reads another table is not yet CQRS.",
+          "CQRS allows only one query model in total, so every screen must read that same projection even when the screens' access patterns differ.",
+          "It counts as CQRS only when the write model is a relational table and the read model is a document store too."
+        ]
       }
     ],
     "correct": [
@@ -6976,19 +13741,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "State changes are stored as an append-only sequence of events, rather than only as the entity's current row."
+        "variants": [
+          "State changes are stored as an append-only sequence of events, rather than only as the entity's current row.",
+          "An append-only event sequence is what records each state change, rather than storing only the entity's current row.",
+          "Each state change is appended as an event in order, instead of keeping only the entity's current row."
+        ]
       },
       {
         "id": "B",
-        "text": "Current state is rebuilt by replaying those events from the start, or from a snapshot plus the events after it."
+        "variants": [
+          "Current state is rebuilt by replaying those events from the start, or from a snapshot plus the events after it.",
+          "Current state is rebuilt by replaying those events from the beginning, or from a snapshot plus the events that follow it.",
+          "You recover current state by replaying the events from the start, or from a snapshot plus the events after that snapshot."
+        ]
       },
       {
         "id": "C",
-        "text": "Once a snapshot is stored, earlier events for that entity are dropped, because the snapshot replaces the history."
+        "reasons": [
+          "A snapshot does not replace the history, so earlier events stay in the log and are not dropped once the snapshot is stored.",
+          "Event sourcing keeps the event sequence as the record of change, and a later commit does not replace those events with only the current row.",
+          "A snapshot is an optimization for replay, not a record written on every event that readers must use instead of the events."
+        ],
+        "variants": [
+          "Once a snapshot is stored, earlier events for that entity are dropped, because the snapshot replaces the history.",
+          "Events are kept only until the next transaction commits, and then they are replaced by the entity's updated current row.",
+          "A snapshot is written for every event, and a reader must use the newest snapshot without applying any event at all."
+        ]
       },
       {
         "id": "D",
-        "text": "A wrong event is corrected by updating that event's payload, so replay does not need a later compensating event."
+        "reasons": [
+          "An append-only log is not corrected by editing an event's payload, and a mistake is recorded with a later compensating event.",
+          "Deleting an event and renumbering the tail rewrites history, which an append-only event stream does not do.",
+          "Unrecognized events are not skipped on replay, because dropping them would rebuild a state the stream did not produce."
+        ],
+        "variants": [
+          "A wrong event is corrected by updating that event's payload, so replay does not need a later compensating event.",
+          "A mistaken event is deleted from the middle of the stream, and the later events are renumbered so the sequence has no gap.",
+          "Replay ignores any event whose type the current code does not recognize, so an unknown event never affects rebuilt state."
+        ]
       }
     ],
     "correct": [
@@ -7005,19 +13796,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A content-based router picks a destination from the message contents; a splitter breaks one composite message into a message per part."
+        "variants": [
+          "A content-based router picks a destination from the message contents; a splitter breaks one composite message into a message per part.",
+          "From the message contents, a content-based router picks where that message goes; a splitter emits one message for each part of a composite.",
+          "A content-based router reads the contents to choose a destination, and a splitter divides one composite message into a message per part."
+        ]
       },
       {
         "id": "B",
-        "text": "A content-based router breaks a composite payload into one message per element; a splitter chooses the channel from a header."
+        "reasons": [
+          "A content-based router does not break a composite payload apart, and a splitter does not choose a channel from a header.",
+          "Copying one message to every channel is not content-based routing, and keeping a single matching element is not what a splitter does.",
+          "Waiting to forward the largest message is not routing by content, and returning parts to the sender is not splitting."
+        ],
+        "variants": [
+          "A content-based router breaks a composite payload into one message per element; a splitter chooses the channel from a header.",
+          "A content-based router copies one message onto every outbound channel, and a splitter keeps only the element that matches a filter.",
+          "A content-based router waits for several messages and forwards the largest, and a splitter sends each part back to the original sender."
+        ]
       },
       {
         "id": "C",
-        "text": "A content-based router joins related messages back into one; a splitter drops duplicate messages so only the first copy is delivered."
+        "reasons": [
+          "Joining related messages is an aggregator, not a content-based router, and dropping duplicates is not what a splitter does.",
+          "Rewriting the body into a routing key without changing channel is not content-based routing, and adding a sequence number does not split the message.",
+          "Holding a message for a timer is not content-based routing, and releasing that message onto one channel is not a splitter."
+        ],
+        "variants": [
+          "A content-based router joins related messages back into one; a splitter drops duplicate messages so only the first copy is delivered.",
+          "A content-based router rewrites the body into a routing key and keeps the channel, and a splitter only adds a sequence number to that same message.",
+          "A content-based router holds the message until a timer fires, and a splitter is the step that then releases it onto one channel."
+        ]
       },
       {
         "id": "D",
-        "text": "A content-based router rewrites the payload into the receiver's schema; a splitter chooses a destination and leaves the message intact."
+        "reasons": [
+          "Rewriting a payload into the receiver's schema is a translator, not a content-based router, and choosing a destination is not what a splitter does.",
+          "Checking credentials is not content-based routing, and decrypting parts is not the splitter's job of emitting one message per part.",
+          "Spreading load across consumers of one channel is competing consumers, not a content-based router or a splitter."
+        ],
+        "variants": [
+          "A content-based router rewrites the payload into the receiver's schema; a splitter chooses a destination and leaves the message intact.",
+          "A content-based router checks the sender's credentials before delivery, and a splitter decrypts each part and then discards the envelope.",
+          "A content-based router spreads load across consumers of one channel, and a splitter is the consumer that takes a single message at a time."
+        ]
       }
     ],
     "correct": [
@@ -7033,23 +13855,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A failed readiness probe restarts the container and reschedules the pod, because a pod that is not ready is treated as failed."
+        "reasons": [
+          "A failed readiness probe does not restart the container or reschedule the pod, and not-ready is not treated as a failed container.",
+          "A failed startup probe restarts the container when the process has not become healthy in time, and it does not merely drop the Service endpoint.",
+          "Readiness and liveness are different probes, and a readiness failure removes the endpoint without restarting the container."
+        ],
+        "variants": [
+          "A failed readiness probe restarts the container and reschedules the pod, because a pod that is not ready is treated as failed.",
+          "A failed startup probe drops the pod from the Service at once and leaves liveness running so the container is never restarted.",
+          "Readiness and liveness are one probe under two names, so a failure of either both restarts the container and removes the endpoint."
+        ]
       },
       {
         "id": "B",
-        "text": "A startup probe holds off liveness and readiness until it succeeds, so a slow JVM start is not killed as a failed process."
+        "variants": [
+          "A startup probe holds off liveness and readiness until it succeeds, so a slow JVM start is not killed as a failed process.",
+          "Liveness and readiness wait until the startup probe passes, so a slow JVM start is not killed as a failed process.",
+          "Until that startup probe passes, liveness and readiness stay off, so a slow JVM start is not killed as a failed process."
+        ]
       },
       {
         "id": "C",
-        "text": "A failed readiness probe removes the pod from Service endpoints and does not restart the container."
+        "variants": [
+          "A failed readiness probe removes the pod from Service endpoints and does not restart the container.",
+          "Failing readiness removes the pod from Service endpoints without restarting the container.",
+          "When a readiness probe fails, the pod leaves Service endpoints and the container keeps running."
+        ]
       },
       {
         "id": "D",
-        "text": "A failed liveness probe causes the kubelet to restart the container, which is how a deadlocked process is recovered."
+        "variants": [
+          "A failed liveness probe causes the kubelet to restart the container, which is how a deadlocked process is recovered.",
+          "A failed liveness probe makes the kubelet restart the container, which recovers a process that has deadlocked.",
+          "If a liveness probe fails, the kubelet restarts the container, and that is how a deadlocked process is recovered."
+        ]
       },
       {
         "id": "E",
-        "text": "A liveness probe should call the database or a payment gateway, so the pod restarts whenever that dependency is down."
+        "reasons": [
+          "A liveness probe should check that the process itself is making progress, not call a database or a payment gateway, because a down dependency would restart a healthy pod.",
+          "Readiness does not wait for a real user request, and an idle pod that can serve traffic should still be an endpoint.",
+          "A single probe failure does not delete the Deployment, and the three probes do not share one pass-or-delete outcome."
+        ],
+        "variants": [
+          "A liveness probe should call the database or a payment gateway, so the pod restarts whenever that dependency is down.",
+          "A readiness probe should pass only after the pod has served a real user request, so an idle pod stays out of the Service.",
+          "Startup, liveness, and readiness must all pass on every check, and one failure of any of them deletes the whole Deployment."
+        ]
       }
     ],
     "correct": [
@@ -7067,19 +13919,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The kubelet sends SIGTERM only after the pod has been idle, so requests that already arrived are finished before shutdown starts."
+        "reasons": [
+          "The kubelet sends `SIGTERM` when deletion starts, not after the pod has gone idle, so in-flight requests are not guaranteed to finish first.",
+          "Endpoints are removed while the process can still be running, so the route does not wait until the main process exits.",
+          "kube-proxy does not wait for the restart count to rise, and a pod being deleted is not kept reachable until a replacement is created."
+        ],
+        "variants": [
+          "The kubelet sends SIGTERM only after the pod has been idle, so requests that already arrived are finished before shutdown starts.",
+          "The Service keeps the pod's endpoint until the container's main process exits, so routes disappear only after that process is gone.",
+          "kube-proxy drops connections only after the pod's restart count increases, so a deleting pod stays reachable until it is created again."
+        ]
       },
       {
         "id": "B",
-        "text": "Endpoint removal and kube-proxy updates are asynchronous, so the process should keep accepting traffic until those routes have drained."
+        "variants": [
+          "Endpoint removal and kube-proxy updates are asynchronous, so the process should keep accepting traffic until those routes have drained.",
+          "Endpoint removal and the kube-proxy update do not finish together, so the process should keep taking traffic until those routes have drained.",
+          "Because endpoint removal and kube-proxy updates are asynchronous, the process should accept traffic until those routes finish draining."
+        ]
       },
       {
         "id": "C",
-        "text": "A preStop hook replaces the application's own shutdown logic entirely, and that delay is what flushes the in-flight work inside the JVM."
+        "reasons": [
+          "A preStop hook does not replace the application's own shutdown logic, and the hook's delay is not what flushes in-flight work inside the JVM.",
+          "Ingress retries are not why a terminating pod still receives traffic, and success responses do not keep its endpoint in place.",
+          "Cluster DNS TTL for the Service name is not what keeps a deleting pod's routes alive until kube-proxy has dropped them."
+        ],
+        "variants": [
+          "A preStop hook replaces the application's own shutdown logic entirely, and that delay is what flushes the in-flight work inside the JVM.",
+          "A deleting pod stays reachable because the ingress retries the last request against that pod until the pod returns a success status.",
+          "The pod keeps receiving traffic because its address stays cached in cluster DNS for the full TTL, and clients keep that address until the TTL ends."
+        ]
       },
       {
         "id": "D",
-        "text": "A readiness failure during a rollout restarts the pod, and the delay exists so the liveness probe does not fire first."
+        "reasons": [
+          "A readiness failure during a rollout does not restart the pod, and the brief extra traffic is not a delay inserted so liveness will not fire first.",
+          "`SIGTERM` is sent when termination starts, and the grace period is the time allowed before `SIGKILL`, not a wait that holds `SIGTERM` back.",
+          "A terminating pod is removed from ready endpoints without waiting for a successful liveness probe during shutdown."
+        ],
+        "variants": [
+          "A readiness failure during a rollout restarts the pod, and the delay exists so the liveness probe does not fire first.",
+          "The grace period holds `SIGTERM` until the whole termination window has elapsed, and only then does the kubelet ask the process to stop.",
+          "A terminating pod stays a ready endpoint until its containers report a successful liveness probe during shutdown."
+        ]
       }
     ],
     "correct": [
@@ -7095,19 +13978,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "When a container exceeds its memory limit, the Linux cgroup OOM (Out of Memory) killer terminates the process immediately (typically reporting Exit Code 137)."
+        "variants": [
+          "When a container exceeds its memory limit, the Linux cgroup OOM (Out of Memory) killer terminates the process immediately (typically reporting Exit Code 137).",
+          "Past the memory limit, the Linux cgroup OOM (Out of Memory) killer terminates the process immediately, and the usual exit code is 137.",
+          "Going over the memory limit makes the Linux cgroup OOM (Out of Memory) killer stop the process immediately, typically reporting exit code 137."
+        ]
       },
       {
         "id": "B",
-        "text": "When a container exceeds its CPU limit, Kubernetes immediately kills the pod and evacuates it to a different worker node."
+        "reasons": [
+          "Exceeding a CPU limit does not make Kubernetes kill the pod or move it to another node; the container is throttled instead.",
+          "Exceeding a CPU request does not throttle the container, and memory pressure is not the follow-up to a CPU-request overrun.",
+          "A CPU request is not a hard cap, and going over it while staying under the CPU limit does not OOMKill the container."
+        ],
+        "variants": [
+          "When a container exceeds its CPU limit, Kubernetes immediately kills the pod and evacuates it to a different worker node.",
+          "When a container exceeds its CPU request, the kubelet throttles it and then evicts the pod if the node is short of memory.",
+          "A container under its CPU limit but over its CPU request is OOMKilled, because the request is treated as the hard cap."
+        ]
       },
       {
         "id": "C",
-        "text": "When a container reaches its CPU limit, the Linux Completely Fair Scheduler (CFS) throttles its CPU time via cgroup quota enforcement rather than terminating the container."
+        "variants": [
+          "When a container reaches its CPU limit, the Linux Completely Fair Scheduler (CFS) throttles its CPU time via cgroup quota enforcement rather than terminating the container.",
+          "The Linux Completely Fair Scheduler (CFS) throttles CPU time via cgroup quota enforcement at the CPU limit, rather than terminating the container.",
+          "At the CPU limit, the Linux Completely Fair Scheduler (CFS) uses cgroup quota enforcement to throttle CPU time instead of terminating the container."
+        ]
       },
       {
         "id": "D",
-        "text": "A pod with different request and limit values for memory and CPU is classified into the Guaranteed Quality of Service (QoS) tier."
+        "reasons": [
+          "Different request and limit values are Burstable, not Guaranteed; Guaranteed requires requests and limits to be equal for CPU and memory.",
+          "Burstable is not limited to a memory limit with CPU left unset, and other mixes of request and limit are Burstable too.",
+          "A limit below the request is not a BestEffort pod, and Kubernetes does not ignore the request to force that tier."
+        ],
+        "variants": [
+          "A pod with different request and limit values for memory and CPU is classified into the Guaranteed Quality of Service (QoS) tier.",
+          "A pod is Burstable only if it sets a memory limit and leaves every container's CPU with neither a request nor a limit configured.",
+          "A CPU limit below the CPU request puts that pod into BestEffort, because Kubernetes ignores this request when it selects the Quality of Service tier."
+        ]
       }
     ],
     "correct": [
@@ -7124,19 +14033,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "-Xmx is the container memory limit, so the kernel kills the process when heap use crosses it even if the process RSS is lower."
+        "reasons": [
+          "The `-Xmx` flag is the JVM heap ceiling, not the container memory limit, and the kernel kills on process memory even when heap use is still below it.",
+          "Crossing `-Xms` does not kill the heap, and a container limit above `-Xmx` can still OOMKill the process on non-heap memory.",
+          "An `OutOfMemoryError` is a JVM exception, and OOMKilled with exit code 137 is the kernel's cgroup kill, not that exception being recorded."
+        ],
+        "variants": [
+          "-Xmx is the container memory limit, so the kernel kills the process when heap use crosses it even if the process RSS is lower.",
+          "The heap is killed once committed memory passes `-Xms`, so a container limit above `-Xmx` never yields an OOMKilled status.",
+          "OOMKilled means the JVM threw `OutOfMemoryError` for the heap, and the kubelet records that Java exception as exit code 137."
+        ]
       },
       {
         "id": "B",
-        "text": "Metaspace sits inside the -Xmx heap, so a heap graph that looks low still means that heap limit was crossed."
+        "reasons": [
+          "Metaspace is outside the `-Xmx` heap, so a heap graph below `-Xmx` does not mean the heap limit was crossed.",
+          "Thread stacks are not part of the `-Xmx` heap, and stack growth does not push the heap itself over the container limit.",
+          "Direct buffers are allocated outside the heap, so a low heap reading does not mean those buffers have filled `-Xmx`."
+        ],
+        "variants": [
+          "Metaspace sits inside the -Xmx heap, so a heap graph that looks low still means that heap limit was crossed.",
+          "Thread stacks are counted inside the `-Xmx` heap, so stack growth is what pushes a small heap past the container limit.",
+          "Direct buffers are taken from the heap at JVM start, so a low heap reading already means those buffers filled `-Xmx`."
+        ]
       },
       {
         "id": "C",
-        "text": "The container limit covers the whole process, including metaspace, thread stacks, and direct buffers, not only the Java heap."
+        "variants": [
+          "The container limit covers the whole process, including metaspace, thread stacks, and direct buffers, not only the Java heap.",
+          "Metaspace, thread stacks, and direct buffers sit in the container limit with the heap, because the limit covers the process.",
+          "A container's memory limit includes the entire process, metaspace, thread stacks, and direct buffers, not only the Java heap."
+        ]
       },
       {
         "id": "D",
-        "text": "MaxRAMPercentage sizes the heap from the node's memory, so a smaller container limit is ignored until the node itself runs out."
+        "reasons": [
+          "MaxRAMPercentage sizes the heap from the container's memory limit when container support is on, and a smaller container limit is not ignored until the node runs out.",
+          "The kubelet does not subtract `-Xmx` from the cgroup limit, and non-heap memory still counts toward the cap that can kill the pod.",
+          "Exit code 137 from OOMKilled is the kernel sending `SIGKILL`, not a signal the application sent to itself."
+        ],
+        "variants": [
+          "MaxRAMPercentage sizes the heap from the node's memory, so a smaller container limit is ignored until the node itself runs out.",
+          "The kubelet subtracts `-Xmx` from the container limit before setting the cgroup, so non-heap memory sits outside the cap that can kill the pod.",
+          "Exit code 137 is produced only by a kill signal the process sends itself, so OOMKilled means the application requested that signal."
+        ]
       }
     ],
     "correct": [
@@ -7152,19 +14092,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "maxSurge is how many old pods may be unavailable at once, and maxUnavailable is how many extra pods may run above the replica count."
+        "reasons": [
+          "`maxSurge` is the extra pods allowed above the replica count, and `maxUnavailable` is how many pods may be down below it, not the other way around.",
+          "`maxSurge` and `maxUnavailable` count pods relative to the replica count, not nodes the scheduler may add or cordon.",
+          "The values are absolute pod counts or percentages of desired replicas, not a fraction of the cluster's nodes."
+        ],
+        "variants": [
+          "maxSurge is how many old pods may be unavailable at once, and maxUnavailable is how many extra pods may run above the replica count.",
+          "`maxSurge` is how many nodes the scheduler may add during the rollout, and `maxUnavailable` is how many nodes may be cordoned at once.",
+          "Both values are percentages of the cluster's node count, so a setting of 25 always means one quarter of the nodes."
+        ]
       },
       {
         "id": "B",
-        "text": "Both settings keep the pod count at the replica count, so a rollout never runs an old pod and a new pod at the same time."
+        "reasons": [
+          "The settings do not pin the pod count to the replica count, and a rolling update can run old pods and new pods at the same time.",
+          "`maxSurge` does not pause the rollout after the first Ready pod, and `maxUnavailable` is not a count of pods deleted before a pause.",
+          "`maxSurge` and `maxUnavailable` apply to RollingUpdate, and Recreate replaces pods without using those two rolling allowances."
+        ],
+        "variants": [
+          "Both settings keep the pod count at the replica count, so a rollout never runs an old pod and a new pod at the same time.",
+          "`maxSurge` pauses the rollout once the first new pod is Ready, and `maxUnavailable` is how many old pods were deleted before that pause.",
+          "The two fields apply only to the Recreate strategy, and a RollingUpdate proceeds while ignoring both of them."
+        ]
       },
       {
         "id": "C",
-        "text": "maxSurge is the delay before a new pod receives traffic, and maxUnavailable is how long an old pod may take to exit."
+        "reasons": [
+          "`maxSurge` is not a delay before a new pod receives traffic, and `maxUnavailable` is not how long an old pod may take to exit.",
+          "Revision history and rollback targets are separate from `maxSurge` and `maxUnavailable`, which limit pod counts during a rollout.",
+          "Probe thresholds and periods are not `maxSurge` or `maxUnavailable`, and those rollout fields do not configure the probes."
+        ],
+        "variants": [
+          "maxSurge is the delay before a new pod receives traffic, and maxUnavailable is how long an old pod may take to exit.",
+          "`maxSurge` counts old revisions the history keeps, and `maxUnavailable` counts how many of those revisions a rollback can target.",
+          "`maxSurge` sets the readiness probe failure threshold, and `maxUnavailable` sets the liveness probe period used during the rollout."
+        ]
       },
       {
         "id": "D",
-        "text": "maxSurge is how many extra pods may run above the replica count, and maxUnavailable is how many pods may be down below it."
+        "variants": [
+          "maxSurge is how many extra pods may run above the replica count, and maxUnavailable is how many pods may be down below it.",
+          "`maxSurge` caps how many pods may run above the replica count, and `maxUnavailable` caps how many pods may be down below it.",
+          "During rollout, `maxSurge` allows extra pods above the count, and `maxUnavailable` allows that many pods to be down."
+        ]
       }
     ],
     "correct": [
@@ -7180,19 +14151,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Each pod gets a stable name, but its volume is claimed again from scratch whenever that pod is rescheduled."
+        "reasons": [
+          "A stable name is not paired with a fresh volume on reschedule; the ordinal's existing claim is mounted again.",
+          "Each pod has its own stable DNS name that includes the ordinal, and that ordinal does not change when the pod restarts.",
+          "StatefulSet replacement follows ordinal order rather than running in parallel, and that order still applies when the replica count is scaled to zero."
+        ],
+        "variants": [
+          "Each pod gets a stable name, but its volume is claimed again from scratch whenever that pod is rescheduled.",
+          "Every pod in the set shares one DNS name, and the ordinal is only a label that changes whenever the pod restarts.",
+          "Pods are replaced in parallel, and ordinal order is applied only when the replica count is scaled all the way to zero."
+        ]
       },
       {
         "id": "B",
-        "text": "Each pod gets a stable ordinal and DNS name, and pods are created and rolled in that ordinal order."
+        "variants": [
+          "Each pod gets a stable ordinal and DNS name, and pods are created and rolled in that ordinal order.",
+          "Each pod gets a stable ordinal and DNS name, and both creation and rollout proceed in that ordinal order.",
+          "Pods receive a stable ordinal and DNS name, and they are created and rolled following that ordinal order."
+        ]
       },
       {
         "id": "C",
-        "text": "Pods start in parallel and get a new identity whenever they are replaced; the stable name comes only from a Service."
+        "reasons": [
+          "StatefulSet pods do not start in parallel with a new identity on each replacement, and the stable name does not come only from a Service.",
+          "Pod identity is the ordinal, not a ConfigMap entry keyed by node, so a reschedule does not mint a new identity.",
+          "`volumeClaimTemplates` creates a distinct claim per ordinal, and the headless Service is not what provisions those volumes."
+        ],
+        "variants": [
+          "Pods start in parallel and get a new identity whenever they are replaced; the stable name comes only from a Service.",
+          "Identity is stored in a ConfigMap keyed by node name, so moving the pod to another node assigns it a new identity.",
+          "The headless Service is what creates the volumes, and `volumeClaimTemplates` only names a storage class shared by every pod."
+        ]
       },
       {
         "id": "D",
-        "text": "Each ordinal gets its own volume from volumeClaimTemplates, and that same claim is reused when the pod is rescheduled."
+        "variants": [
+          "Each ordinal gets its own volume from volumeClaimTemplates, and that same claim is reused when the pod is rescheduled.",
+          "`volumeClaimTemplates` creates a separate volume per ordinal, and rescheduling mounts that same claim on the pod again.",
+          "`volumeClaimTemplates` assigns each ordinal a volume of its own, and the same claim is reused when that pod is rescheduled."
+        ]
       }
     ],
     "correct": [
@@ -7209,19 +14206,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A DaemonSet keeps a fixed replica count and packs those pods onto as few nodes as it can; a Deployment runs one pod on every node."
+        "reasons": [
+          "A DaemonSet does not keep a fixed replica count packed onto few nodes, and a Deployment does not run one pod on every node.",
+          "A DaemonSet does not scale from CPU use, and a Deployment is not restricted to nodes that have a local disk.",
+          "A DaemonSet is one pod per eligible node, not per namespace, and a Deployment's replicas are not one pod per image in the cluster."
+        ],
+        "variants": [
+          "A DaemonSet keeps a fixed replica count and packs those pods onto as few nodes as it can; a Deployment runs one pod on every node.",
+          "A DaemonSet raises or lowers its replica count from CPU use, and a Deployment runs pods only on nodes that already have a local disk attached.",
+          "A DaemonSet starts one pod per namespace on the node, and a Deployment starts one pod for each image already present in the cluster."
+        ]
       },
       {
         "id": "B",
-        "text": "A DaemonSet runs one pod on each eligible node; a Deployment runs a chosen replica count and may place more than one pod on a node."
+        "variants": [
+          "A DaemonSet runs one pod on each eligible node; a Deployment runs a chosen replica count and may place more than one pod on a node.",
+          "A DaemonSet places one pod on every eligible node; a Deployment runs a chosen replica count and can put more than one pod on a node.",
+          "A DaemonSet runs a single pod on each eligible node, while a Deployment uses a set replica count and may place several pods on one node."
+        ]
       },
       {
         "id": "C",
-        "text": "A DaemonSet does not restart a crashed pod; the agent returns only when the node rejoins. A Deployment restarts its pods in place."
+        "reasons": [
+          "A DaemonSet does restart a crashed pod, and it does not wait for the node to rejoin before that pod is run again.",
+          "Memory-pressure eviction does not permanently drop a DaemonSet pod, and a Deployment is not evicted only because its image changed.",
+          "A DaemonSet honors node selectors and tolerations, and a Deployment can run on tainted nodes when its pods tolerate those taints."
+        ],
+        "variants": [
+          "A DaemonSet does not restart a crashed pod; the agent returns only when the node rejoins. A Deployment restarts its pods in place.",
+          "A DaemonSet pod evicted for memory pressure is never started again, and a Deployment pod is evicted only when its image changes.",
+          "A DaemonSet ignores node selectors and tolerations, and a Deployment can be placed only on nodes that carry no taints at all."
+        ]
       },
       {
         "id": "D",
-        "text": "A DaemonSet schedules pods only onto control-plane nodes; a Deployment schedules only onto nodes that lack the control-plane taint."
+        "reasons": [
+          "A DaemonSet is not limited to control-plane nodes, and a Deployment is not limited to nodes that lack the control-plane taint.",
+          "Neither a DaemonSet nor a Deployment is tied to the kube-system namespace by the API.",
+          "A DaemonSet does not have to delete every pod at once, and a Deployment can start new pods before every old pod has exited."
+        ],
+        "variants": [
+          "A DaemonSet schedules pods only onto control-plane nodes; a Deployment schedules only onto nodes that lack the control-plane taint.",
+          "A DaemonSet is allowed only in the kube-system namespace, and a Deployment is rejected by the API if it is created in that namespace.",
+          "A DaemonSet updates by deleting every pod at once, and a Deployment never starts a new pod until every old pod has fully exited."
+        ]
       }
     ],
     "correct": [
@@ -7237,19 +14265,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A ClusterIP Service is for clients outside the cluster, and a LoadBalancer Service exists only for clients already inside the cluster."
+        "reasons": [
+          "ClusterIP is for clients inside the cluster, and a LoadBalancer Service is what exposes the Service outside through an external load balancer.",
+          "NodePort is not limited to the node hosting the pod, and ClusterIP is not published on each node's public address.",
+          "A LoadBalancer Service does ask the platform for an external address, and that external allocation is not what NodePort does."
+        ],
+        "variants": [
+          "A ClusterIP Service is for clients outside the cluster, and a LoadBalancer Service exists only for clients already inside the cluster.",
+          "A NodePort Service is reachable only on the node that currently hosts the pod, and a ClusterIP Service is opened on every node's public address.",
+          "A LoadBalancer Service allocates only a cluster-internal address and never an external one, which is the allocation NodePort performs instead."
+        ]
       },
       {
         "id": "B",
-        "text": "A NodePort Service does not open a port on the node itself; clients can reach that Service only through the cluster virtual IP that it allocates."
+        "reasons": [
+          "A NodePort Service does open a port on each node, and clients are not limited to the cluster virtual IP.",
+          "The three types do not all open one shared node port, and the type changes how the Service is reached, not only its DNS name.",
+          "LoadBalancer is not restricted to kube-system, and NodePort does not require the absence of a cloud provider."
+        ],
+        "variants": [
+          "A NodePort Service does not open a port on the node itself; clients can reach that Service only through the cluster virtual IP that it allocates.",
+          "ClusterIP, NodePort, and LoadBalancer all open the same node port, and the type only changes the DNS name assigned to the Service.",
+          "A LoadBalancer Service is valid only in kube-system, and a NodePort Service is valid only when the cluster has no cloud-provider integration."
+        ]
       },
       {
         "id": "C",
-        "text": "ClusterIP is only inside the cluster, NodePort also opens a port on each node, and LoadBalancer asks the platform for an external load balancer."
+        "variants": [
+          "ClusterIP is only inside the cluster, NodePort also opens a port on each node, and LoadBalancer asks the platform for an external load balancer.",
+          "Outside clients cannot call ClusterIP, each node exposes a NodePort, and LoadBalancer gets an external load balancer from the platform.",
+          "ClusterIP stays inside the cluster, NodePort opens a port on every node, and LoadBalancer requests an external balancer from the platform."
+        ]
       },
       {
         "id": "D",
-        "text": "A headless Service is what assigns a Deployment its virtual IP, while a ClusterIP Service returns each pod IP directly from DNS."
+        "reasons": [
+          "A headless Service has no cluster virtual IP and returns pod addresses, while a ClusterIP Service is the one that provides the virtual IP.",
+          "A headless Service does not load-balance through a virtual IP, and a ClusterIP Service does not return one pod address in place of that virtual IP.",
+          "NodePort keeps a cluster virtual IP and adds a node port, and ClusterIP is not the type that opens a port on each node."
+        ],
+        "variants": [
+          "A headless Service is what assigns a Deployment its virtual IP, while a ClusterIP Service returns each pod IP directly from DNS.",
+          "A headless Service load-balances across the pods, while a ClusterIP Service returns a single pod address and never a virtual IP.",
+          "NodePort drops the cluster virtual IP so clients must use a node address, and ClusterIP is the type that adds a port on each node."
+        ]
       }
     ],
     "correct": [
@@ -7265,23 +14324,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "An image is a read-only stack of filesystem layers, and a container is a running instance started from that image."
+        "variants": [
+          "An image is a read-only stack of filesystem layers, and a container is a running instance started from that image.",
+          "Read-only filesystem layers stacked together form an image, and a container is the running instance you start from that image.",
+          "An image is stacked, read-only filesystem layers, and a container is the running instance started from that image."
+        ]
       },
       {
         "id": "B",
-        "text": "A container is the artifact you push to a registry, and an image is created only when that container is started."
+        "reasons": [
+          "The image is the artifact you push to a registry, and a container is created by starting that image, not the other way around.",
+          "An image is a read-only layer stack, and a container is not a read-only snapshot of a writable image filesystem.",
+          "Starting a container does not merge layers into a new image, and further containers can still be started from the original image."
+        ],
+        "variants": [
+          "A container is the artifact you push to a registry, and an image is created only when that container is started.",
+          "An image is one writable filesystem, and a container is the read-only snapshot saved from that filesystem.",
+          "Starting a container merges its layers into a new image, and any later container has to be started from that merged image."
+        ]
       },
       {
         "id": "C",
-        "text": "Several containers can be started from one image, and each gets its own writable layer on top of those shared image layers."
+        "variants": [
+          "Several containers can be started from one image, and each gets its own writable layer on top of those shared image layers.",
+          "Several containers can start from one image, and each receives its own writable layer above those shared image layers.",
+          "One image can start many containers, and every container gets its own writable layer on top of the shared image layers."
+        ]
       },
       {
         "id": "D",
-        "text": "Writing files in a running container does not change the image, unless you explicitly commit a new image from that container."
+        "variants": [
+          "Writing files in a running container does not change the image, unless you explicitly commit a new image from that container.",
+          "Files written in a running container leave the image unchanged, unless you commit that container as a new image.",
+          "Writes inside a running container do not alter the image, unless you explicitly commit a new image from that container."
+        ]
       },
       {
         "id": "E",
-        "text": "An image includes the container's current memory and its open connections, so saving the image also saves that live process."
+        "reasons": [
+          "An image does not include the container's memory or open connections, so saving an image does not save that live process.",
+          "Each container has its own writable layer, so deleting a file there does not delete it from every other container started from the image.",
+          "Stopping a container does not discard the image layers, and the next start can reuse the image that is already present locally."
+        ],
+        "variants": [
+          "An image includes the container's current memory and its open connections, so saving the image also saves that live process.",
+          "A container and its image share one writable layer, so a file removed in the container is removed in every other container from that image.",
+          "Stopping a container throws away the image layers it started from, so the next start has to pull that image from the registry again."
+        ]
       }
     ],
     "correct": [
@@ -7299,19 +14388,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "Docker reruns every instruction from the first line whenever any later line changes, so the order of the lines does not affect that layer cache."
+        "reasons": [
+          "Docker does not rerun every instruction from the first line when a later line changes, and the order of lines is what decides which cached prefix survives.",
+          "A changed instruction also invalidates every layer after it, so Docker does not keep reusing the steps that follow the change.",
+          "The cache is keyed by each instruction, not by the stage name, so reordering steps inside a stage does change what is rebuilt."
+        ],
+        "variants": [
+          "Docker reruns every instruction from the first line whenever any later line changes, so the order of the lines does not affect that layer cache.",
+          "Docker invalidates the cache only for the instruction whose text changed, and it still reuses every layer that comes after that line in the file.",
+          "The layer cache is owned by the stage name, so reordering instructions inside one stage never changes which layers get rebuilt during that build."
+        ]
       },
       {
         "id": "B",
-        "text": "Each instruction is a layer, and Docker reuses cached layers until the first changed instruction, then reruns that step and every step after it."
+        "variants": [
+          "Each instruction is a layer, and Docker reuses cached layers until the first changed instruction, then reruns that step and every step after it.",
+          "Docker makes a layer per instruction and keeps the cached ones until an instruction changes, then runs that step again and every step after it.",
+          "Every instruction forms a layer; Docker keeps cached layers until the first instruction that changed, then rebuilds that step and later steps."
+        ]
       },
       {
         "id": "C",
-        "text": "Only the final CMD instruction is cached, so moving COPY above or below RUN does not change which steps are rebuilt."
+        "reasons": [
+          "More than the final `CMD` is cached, and moving `COPY` above or below `RUN` changes which steps are rebuilt.",
+          "`COPY` and `ADD` do not share one cache entry that spares later `RUN` layers, and a changed source file invalidates that instruction and everything after it.",
+          "The base-image tag is not the only cache key, so a changed instruction is rebuilt even when `FROM` stays on the same tag."
+        ],
+        "variants": [
+          "Only the final CMD instruction is cached, so moving COPY above or below RUN does not change which steps are rebuilt.",
+          "`COPY` and `ADD` share one cache entry, so an edited source rebuilds only the last `COPY` and leaves every `RUN` layer as it was.",
+          "Docker caches the base image by its tag alone, so a changed instruction is still skipped when the `FROM` tag has not changed."
+        ]
       },
       {
         "id": "D",
-        "text": "The cache key is only the image tag you chose to push, so an edited source file still hits the cache until you change that tag as well."
+        "reasons": [
+          "The cache key is not the tag you push, so an edited source file misses the cache even when that tag stays the same.",
+          "The cache hash covers the instruction text, so editing a comment in that instruction can change the key rather than being ignored.",
+          "`ENV` and `ARG` values participate in later cache keys, so changing a build argument can invalidate the steps that use it."
+        ],
+        "variants": [
+          "The cache key is only the image tag you chose to push, so an edited source file still hits the cache until you change that tag as well.",
+          "A comment edited inside an instruction does not affect the cache key, because Docker hashes only the command keyword and not the remainder of that line.",
+          "`ENV` and `ARG` values are left out of the cache key entirely at build time, so changing a build argument never invalidates the instructions that follow it."
+        ]
       }
     ],
     "correct": [
@@ -7327,19 +14447,45 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A mounted ConfigMap is refreshed when the ConfigMap changes; environment variables taken from it stay as they were at process start."
+        "variants": [
+          "A mounted ConfigMap is refreshed when the ConfigMap changes; environment variables taken from it stay as they were at process start.",
+          "Environment variables from a ConfigMap keep their process-start values, while a mounted ConfigMap is refreshed when the ConfigMap changes.",
+          "When the ConfigMap changes, a mounted file is refreshed, but environment variables taken from it remain the values from process start."
+        ]
       },
       {
         "id": "B",
-        "text": "Environment variables from a ConfigMap are updated inside the running process when the ConfigMap changes, so a mount is only for files the app opens."
+        "reasons": [
+          "Environment variables taken from a ConfigMap are not updated inside the running process, and a mount is not only for files the app happens to open.",
+          "A mounted ConfigMap is refreshed after the ConfigMap changes, and that refresh is not reserved for a Secret projected as a volume.",
+          "Environment variables are not rewritten in the running process when the ConfigMap changes, even though a mounted file can be refreshed."
+        ],
+        "variants": [
+          "Environment variables from a ConfigMap are updated inside the running process when the ConfigMap changes, so a mount is only for files the app opens.",
+          "A ConfigMap mounted as files is frozen at pod start, and only a volume projected from a Secret is refreshed while the process keeps running.",
+          "Environment variables and mounted files are both rewritten in the process when the ConfigMap changes, so the new values appear without a restart."
+        ]
       },
       {
         "id": "C",
-        "text": "Secret values in the API object are base64-encoded, not encrypted; encryption at rest in etcd is what protects the stored bytes."
+        "variants": [
+          "Secret values in the API object are base64-encoded, not encrypted; encryption at rest in etcd is what protects the stored bytes.",
+          "A Secret in the API is only base64-encoded, not encrypted, and encryption at rest inside etcd is what protects those stored bytes.",
+          "A Secret's API-object values are base64-encoded rather than encrypted, and etcd encryption at rest is what protects the stored bytes."
+        ]
       },
       {
         "id": "D",
-        "text": "Mounting a Secret encrypts it on the node, so enabling encryption in etcd does not change who can read that Secret from the API."
+        "reasons": [
+          "Mounting a Secret does not encrypt it on the node, and encryption at rest in etcd does not decide who can read the Secret through the API.",
+          "Base64 is an encoding, not encryption, so a caller who can read the Secret object can decode the value.",
+          "Etcd encryption at rest does not encrypt the node's mounted files, and the API still returns the Secret data in base64 rather than as stripped plaintext."
+        ],
+        "variants": [
+          "Mounting a Secret encrypts it on the node, so enabling encryption in etcd does not change who can read that Secret from the API.",
+          "Base64-encoding a Secret encrypts it, so a caller who can read the object from the API still cannot recover the original value.",
+          "Encryption at rest in etcd encrypts the Secret on the node disk, and the API returns that value as plaintext with the base64 removed."
+        ]
       }
     ],
     "correct": [
@@ -7356,19 +14502,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It reads CPU and memory from the image config and can scale the Deployment down to zero replicas when the process is idle."
+        "reasons": [
+          "The autoscaler does not read CPU and memory from the image config, and it does not scale a Deployment to zero just because the process is idle.",
+          "Restart count is not the metric it follows, and a non-zero exit does not by itself add a pod.",
+          "Ready node count is not the replica target, so the Deployment is not kept at one pod per Ready node."
+        ],
+        "variants": [
+          "It reads CPU and memory from the image config and can scale the Deployment down to zero replicas when the process is idle.",
+          "It watches the Deployment's restart count and adds a pod whenever a container exits with a non-zero status.",
+          "It sets the replica count from the number of Ready nodes, so five Ready nodes always mean five pods of that Deployment."
+        ]
       },
       {
         "id": "B",
-        "text": "It hands the replica count to an event scaler such as KEDA, and it then ignores a CPU target configured on the same object."
+        "reasons": [
+          "A Horizontal Pod Autoscaler does not hand the replica count to KEDA, and a CPU target on that object is still a metric it can act on.",
+          "It does not wait for the cluster autoscaler to add a node before it changes the replica count.",
+          "The desired count is recomputed from current metrics, not frozen at the moment the autoscaler object is created."
+        ],
+        "variants": [
+          "It hands the replica count to an event scaler such as KEDA, and it then ignores a CPU target configured on the same object.",
+          "It asks the cluster autoscaler for nodes first, and it adds pods only after one of those new nodes has become Ready.",
+          "It computes the desired replica count once, when the autoscaler object is created, and later metric changes leave that count unchanged."
+        ]
       },
       {
         "id": "C",
-        "text": "It changes the replica count so a metric, usually CPU from Metrics Server, moves toward the target average you set."
+        "variants": [
+          "It changes the replica count so a metric, usually CPU from Metrics Server, moves toward the target average you set.",
+          "Replicas are added or removed so a metric, usually CPU supplied by Metrics Server, moves toward the target average you set.",
+          "It changes the replica count so a metric, usually CPU reported by Metrics Server, approaches the target average you set."
+        ]
       },
       {
         "id": "D",
-        "text": "It raises the container CPU limit while usage is high, and the replica count stays at the number written on the Deployment."
+        "reasons": [
+          "The autoscaler does not raise the container CPU limit, and the replica count does not stay fixed at the number written on the Deployment.",
+          "High CPU leads it to add pods so the average can fall toward the target, not to remove pods.",
+          "It follows the configured metric, usually CPU, and it does not ignore a CPU target in favor of the pod's memory limit."
+        ],
+        "variants": [
+          "It raises the container CPU limit while usage is high, and the replica count stays at the number written on the Deployment.",
+          "It removes pods while CPU is high, because fewer pods leave each remaining pod a larger share of the node's CPU.",
+          "It scales from the memory limit written on the pod, and a CPU target configured on the autoscaler is never consulted."
+        ]
       }
     ],
     "correct": [
@@ -7384,19 +14561,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "ENTRYPOINT is the default arguments that docker run replaces, and CMD is the executable, which docker run cannot override."
+        "reasons": [
+          "`ENTRYPOINT` is the executable, not the default arguments that `docker run` replaces, and `CMD` is not an executable that `docker run` is forbidden to override.",
+          "`ENTRYPOINT` does not set the workdir or the user, and `CMD` is not a shell script Docker always wraps around the program.",
+          "`CMD` and `ENTRYPOINT` are allowed to differ, and Docker combines them instead of refusing to start."
+        ],
+        "variants": [
+          "ENTRYPOINT is the default arguments that docker run replaces, and CMD is the executable, which docker run cannot override.",
+          "`ENTRYPOINT` sets the working directory and the user, and `CMD` is a shell script that Docker always wraps around that program.",
+          "`CMD` and `ENTRYPOINT` must name the same program, and Docker refuses to start the container when the two instructions differ."
+        ]
       },
       {
         "id": "B",
-        "text": "ENTRYPOINT is the executable that runs, and CMD is the default arguments, which a docker run command can replace."
+        "variants": [
+          "ENTRYPOINT is the executable that runs, and CMD is the default arguments, which a docker run command can replace.",
+          "`ENTRYPOINT` is the program that starts, and `CMD` is only the default arguments, which a `docker run` command can replace.",
+          "`ENTRYPOINT` is the program that runs, and `CMD` supplies the default arguments that a `docker run` command can replace."
+        ]
       },
       {
         "id": "C",
-        "text": "CMD and ENTRYPOINT are both executables, and when both are set Docker starts them as two processes, one after the other."
+        "reasons": [
+          "`CMD` and `ENTRYPOINT` are not both started as executables, and setting both does not launch two processes one after the other.",
+          "Neither instruction runs at build time as the container's process, and a multi-stage build does not need both in order to start.",
+          "`CMD` does not replace the base `ENTRYPOINT` by appending, and the started process is not the base program concatenated with the `CMD` string."
+        ],
+        "variants": [
+          "CMD and ENTRYPOINT are both executables, and when both are set Docker starts them as two processes, one after the other.",
+          "`ENTRYPOINT` runs while the image is built, and `CMD` runs only in the final stage, so a multi-stage build needs both in order to start.",
+          "`CMD` replaces the base image `ENTRYPOINT` by appending text, so the process that starts is the base program plus the new `CMD` string."
+        ]
       },
       {
         "id": "D",
-        "text": "CMD always wins over ENTRYPOINT, so setting both runs the CMD program and drops the ENTRYPOINT program."
+        "reasons": [
+          "`CMD` does not always win over `ENTRYPOINT`, and setting both does not run only the `CMD` program while dropping `ENTRYPOINT`.",
+          "An earlier `CMD` does not discard a later `ENTRYPOINT`, and both instructions can remain in effect together.",
+          "A `docker run` command replaces `CMD` by default, and it does not leave `CMD` fixed while appending those arguments to it."
+        ],
+        "variants": [
+          "CMD always wins over ENTRYPOINT, so setting both runs the CMD program and drops the ENTRYPOINT program.",
+          "The last `ENTRYPOINT` is dropped when any `CMD` appears earlier in the file, so only that earlier `CMD` is kept.",
+          "`docker run` can replace `ENTRYPOINT` but not `CMD`, so arguments on the command line are appended to `CMD`."
+        ]
       }
     ],
     "correct": [
@@ -7412,19 +14620,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "It cordons the node and evicts its pods, and the eviction stops for a pod when removing it would break that pod's PodDisruptionBudget."
+        "variants": [
+          "It cordons the node and evicts its pods, and the eviction stops for a pod when removing it would break that pod's PodDisruptionBudget.",
+          "Drain cordons the node and evicts pods, but it stops an eviction when removing that pod would break the pod's PodDisruptionBudget.",
+          "It cordons the node and evicts pods, and eviction of a pod halts when that removal would violate the pod's PodDisruptionBudget."
+        ]
       },
       {
         "id": "B",
-        "text": "It cordons the node and deletes pods, and a PodDisruptionBudget only pauses until the grace period ends, then the eviction continues."
+        "reasons": [
+          "A PodDisruptionBudget does not merely pause until the grace period ends, and the eviction does not continue once that period expires if the budget would still be broken.",
+          "Drain does evict after cordoning, and a minimum available of zero is not the only budget that allows an eviction to start.",
+          "Drain cordons the node as well as evicting, and a PodDisruptionBudget does not answer a violation by uncordoning the node."
+        ],
+        "variants": [
+          "It cordons the node and deletes pods, and a PodDisruptionBudget only pauses until the grace period ends, then the eviction continues.",
+          "It cordons the node and then waits without evicting, and only a PodDisruptionBudget whose minimum available is zero allows evictions to begin.",
+          "It evicts the pods without cordoning the node, and a PodDisruptionBudget uncordons that node when the budget would be exceeded."
+        ]
       },
       {
         "id": "C",
-        "text": "It cordons the node so nothing new is scheduled, but pods that are already running stay until you delete them yourself."
+        "reasons": [
+          "Drain does more than cordon, and pods that are already running are evicted rather than left until you delete them yourself.",
+          "Drain does not force-delete every pod while ignoring the budget, and a PodDisruptionBudget can block an eviction rather than only logging it.",
+          "Drain still cordons the node, and a PodDisruptionBudget does not limit eviction to its own pods while leaving the node schedulable."
+        ],
+        "variants": [
+          "It cordons the node so nothing new is scheduled, but pods that are already running stay until you delete them yourself.",
+          "It marks the node unschedulable and force-deletes every pod immediately, and a PodDisruptionBudget only logs the disruption afterward.",
+          "A PodDisruptionBudget makes drain skip the cordon and evict only pods that the budget selects, leaving the node schedulable."
+        ]
       },
       {
         "id": "D",
-        "text": "A PodDisruptionBudget blocks draining every pod that is running on the node, including pods that this particular budget does not select."
+        "reasons": [
+          "A PodDisruptionBudget blocks eviction only for pods it selects, and it does not stop drain for every other pod running on the node.",
+          "The budget applies to the pods it selects, including Deployment pods, and those pods are not evicted when the eviction would break it.",
+          "A Pending pod in another namespace does not make the budget block every eviction on the node."
+        ],
+        "variants": [
+          "A PodDisruptionBudget blocks draining every pod that is running on the node, including pods that this particular budget does not select.",
+          "A PodDisruptionBudget is consulted only for DaemonSet pods, and Deployment pods are evicted even when that eviction would break the budget.",
+          "The budget stops drain for the whole node whenever any pod there is Pending, including pods that sit in another namespace."
+        ]
       }
     ],
     "correct": [
@@ -7440,19 +14679,50 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "The runtime stage still keeps the compiler and the build tools, but Docker compresses those layers so they add almost nothing when the image is pulled."
+        "reasons": [
+          "The runtime stage does not keep the compiler and build tools in a compressed form; those tools are left out of the image you run.",
+          "Stages are not squashed into the base digest, and installed tools still take space if they remain in the final image.",
+          "Package cleanup in the final stage is not what removes a compiler that was never copied in, and uninstalling inside one layer does not erase earlier layers."
+        ],
+        "variants": [
+          "The runtime stage still keeps the compiler and the build tools, but Docker compresses those layers so they add almost nothing when the image is pulled.",
+          "The image is smaller because every stage is squashed into the base image digest, so the registry stores a single layer no matter what you installed.",
+          "The saving comes from the final stage running a package cleanup, and that cleanup is what deletes the compiler from the image you pull."
+        ]
       },
       {
         "id": "B",
-        "text": "The final stage starts from a slim base and copies in only the built artifact, so the compiler and build tools are not in the image you run."
+        "variants": [
+          "The final stage starts from a slim base and copies in only the built artifact, so the compiler and build tools are not in the image you run.",
+          "The final stage begins from a slim base and copies in only the built artifact, leaving the compiler and build tools out of the image you run.",
+          "The last stage uses a slim base and copies only the built artifact, leaving the compiler and the build tools out of the image you run."
+        ]
       },
       {
         "id": "C",
-        "text": "Earlier stages are removed from the registry afterward, but the image you run still contains every package those stages installed."
+        "reasons": [
+          "Removing earlier stages from the registry does not shrink the image you run if that image still contains the packages those stages installed.",
+          "Sharing build-stage layers on the host does not omit those tools from the runtime image when the final stage still includes them.",
+          "A multi-stage build does not shrink the image by inheriting a smaller architecture from the earlier stages."
+        ],
+        "variants": [
+          "Earlier stages are removed from the registry afterward, but the image you run still contains every package those stages installed.",
+          "The runtime image is smaller because its layers are shared with the build stage on the host, so the tools occupy space once and not inside the image.",
+          "Earlier stages are built for a smaller machine architecture, and the final image is small because it inherits that reduced architecture."
+        ]
       },
       {
         "id": "D",
-        "text": "The final stage inherits the build filesystem and then uninstalls the compiler, which is what removes those files from the image."
+        "reasons": [
+          "The final stage does not inherit the build filesystem and then uninstall the compiler; it starts from its own base and copies in the artifact.",
+          "Whiteout entries do not keep the compiler in the runnable image while hiding it, and the compiler is omitted by not copying it into the final stage.",
+          "A later `FROM` starts a new stage, and untagging earlier stages does not leave their layers inside the image you run."
+        ],
+        "variants": [
+          "The final stage inherits the build filesystem and then uninstalls the compiler, which is what removes those files from the image.",
+          "The final stage keeps the build filesystem and hides the compiler with whiteout entries, so those files stay downloaded but hidden at runtime.",
+          "The second `FROM` only replaces the image tag, and the earlier layers stay inside the image you run after they have been untagged."
+        ]
       }
     ],
     "correct": [
@@ -7468,23 +14738,53 @@ const QUESTIONS = [
     "options": [
       {
         "id": "A",
-        "text": "A volume is storage Docker manages, and it is the usual place for data that should outlive the container that wrote it."
+        "variants": [
+          "A volume is storage Docker manages, and it is the usual place for data that should outlive the container that wrote it.",
+          "Docker manages a volume itself, and that storage is the usual place for data meant to outlive the container that wrote it.",
+          "Docker-managed storage is called a volume, and it is where data usually goes when it must outlive the container that wrote it."
+        ]
       },
       {
         "id": "B",
-        "text": "A bind mount stores its data in the image layers, so that data is pushed to the registry together with the image."
+        "reasons": [
+          "A bind mount does not store its data in the image layers, and that data is not pushed to the registry with the image.",
+          "A named volume is not part of the image configuration, so exporting the image does not export the volumes a container wrote.",
+          "A bind mount writes through to the host path, and it does not copy that directory into the writable layer and keep later writes only there."
+        ],
+        "variants": [
+          "A bind mount stores its data in the image layers, so that data is pushed to the registry together with the image.",
+          "A named volume is recorded in the image configuration, so exporting the image also exports every volume that a container wrote.",
+          "A bind mount copies the host directory into the container's writable layer at start, and later writes remain only in that layer."
+        ]
       },
       {
         "id": "C",
-        "text": "A bind mount maps a host file or directory into the container, and the container reads and writes that host path."
+        "variants": [
+          "A bind mount maps a host file or directory into the container, and the container reads and writes that host path.",
+          "A bind mount attaches a host file or directory to the container, and the container reads and writes that host path.",
+          "Whatever host file or directory a bind mount maps in is the path the container itself reads and writes."
+        ]
       },
       {
         "id": "D",
-        "text": "Deleting a container does not delete a named volume, while a bind mount is simply the host path you attached."
+        "variants": [
+          "Deleting a container does not delete a named volume, while a bind mount is simply the host path you attached.",
+          "Removing a container does not remove a named volume, while a bind mount is only the host path you attached.",
+          "A named volume remains after the container is deleted, while a bind mount is simply the host path you attached."
+        ]
       },
       {
         "id": "E",
-        "text": "A volume is removed when the container stops, and a bind mount keeps a second copy of the host directory inside the image."
+        "reasons": [
+          "A volume is not removed when the container stops, and a bind mount does not keep a second copy of the host directory inside the image.",
+          "A volume is mounted only where you attach it, and a bind mount is not private to the container that first used that host path.",
+          "Stopping a container does not copy a bind mount into a volume, and the host directory is not restored from a volume on the next start."
+        ],
+        "variants": [
+          "A volume is removed when the container stops, and a bind mount keeps a second copy of the host directory inside the image.",
+          "A volume is mounted into every container on the host by default, and a bind mount stays visible only to the container that created it.",
+          "Stopping the container copies a bind mount back into a volume, and the next start restores the host directory from that volume."
+        ]
       }
     ],
     "correct": [
