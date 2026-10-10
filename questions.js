@@ -5507,54 +5507,54 @@ const QUESTIONS = [
   },
   {
     "id": 97,
-    "category": "System Design",
-    "question": "Why does consistent hashing move fewer keys when a node is added?",
+    "category": "Kotlin",
+    "question": "Why does a Kotlin function have to be `inline` before it can declare a `reified` type parameter?",
     "options": [
       {
         "id": "A",
         "variants": [
-          "Each key lands on a ring, and a new node takes only the keys between itself and the previous node, rather than remapping every key.",
-          "Keys are placed on a ring, and a new node takes only the keys between itself and the previous node, rather than remapping every key.",
-          "A new node on the ring receives just the keys that lie between it and the previous node, instead of remapping every stored key."
+          "The compiler copies the body into the call site and substitutes the real type, so a `reified` `T` can be used as `T::class`.",
+          "`inline` pastes the function body at the call and fills in the actual type argument, which is why `T::class` works for a `reified` `T`.",
+          "Because the body is inlined, the call site still knows the concrete type and can reflect a `reified` parameter with `T::class`."
         ]
       },
       {
         "id": "B",
         "reasons": [
-          "Using `hash % nodeCount` is ordinary modulo placement, and that is the scheme that moves nearly every key rather than the reason consistent hashing moves fewer.",
-          "A new node does not split every partition in half, and consistent hashing does not in general move about half of all keys.",
-          "Consistent hashing does not re-salt every key when membership changes, and it does not limit movement to cache entries that have already expired."
+          "The JVM erases generic type arguments. An ordinary function cannot name `T` at runtime.",
+          "`inline` is what keeps the concrete type available. It is not optional for `reified`.",
+          "Kotlin generics are erased on the JVM as well, so a non-inline function cannot recover `T`."
         ],
         "variants": [
-          "The bucket is `hash % nodeCount`, so adding one node changes the modulus and moves nearly every stored key onto some different node.",
-          "Adding a node always relocates about half of the keys, because consistent hashing splits every existing partition in half when membership changes.",
-          "A membership change rehashes every key with a new salt, and only entries that have already expired in cache are the ones that move."
+          "`reified` works on an ordinary function because the JVM keeps generic type arguments at runtime for every call.",
+          "A normal generic already carries `T` at runtime, so `inline` is only a style choice and is not required for `T::class`.",
+          "Type erasure does not apply to Kotlin generics, so any function can read a `reified` `T` without being `inline`."
         ]
       },
       {
         "id": "C",
         "reasons": [
-          "Keys are not stored on every node, and adding a node does not copy the whole dataset while leaving the old copies in place.",
-          "Keys do not move only on a hash collision with the new node id, and hash width is not what limits the move set.",
-          "The ring is not discarded on every membership change, and clients keeping an old map until restart is not why fewer keys move."
+          "Skipping the lambda allocation is a separate effect of `inline`. It does not recover an erased type.",
+          "The JIT does not put a generic type argument back. The compiler substitutes it while inlining.",
+          "`reified` is rejected unless the function is `inline`."
         ],
         "variants": [
-          "Every key is stored on every node, so adding a node copies the entire dataset and then leaves the old copies in place.",
-          "A key moves only if its hash collides with the new node id, so a wide hash is what keeps moves near zero.",
-          "On each membership change the ring is thrown away and rebuilt, while clients keep using the previous map until their process restarts."
+          "`inline` only avoids allocating the lambda object, and that allocation saving is what makes `T::class` compile.",
+          "Marking the function `inline` removes a virtual call, and the JIT then restores the erased type argument.",
+          "`reified` is legal on any function, and `inline` is a separate optimisation that does not affect the type."
         ]
       },
       {
         "id": "D",
         "reasons": [
-          "Existing keys do move when a node joins; the new node is not limited to keys written only after it arrives.",
-          "Virtual nodes do not freeze each key on one physical server, and a newly added node does receive some existing keys.",
-          "Consistent hashing does not store the owner inside the key or assign responsibility by an address prefix."
+          "A `reified` call does not ask the programmer to pass `Class<T>`. That is the Java workaround.",
+          "The type is substituted at the call site. It is not carried in the return value.",
+          "There is no thread-local type slot. Inlining is what makes the concrete type visible."
         ],
         "variants": [
-          "Existing keys never move, and a new node serves only the keys that are written after it joins the ring.",
-          "Virtual nodes pin each key to a fixed server, so a joining server receives none of the stored keys.",
-          "The owner is stored in the key, and a new node serves only keys whose prefix matches its address."
+          "The caller must pass a `Class<T>` by hand, the same way Java does, and `inline` plays no part in that.",
+          "`reified` boxes the type into the return value, so the function does not need to be copied to the call site.",
+          "A `reified` parameter is stored in a thread-local by the Kotlin runtime, which is why `inline` is unnecessary."
         ]
       }
     ],
@@ -5562,7 +5562,7 @@ const QUESTIONS = [
       "A"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Consistent hashing places nodes and keys on a ring. A key is owned by the next node clockwise. Adding a node takes only the arc between that node and its predecessor.\n• `hash % n` is the scheme that moves most keys, because the modulus itself changed.\n\nWhy other options are incorrect:\n• B is modulo placement, which is what consistent hashing avoids.\n• C replicates every key onto every node.\n• D never moves existing keys, so the new node would not take load off the old ones."
+    "explanation": "Why this is correct:\n• A generic type argument is erased. `inline` copies the function into the call site, where the real type is still known, so a `reified` `T` can be used as `T::class`.\n\nWhy other options are incorrect:\n• B assumes the JVM keeps generic arguments at runtime.\n• C treats `inline` as only an allocation optimisation.\n• D describes Java's explicit `Class<T>` argument, a boxed return, or a thread-local, none of which is how `reified` works."
   },
   {
     "id": 98,
@@ -6037,67 +6037,58 @@ const QUESTIONS = [
   },
   {
     "id": 106,
-    "category": "System Design",
-    "question": "Which THREE statements correctly apply the CAP theorem once a network partition exists?",
+    "category": "Kotlin",
+    "question": "Which TWO statements describe how `coroutineScope` and `supervisorScope` treat a failing child?",
     "options": [
       {
         "id": "A",
-        "reasons": [
-          "A partitioned system cannot check both sides before every response, so it cannot stay strongly consistent and still answer every request.",
-          "A heartbeat from one replica does not make that replica's data strongly consistent for every request that arrives during the split.",
-          "Retrying until both sides acknowledge the same write does not let a partitioned system stay consistent and answer every request."
-        ],
         "variants": [
-          "During a partition the system can stay strongly consistent and still answer every request, by checking both sides before it responds.",
-          "During a partition, answering from any replica that still emits a heartbeat keeps every arriving request strongly consistent.",
-          "Clients that retry until both sides acknowledge the same write remain fully consistent and fully available through the partition."
+          "When a child of `coroutineScope` fails, the scope cancels the other children and the `coroutineScope` call fails with that exception.",
+          "A failing child inside `coroutineScope` cancels its siblings, and the scope itself completes with the child's failure.",
+          "`coroutineScope` does not keep going after a child throws. It cancels the remaining children and then fails."
         ]
       },
       {
         "id": "B",
+        "reasons": [
+          "A supervisor does not cancel siblings when one child fails.",
+          "The surrounding `supervisorScope` waits for the other children instead of failing immediately.",
+          "`supervisorScope` isolates child failure. It does not tear down the parent hierarchy."
+        ],
         "variants": [
-          "A partition forces a choice between answering with data that may be stale and refusing requests that cannot be checked with a quorum.",
-          "Once partitioned, the system must either answer with data that may be stale or refuse requests that a quorum cannot check.",
-          "A partition forces a choice between data that may be stale and a refusal of any request that cannot be checked with a quorum."
+          "`supervisorScope` cancels every sibling as soon as one child throws, and it also cancels the parent job immediately.",
+          "One failing child of `supervisorScope` aborts the other children and fails the surrounding scope at once.",
+          "`supervisorScope` is stricter than `coroutineScope`: any child failure cancels the whole parent hierarchy."
         ]
       },
       {
         "id": "C",
         "variants": [
-          "Consistency, availability, and partition tolerance are not all available together while the network is split.",
-          "While the network is split, consistency, availability, and partition tolerance cannot all be provided together.",
-          "Consistency, availability, and partition tolerance are not available as a set while the network remains split."
+          "A failing child of `supervisorScope` does not cancel its siblings. The scope still waits for the children that are left.",
+          "Inside `supervisorScope`, one child's failure leaves the other children running, and the scope waits until those children finish.",
+          "`supervisorScope` isolates a child failure from its siblings and still suspends until the remaining children complete."
         ]
       },
       {
         "id": "D",
         "reasons": [
-          "Partition tolerance is not optional on a multi-node system, and turning it off is not a usable fix for a network split.",
-          "Partition tolerance does not mean freezing every write until full connectivity returns.",
-          "A refused request is not a successful response, so choosing consistency does not also preserve availability."
+          "`coroutineScope` fails when a child fails. It does not return normally.",
+          "The exception is not swallowed, and there is no 'last successful child' result in that case.",
+          "The scope itself cancels the siblings. That is not left to the caller."
         ],
         "variants": [
-          "Partition tolerance is optional on a multi-node system, and the usual fix is to turn partition tolerance off.",
-          "Partition tolerance requires every write to pause until each node can once again see every other node.",
-          "Choosing consistency during a split is also available, because a refused request still counts as a successful response."
-        ]
-      },
-      {
-        "id": "E",
-        "variants": [
-          "One database on one machine is not a counterexample, because the theorem is about what happens when a partition can separate nodes.",
-          "A single database on one machine is not a counterexample, since the theorem is about a partition that can separate nodes.",
-          "The theorem concerns what happens when a partition can separate nodes, so one database on one machine is not a counterexample."
+          "`coroutineScope` ignores a child failure and always returns normally, posting the exception to a default handler.",
+          "A child exception inside `coroutineScope` is swallowed, and the scope returns the value of the last successful child.",
+          "`coroutineScope` converts a child failure into a normal return and leaves cancellation of siblings to the caller."
         ]
       }
     ],
     "correct": [
-      "B",
-      "C",
-      "E"
+      "A",
+      "C"
     ],
-    "requiredCount": 3,
-    "explanation": "Why this is correct:\n• While nodes cannot talk, a system either serves a response that might disagree with the other side, or it refuses the request until it can check a quorum.\n• That is the consistency-versus-availability choice. Partition tolerance is the situation you are already in, not a feature you switch off.\n• A single node has no other node to be partitioned from, so it does not show a way around the choice.\n\nWhy other options are incorrect:\n• A keeps both consistency and availability across a partition, which is the combination CAP says you do not have.\n• D treats partition tolerance as optional. On a real network, partitions happen."
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `coroutineScope` uses a regular job: one failing child cancels the others, and the scope call fails.\n• `supervisorScope` uses a supervisor job: a failing child does not cancel its siblings, and the scope still waits for the children that remain.\n\nWhy other options are incorrect:\n• B gives `supervisorScope` the failure behaviour of `coroutineScope`.\n• D says `coroutineScope` swallows the failure. It propagates it."
   },
   {
     "id": 107,
@@ -10327,62 +10318,58 @@ const QUESTIONS = [
   },
   {
     "id": 178,
-    "category": "System Design",
-    "question": "How do active-passive and active-active multi-region deployments differ?",
+    "category": "Kotlin",
+    "question": "Which TWO statements describe a cold `Flow`?",
     "options": [
       {
         "id": "A",
-        "reasons": [
-          "That swaps the two designs: active-active is not single-region writes, and active-passive does not take writes in every region with no conflict handling.",
-          "Active-passive still accepts writes in the primary region; it does not refuse all writes until a manual promotion.",
-          "Active-active does not leave every region except one as DNS-only with no database."
-        ],
         "variants": [
-          "Active-active takes writes in a single region only, and active-passive takes writes in every region at once without any conflict handling at all.",
-          "Active-passive serves all reads from every region and accepts writes in none of those regions until an operator manually promotes one chosen region.",
-          "Active-active stores its data in only one region and uses every other region merely as a DNS name that never holds a database replica of its own."
+          "The producer runs when a terminal operator such as `collect` is called, and it runs again for each collector.",
+          "Building a cold `Flow` does not start it. Each `collect` runs the producer from the beginning.",
+          "A cold `Flow` is idle until collection, and two collectors each cause a separate run of the upstream."
         ]
       },
       {
         "id": "B",
         "reasons": [
-          "The designs do not both accept writes in every region, and they are not distinguished only by which region answers a health check.",
-          "They are not write-disabled except during an outage, and failover time is not the only difference.",
-          "Active-active is not defined as synchronous replication to every region with automated failover disabled."
+          "A cold `Flow` does not start until a terminal operator runs.",
+          "The `flow` builder does not launch work or cache values by itself.",
+          "`SharedFlow` is hot. A cold `Flow` waits for a collector."
         ],
         "variants": [
-          "Both forms take writes in every region, and they differ only in which region answers the health check.",
-          "They differ only by failover duration, and both refuse writes except while an outage is underway.",
-          "Both replicate synchronously to every region, and active-active simply turns automated failover off."
+          "A `Flow` is hot: it starts emitting as soon as the builder returns, even when nobody is collecting.",
+          "Creating a `flow { }` builder launches the producer immediately and caches every value for later collectors.",
+          "A cold `Flow` and a `SharedFlow` both emit before the first collector arrives."
         ]
       },
       {
         "id": "C",
-        "reasons": [
-          "Active-passive does not keep a writable copy in every region, and active-active is not a read-only cache in front of one primary.",
-          "Two writable primaries on a consensus log are not active-passive, and active-active is not a cold spare restored from backups.",
-          "Active-active accepts writes in more than one healthy region; it is not a snapshot restore with writes disabled."
-        ],
         "variants": [
-          "Active-passive keeps a writable copy in every region, and active-active is a read-only cache in front of one primary.",
-          "Active-passive runs two writable primaries coordinated by a consensus log, and active-active is a cold spare rebuilt from backups.",
-          "Active-active fails over by restoring a snapshot in the second region, and neither region writes while both stay healthy."
+          "`collect` is a suspending call. It runs the upstream in the collector's coroutine and returns after the flow completes or is cancelled.",
+          "Calling `collect` suspends the current coroutine, pulls values from the upstream, and resumes when the flow finishes.",
+          "`collect` does not return straight away. The collector coroutine stays in `collect` until the upstream completes or cancellation arrives."
         ]
       },
       {
         "id": "D",
+        "reasons": [
+          "`collect` suspends in the collector's coroutine. It does not return a `Job`.",
+          "It does not switch to `Dispatchers.IO` unless the upstream says so.",
+          "Collection does not start a platform thread per element, and it does not return early."
+        ],
         "variants": [
-          "Active-passive takes writes in one region and fails over, while active-active takes writes in more than one region and has to handle conflicts.",
-          "Active-passive takes writes in one region and fails over, while active-active takes writes in several regions and must handle conflicts.",
-          "With active-passive, one region accepts writes and can fail over; active-active accepts writes in more than one region and handles conflicts."
+          "`collect` schedules the producer on `Dispatchers.Default` and returns a `Job` to the caller immediately.",
+          "`collect` is non-suspending and always moves the upstream onto `Dispatchers.IO`.",
+          "`collect` starts a platform thread per value and returns before the first element is emitted."
         ]
       }
     ],
     "correct": [
-      "D"
+      "A",
+      "C"
     ],
-    "requiredCount": 1,
-    "explanation": "Why this is correct:\n• Active-passive has one region taking writes. Another region is ready to take over, which is the failover path.\n• Active-active takes writes in more than one region at the same time, so two updates can disagree and the design needs a conflict rule.\n\nWhy other options are incorrect:\n• A swaps the two forms and drops conflict handling from the multi-writer case.\n• B says both take writes everywhere.\n• C makes the passive deployment the one that writes in every region."
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• A cold `Flow` runs its producer only when collected, and each collector gets its own run.\n• `collect` is a suspend function. It drives the upstream in the current coroutine until the flow completes or is cancelled.\n\nWhy other options are incorrect:\n• B describes a hot stream such as `SharedFlow`.\n• D turns `collect` into a fire-and-forget launch on a fixed dispatcher."
   },
   {
     "id": 179,
@@ -10505,62 +10492,58 @@ const QUESTIONS = [
   },
   {
     "id": 181,
-    "category": "System Design",
-    "question": "How do partitions and a consumer group affect ordering in a log such as Kafka?",
+    "category": "Kotlin",
+    "question": "Which TWO statements describe `async` compared with two sequential `suspend` calls?",
     "options": [
       {
         "id": "A",
         "variants": [
-          "Records inside one partition stay in order, and a consumer group assigns each partition to one member so the members share the partitions.",
-          "A consumer group shares the partitions by assigning each partition to one member, while records inside one partition stay in order.",
-          "Inside a single partition the records stay in order, and a consumer group has members share the partitions by giving each partition to one member."
+          "Each `async` starts a child coroutine straight away, so the two blocks can run at the same time. `await` then reads each `Deferred`.",
+          "`async` launches both pieces of work before either result is required, and `await` suspends until that `Deferred` has a value.",
+          "Two `async` blocks are concurrent children. Calling `await` on each `Deferred` is how the caller receives the results."
         ]
       },
       {
         "id": "B",
         "reasons": [
-          "A consumer group does not deliver every partition to every member, and a topic does not promise one order across all partitions.",
-          "A consumer group does not elect a single reader while other members merely copy that reader's offset in memory.",
-          "Rebalancing reassigns partitions, but it does not rewrite the order of records stored inside a partition."
+          "`async` starts a coroutine, not a platform thread, and `await` suspends instead of sleeping.",
+          "There is no `Thread.join`. The waiting coroutine suspends.",
+          "`await` does not block the carrier the way `Future.get` does."
         ],
         "variants": [
-          "A consumer group delivers every partition to every member, and the topic promises one order across all partitions.",
-          "A consumer group elects one member to read the log, and the other members only copy that member's offset in memory.",
-          "Rebalancing a consumer group rewrites the order of records inside each partition for the member that takes ownership."
+          "`async` creates one platform thread per call, and `await` blocks that thread with a sleep until the value is ready.",
+          "`await` calls `Thread.join` on a dedicated OS thread that `async` allocated for the block.",
+          "`async` is compiled into `ExecutorService.submit`, and `await` is a blocking `Future.get`."
         ]
       },
       {
         "id": "C",
-        "reasons": [
-          "Order is not global across a topic, and partitions are not merely the storage place for consumer offsets.",
-          "Offsets are not stored in the record key, and sorting keys after a read is not how a group restores partition order.",
-          "Members of a group fetch independently, so pausing one member does not pause the group through a shared fetch loop."
-        ],
         "variants": [
-          "Order is global for the whole topic, and partitions exist only as the place where consumer offsets are stored.",
-          "Consumer offsets are stored in the record key, so a group restores order by sorting those keys after each read.",
-          "Pausing one member pauses the entire consumer group, because the members share a single fetch loop."
+          "Two ordinary `suspend` calls in one coroutine run one after the other. The second does not start until the first has returned.",
+          "Writing `val a = loadA(); val b = loadB()` inside one coroutine runs `loadB` only after `loadA` finishes.",
+          "Sequential `suspend` calls share one coroutine and do not overlap, unlike two `async` builders."
         ]
       },
       {
         "id": "D",
         "reasons": [
-          "Members of one group do not read the same partition concurrently, and a shared read is not what keeps that partition ordered.",
-          "The maximum poll records setting limits how many records a fetch returns and does not sort that batch to create partition order.",
-          "Synchronous or async commits do not reshuffle a partition, so commit style is not what keeps the records ordered."
+          "`async` returns a `Deferred`. The value comes from `await`.",
+          "The point of `async` is that the children can overlap.",
+          "The builder returns as soon as the child is started. It does not block for the result."
         ],
         "variants": [
-          "Several members of one group may read the same partition at the same time, and that shared read is what keeps the records in that partition ordered.",
-          "Ordering inside a partition is produced by the consumer `max.poll.records` setting, which sorts each fetched batch before it is processed.",
-          "A partition stays ordered only when its consumer commits synchronously after every record, because an async commit reshuffles the records in that partition."
+          "`async` returns the value itself, so the caller never calls `await`, and the two blocks still run one after another.",
+          "`async` is only a different name for a sequential `suspend` call and cannot overlap the two blocks.",
+          "The value of `async` is available on the next line with no `await`, because the builder blocks until the block returns."
         ]
       }
     ],
     "correct": [
-      "A"
+      "A",
+      "C"
     ],
-    "requiredCount": 1,
-    "explanation": "Why this is correct:\n• A partition is an ordered log. The topic's order is per partition, not across partitions.\n• In one consumer group, each partition is assigned to a single member. The members split the partitions between them. A second group is a separate subscription and gets its own copy of the records.\n\nWhy other options are incorrect:\n• B gives every member every partition and promises one global order.\n• C stores only offsets in partitions and makes order global.\n• D lets several members of the same group read one partition together. That assignment is one member per partition."
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `async` starts a child coroutine immediately and returns a `Deferred`. Two of those children can run concurrently, and `await` reads each result.\n• Two `suspend` calls written one after another in the same coroutine do not overlap.\n\nWhy other options are incorrect:\n• B treats `async` and `await` as a platform thread plus a blocking join.\n• D says `async` returns the value directly and stays sequential."
   },
   {
     "id": 182,
@@ -14794,5 +14777,559 @@ const QUESTIONS = [
     ],
     "requiredCount": 3,
     "explanation": "Why this is correct:\n• A volume is Docker-managed storage, independent of the container's writable layer, and it survives container deletion until you remove the volume. A bind mount is a host path shown inside the container. Neither one writes data into the image, so neither is pushed when you push the image.\n\nWhy other options are incorrect:\n• B puts bind-mount data into image layers. Mounts are outside the image.\n• E reverses the lifetimes. Stopping a container does not remove a volume, and a bind mount does not copy the host directory into the image."
+  },
+  {
+    "id": 257,
+    "category": "Kotlin",
+    "question": "Which TWO statements describe a sealed type and `when`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "A `when` that covers every direct subtype of a sealed type is exhaustive, so the compiler does not require an `else` branch.",
+          "Once every direct subtype is a branch, `when` on a sealed type compiles without `else`.",
+          "Sealed hierarchies make `when` exhaustive at compile time when each known direct subtype has a branch."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A missing branch on a sealed type is a compile error, not a runtime surprise.",
+          "`else` is not required when every direct subtype is covered.",
+          "The compiler uses the sealed hierarchy to decide that `when` is exhaustive."
+        ],
+        "variants": [
+          "Sealed types are checked only at runtime, so a missing branch still compiles and throws when that subtype appears.",
+          "`when` on a sealed class always needs `else`, because the set of subtypes is open.",
+          "The compiler ignores sealed hierarchies and treats every `when` as non-exhaustive."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "Direct subtypes of a sealed class or interface are declared in the same module as the sealed type.",
+          "A sealed type's direct subclasses or subinterfaces live in its own module, so the compiler can see all of them.",
+          "You cannot add a direct subtype of a sealed type from another module."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Other modules cannot declare a direct subtype, so `else` is not required for unknown subclasses.",
+          "The restriction is the module, not just the package.",
+          "`sealed` closes the set of direct subtypes. `open` does not."
+        ],
+        "variants": [
+          "A sealed class may be subclassed from any module, which is why `when` still needs `else`.",
+          "Sealed only stops subclassing in other packages of the same module, and other modules remain free to extend it.",
+          "`sealed` and `open` allow the same set of subclasses, and the keyword only changes the `when` warning."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• The compiler knows every direct subtype of a sealed type, so a `when` that lists them is exhaustive and needs no `else`.\n• Those direct subtypes must be in the same module. That closed set is what makes the check possible.\n\nWhy other options are incorrect:\n• B treats the check as a runtime failure and says `else` is always required.\n• D leaves the hierarchy open to other modules."
+  },
+  {
+    "id": 258,
+    "category": "Kotlin",
+    "question": "What does `withContext` do to the coroutine that calls it?",
+    "options": [
+      {
+        "id": "A",
+        "reasons": [
+          "`withContext` suspends until the block returns a value. It does not return a `Deferred`.",
+          "The call is suspending, so the following line waits for the block.",
+          "There is no callback. The block's result is the return value."
+        ],
+        "variants": [
+          "It returns a `Deferred` and lets the caller continue without waiting for the block.",
+          "`withContext` is a non-suspending launch, and the next line runs before the block starts.",
+          "The block is scheduled and forgotten. The caller reads the result from a callback."
+        ]
+      },
+      {
+        "id": "B",
+        "variants": [
+          "It suspends the caller, runs the block on the given dispatcher, and returns the block's result in the caller's context.",
+          "The current coroutine waits while the block runs on the dispatcher you pass, then continues with that block's return value.",
+          "`withContext(Dispatchers.IO)` moves the block onto the IO pool and resumes the caller with the value the block produced."
+        ]
+      },
+      {
+        "id": "C",
+        "reasons": [
+          "The caller suspends. The carrier thread is free to run other coroutines.",
+          "It does not pin the thread for the whole wait.",
+          "The block runs on the dispatcher you pass, not by blocking the entering thread."
+        ],
+        "variants": [
+          "It blocks the carrier thread until the block finishes, the same way `Thread.join` waits.",
+          "`withContext` pins the caller thread and refuses to run other coroutines on it until the block returns.",
+          "The dispatcher is ignored, and the block always runs by blocking the thread that entered `withContext`."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Only the block uses the new dispatcher. Code after `withContext` is back on the caller's context.",
+          "The change does not cover the rest of the function.",
+          "The original context is restored when the block finishes."
+        ],
+        "variants": [
+          "After the block returns, the rest of the function stays on the new dispatcher.",
+          "`withContext` changes the dispatcher of the whole coroutine from that line to the end of the function.",
+          "The original dispatcher is discarded, and later calls keep using the one passed to `withContext`."
+        ]
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• `withContext` suspends the current coroutine, runs the block on the dispatcher you give it, and returns that block's result. After the call, the coroutine is back in its previous context.\n\nWhy other options are incorrect:\n• A describes `async`, which returns a `Deferred`.\n• C blocks the carrier thread.\n• D leaves the coroutine on the new dispatcher after the block."
+  },
+  {
+    "id": 259,
+    "category": "Kotlin",
+    "question": "Which TWO statements describe coroutine cancellation?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`cancel()` is cooperative. The coroutine notices it at a suspend point, or when the body checks `isActive` or calls `ensureActive()`.",
+          "Cancellation takes effect when the coroutine reaches a suspending function or an explicit `isActive` / `ensureActive()` check.",
+          "A cancelled coroutine keeps running until it suspends or looks at its job. `cancel()` does not preempt the current instruction."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A CPU loop that never suspends and never checks the job keeps running.",
+          "Cancellation is not injected into arbitrary bytecode.",
+          "The carrier thread is not killed. Other coroutines still need it."
+        ],
+        "variants": [
+          "`cancel()` interrupts the carrier thread at once, so a tight CPU loop stops on the next instruction.",
+          "Cancellation is delivered as an asynchronous exception into whatever bytecode is running, with no need to suspend.",
+          "The dispatcher kills the underlying thread, which is why cancelled coroutines cannot pass another line."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "A loop that never calls a suspending function and never checks `isActive` keeps running after `cancel()`.",
+          "Without a suspend point or an `ensureActive()` check, a computation loop does not observe cancellation.",
+          "`cancel()` alone does not stop a tight loop. The loop has to cooperate."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "There is no preemptive `Thread.stop` and no automatic rollback of locals.",
+          "Side effects that already happened stay happened.",
+          "Cancellation does not restart the block on another dispatcher."
+        ],
+        "variants": [
+          "Cancellation is preemptive, like `Thread.stop`, and it rolls back every local variable automatically.",
+          "`cancel()` undoes side effects the coroutine has already performed and then restarts the block.",
+          "A cancelled coroutine is always restarted on `Dispatchers.Default` so the work is not lost."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Cancellation is cooperative. It is observed at a suspend point or at `isActive` / `ensureActive()`.\n• A loop with neither of those keeps running after `cancel()`.\n\nWhy other options are incorrect:\n• B says the carrier thread is interrupted immediately.\n• D adds rollback and a restart that cancellation does not do."
+  },
+  {
+    "id": 260,
+    "category": "Kotlin",
+    "question": "Which TWO statements contrast a `Sequence` with a `List` chain of `map` and `filter`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "A `Sequence` applies `map` and `filter` as elements are pulled, and it does not build an intermediate list for each step.",
+          "Intermediate `Sequence` operations stay lazy until a terminal operation pulls the elements.",
+          "`asSequence().map { }.filter { }.toList()` can skip work for elements the terminal operation never asks for."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A `Sequence` is pull-based and single-pass. It does not switch dispatchers.",
+          "It is not a `Flow` and has no default dispatcher.",
+          "`map` does not launch a coroutine per element."
+        ],
+        "variants": [
+          "`asSequence()` moves the chain onto `Dispatchers.Default` and processes elements in parallel.",
+          "A `Sequence` is a coroutine flow and emits on `Dispatchers.IO` by default.",
+          "`map` on a `Sequence` launches one coroutine per element."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "Calling `map` then `filter` on a `List` allocates a new list at each call, before the next operation starts.",
+          "A `List` chain is eager: each `map` or `filter` finishes and returns a new list.",
+          "`names.map { }.filter { }` builds the mapped list completely, then builds the filtered list from that."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Laziness has overhead. A tiny eager chain can be cheaper.",
+          "You still need a terminal operation such as `toList()` or `forEach`.",
+          "A sequence is not a random-access structure."
+        ],
+        "variants": [
+          "A `Sequence` is always faster than the same chain on a `List`, including one `map` over a tiny collection.",
+          "`Sequence` removes the need for a terminal operation and stores the result automatically.",
+          "Turning a list into a sequence makes later random access by index cheaper than on the original list."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `Sequence` pipelines are lazy. Each element is mapped and filtered when a terminal operation pulls it, without an intermediate list per step.\n• The same calls on a `List` are eager and allocate a new list every time.\n\nWhy other options are incorrect:\n• B turns a sequence into a parallel coroutine dispatcher.\n• D claims a sequence is always faster and randomly accessible."
+  },
+  {
+    "id": 261,
+    "category": "Kotlin",
+    "question": "Which TWO statements describe interface delegation with `by`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`class Box(private val inner: Store) : Store by inner` forwards `Store` calls to `inner` without writing each method by hand.",
+          "The `by` clause generates the forwarding members, so `Box` implements `Store` by calling the same members on `inner`.",
+          "Interface delegation implements the interface by sending each call to the object after `by`."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Delegation does not subclass the delegate or copy its fields.",
+          "The delegate is a separate object, not a superclass.",
+          "`Box` implements `Store`. It does not extend `inner`'s class."
+        ],
+        "variants": [
+          "`by` subclasses the concrete delegate and copies its fields into the new class.",
+          "The class after `by` becomes the superclass, and delegation is inheritance.",
+          "`Box : Store by inner` means `Box` extends the runtime class of `inner`."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "You can override one member. Calls to that member use the override, and the other members still go to the delegate.",
+          "An override on the delegating class replaces only that member. The generated forwarding methods remain for the rest.",
+          "`override fun get()` in `Box` handles `get`, while every other `Store` method is still forwarded to `inner`."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`by lazy` is a property delegate. It does not forward an interface.",
+          "`lazy` is a function that returns a property delegate, not an interface the class implements.",
+          "Neither feature subclasses the delegated instance."
+        ],
+        "variants": [
+          "`by lazy` is the same feature as interface delegation, and both forward method calls to another object.",
+          "`val x by lazy { }` implements an interface named `lazy` on the property's class.",
+          "Interface delegation and `lazy` both subclass the delegated instance."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• ` : Store by inner` generates the `Store` methods and forwards them to `inner`.\n• An override replaces one of those methods. The others still call the delegate.\n\nWhy other options are incorrect:\n• B describes inheritance and a field copy.\n• D confuses interface delegation with the `lazy` property delegate."
+  },
+  {
+    "id": 262,
+    "category": "Kotlin",
+    "question": "Which TWO statements distinguish `runBlocking` from `coroutineScope`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`runBlocking` blocks the current thread until its coroutine and its children finish. Tests and `main` use it to wait for suspending work.",
+          "`runBlocking` bridges blocking code to coroutines by occupying the calling thread until the block and its children complete.",
+          "Calling `runBlocking` from `main` or a test parks that thread until the coroutine inside it is done."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "`runBlocking` blocks a real thread. Calling it on a UI thread or a limited pool can stall that thread.",
+          "It is not a suspend function. It is a blocking bridge.",
+          "Library code waits with `coroutineScope`, not by blocking a carrier."
+        ],
+        "variants": [
+          "`runBlocking` suspends without occupying a thread, so it is safe to call from the UI thread or from inside a dispatcher pool.",
+          "`runBlocking` is a normal suspend function and can be called from any coroutine without blocking a carrier.",
+          "Library suspend functions should call `runBlocking` whenever they need to wait for children."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`coroutineScope` suspends until its children finish and does not block the carrier thread. A suspend function uses it to wait for work it started.",
+          "Inside a suspend function, `coroutineScope` waits for its child coroutines while the underlying thread can run something else.",
+          "`coroutineScope` is the structured way for a suspending caller to start children and resume after they all complete."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`coroutineScope` suspends. It is not a blocking call, and it must be called from a coroutine.",
+          "It does not return before its children finish, and it does not use `GlobalScope`.",
+          "A failing child fails the scope. The failure is not ignored."
+        ],
+        "variants": [
+          "`coroutineScope` blocks the OS thread the same way `runBlocking` does, and it can be called from a non-suspend function.",
+          "`coroutineScope` returns immediately and leaves its children running on `GlobalScope`.",
+          "`coroutineScope` ignores child failures and always resumes the caller with `Unit`."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `runBlocking` blocks the thread that called it until the coroutine and its children finish. That fits `main` and tests.\n• `coroutineScope` suspends instead of blocking, so a suspend function can wait for its children and still leave the carrier free.\n\nWhy other options are incorrect:\n• B treats `runBlocking` as a non-blocking suspend function.\n• D gives `coroutineScope` the blocking behaviour of `runBlocking` and drops structured waiting."
+  },
+  {
+    "id": 263,
+    "category": "Spring & Hibernate",
+    "question": "Which TWO statements describe the JPA first-level cache?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "The persistence context is the first-level cache. In one `EntityManager`, a second `find` for the same id returns the same instance and does not read the row again.",
+          "Within a single persistence context, the first load of an id is cached, and a later `find` of that id returns that managed instance.",
+          "Two `find` calls for one id on the same `EntityManager` share one object because the persistence context already holds it."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "The first-level cache belongs to one persistence context. Another transaction has its own.",
+          "Entity managers do not share that map.",
+          "It ends when the context is cleared or closed, and other JVMs do not see it."
+        ],
+        "variants": [
+          "The first-level cache is shared by every transaction in the JVM, so two requests that load the same id always receive one object.",
+          "Every `EntityManager` in the process consults one common first-level map.",
+          "The first-level cache survives the transaction and is the cache other application instances read."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`clear()` or closing the `EntityManager` drops that cache. The next manager loads its own instance from the database or from the second-level cache.",
+          "After `EntityManager.clear()`, the same id is loaded again because the persistence context no longer holds it.",
+          "Closing the manager discards its first-level cache, so a new manager does not reuse those instances."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "The first-level cache is always part of the persistence context. The second-level flag does not turn it on.",
+          "`@Cacheable` is for the second-level cache.",
+          "The query cache is a different cache and is not what fills the persistence context by default."
+        ],
+        "variants": [
+          "The first-level cache stays empty unless `hibernate.cache.use_second_level_cache` is true.",
+          "First-level caching is off by default and turns on only when the entity is annotated `@Cacheable`.",
+          "The persistence context caches entities only after a query cache hit."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• The persistence context is the first-level cache. Repeated loads of one id in that context return the same managed instance.\n• `clear()` or closing the manager drops it. Another context does not see those instances.\n\nWhy other options are incorrect:\n• B shares one first-level cache across transactions and JVMs.\n• D ties the first-level cache to the second-level or query-cache switches. It is always on for an open persistence context."
+  },
+  {
+    "id": 264,
+    "category": "Spring & Hibernate",
+    "question": "Which TWO statements describe the Hibernate second-level cache?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "It is shared by sessions from one `SessionFactory`. A later session can load a cacheable entity by id from that cache instead of reading the row.",
+          "The second-level cache sits on the `SessionFactory` and can satisfy an id lookup for a session that does not already hold the entity.",
+          "Two transactions in the same factory can reuse cached entity state for the same id, instead of each one reading the table."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Sessions still have a first-level cache. The second level is an additional shared store.",
+          "Enabling it does not turn the persistence context off.",
+          "They are different caches with different lifetimes."
+        ],
+        "variants": [
+          "It replaces the persistence context, so an `EntityManager` no longer keeps its own copies of managed entities.",
+          "Turning on the second-level cache disables the first-level cache for that factory.",
+          "The second-level cache is the persistence context under another name."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "An entity is stored there only when second-level caching is enabled and the entity is cacheable, for example with `@Cacheable` and a concurrency strategy.",
+          "The cache stays unused for an entity until the factory is configured for it and that entity is marked cacheable.",
+          "`@Cacheable` plus an enabled second-level cache is what allows that entity's state to be shared across sessions."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Sharing across JVMs needs a cache provider. It is not an automatic single map.",
+          "The second-level cache is off unless you enable it.",
+          "A session assembles its own instance from the cached state. Callers do not share one mutable object."
+        ],
+        "variants": [
+          "The second-level cache is automatically one map on every application instance, with no cache provider.",
+          "It is turned on by default for every entity as soon as Hibernate starts.",
+          "A cache hit returns the same Java instance to every session, so two transactions share one mutable object."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• The second-level cache is shared by sessions of one `SessionFactory` and can answer an id load without reading the row.\n• That happens only when the cache is enabled and the entity is cacheable.\n\nWhy other options are incorrect:\n• B says it replaces the persistence context.\n• D makes it a default cluster-wide map of shared mutable instances."
+  },
+  {
+    "id": 265,
+    "category": "Spring & Hibernate",
+    "question": "Which TWO statements describe the Hibernate query cache?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "It stores the identifiers a query returned, not the full entity state. Materialising those entities still uses the second-level cache or the database.",
+          "A query-cache hit gives back ids. The entity data comes from the second-level cache or from a row read.",
+          "The query cache remembers which ids matched. It does not replace the entity cache."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "The cached value is the id list, not the full graph.",
+          "Entity state still has to come from somewhere, which is why the second-level cache matters.",
+          "Sessions do not share the managed instances from the persistence context."
+        ],
+        "variants": [
+          "It stores the whole entity graph for each result, so the second-level cache is unnecessary.",
+          "Enabling the query cache caches every column of every selected row and skips entity caching.",
+          "A query-cache entry is the managed instances themselves, ready to return from any session."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "It pays off together with the second-level cache. Rows changed outside Hibernate can leave stale ids in the query cache until that region is evicted.",
+          "A native update that bypasses Hibernate does not refresh the cached id list, so the query cache can name rows that no longer match.",
+          "Without eviction, a query cache can return yesterday's ids after the table was updated behind Hibernate's back."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "The query cache is shared cache state, not the per-context first-level cache.",
+          "JPQL uses the persistence context for managed instances. That is not the query cache.",
+          "`clear()` drops the persistence context. The query cache is a separate region."
+        ],
+        "variants": [
+          "The query cache is another name for the persistence context, and it lives only for one transaction.",
+          "The query cache is the first-level cache used by JPQL.",
+          "`EntityManager.clear()` is the only way the query cache drops an entry, because the two caches are the same map."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• The query cache stores the ids a query returned. The entity state is loaded from the second-level cache or the database.\n• Updates that do not go through Hibernate can leave those ids stale until the region is evicted.\n\nWhy other options are incorrect:\n• B says the cache holds the whole entity graph.\n• D confuses it with the persistence context."
+  },
+  {
+    "id": 266,
+    "category": "Spring & Hibernate",
+    "question": "Which TWO statements describe bulk updates and the JPA caches?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "A JPQL bulk `UPDATE` or `DELETE` does not apply those changes to entities already sitting in the persistence context. Those instances stay stale until you refresh or clear them.",
+          "After `UPDATE Account a SET a.status = 'CLOSED'`, a managed `Account` already loaded in this context still shows the old status.",
+          "Bulk JPQL bypasses the managed instances. The persistence context is not rewritten to match the statement."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Bulk JPQL does not walk the persistence context and update those objects.",
+          "The SQL runs against the database. Managed instances are left as they were.",
+          "In-memory instances are not removed first. They can still be in the context after the statement."
+        ],
+        "variants": [
+          "A bulk `UPDATE` rewrites every managed instance in the current persistence context before the statement runs.",
+          "Hibernate applies the new column values to all first-level-cache entries, then sends one SQL statement.",
+          "A bulk `DELETE` detaches nothing, because it deletes the managed objects in memory first and the rows second."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "A native SQL update does not invalidate the second-level cache by itself. Cached entity state can stay stale until that region is evicted.",
+          "An `EntityManager.createNativeQuery` update changes rows without telling the second-level cache, so the next session may load the old state.",
+          "Native SQL that bypasses Hibernate leaves the second-level region unchanged unless you evict it."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Native SQL does not evict the second-level cache for you.",
+          "A JDBC write does not clear that cache automatically.",
+          "Hibernate does not watch the database for outside updates."
+        ],
+        "variants": [
+          "Native SQL always evicts both caches, and the next `find` is guaranteed to read the new row.",
+          "Any JDBC update in the same JVM automatically clears the second-level cache before the method returns.",
+          "The second-level cache subscribes to the database and drops an entity as soon as its row changes."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• A JPQL bulk update or delete does not refresh entities already managed in the persistence context.\n• Native SQL does not invalidate the second-level cache. The region can serve stale state until it is evicted.\n\nWhy other options are incorrect:\n• B says the bulk statement rewrites the first-level cache first.\n• D says native SQL always clears both caches. It does not."
   }
 ];
