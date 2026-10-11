@@ -15331,5 +15331,1675 @@ const QUESTIONS = [
     ],
     "requiredCount": 2,
     "explanation": "Why this is correct:\n• A JPQL bulk update or delete does not refresh entities already managed in the persistence context.\n• Native SQL does not invalidate the second-level cache. The region can serve stale state until it is evicted.\n\nWhy other options are incorrect:\n• B says the bulk statement rewrites the first-level cache first.\n• D says native SQL always clears both caches. It does not."
+  },
+  {
+    "id": 267,
+    "category": "Command Line",
+    "question": "Which TWO statements describe `ls -l` and `ls -a`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`ls -l` prints a long listing: permissions, owner, size, and modification time for each name.",
+          "The `-l` flag adds the permission string, link count, owner, group, size, and timestamp.",
+          "`ls -l` is the long form. Each row includes who owns the file and which permission bits are set."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "`ls -l` lists names and metadata. It does not print file contents.",
+          "By default `ls` shows the symlink itself. `ls -l` does not walk the target directory.",
+          "Showing file contents is `cat`, `less`, or `head`, not `ls`."
+        ],
+        "variants": [
+          "`ls -l` reads every symlink and prints the bytes of the target file.",
+          "`ls -l` follows each directory symlink and lists that other directory instead of the link itself.",
+          "The long listing shows the contents of a file, one screen at a time."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`ls -a` includes names that start with `.`. Plain `ls` hides those entries.",
+          "Dotfiles such as `.gitignore` show up with `ls -a` and stay hidden with `ls` alone.",
+          "`-a` means all names in the directory, including `.` and `..` and other hidden names."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Sorting by access time is `ls -t` or `ls -u`, not `-a`.",
+          "`-a` is about hidden names, not the execute bit.",
+          "Recursing into subdirectories is `ls -R`, not `-a`."
+        ],
+        "variants": [
+          "`ls -a` sorts by last access time and prints nothing else.",
+          "`-a` shows only files the current user can execute.",
+          "`ls -a` lists directories one level down and stops hiding nothing."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `ls -l` is the long listing: permissions, ownership, size, and time.\n• `ls -a` shows names that begin with a dot, which a plain `ls` leaves out.\n\nWhy other options are incorrect:\n• B treats `ls` as a way to read file contents.\n• D assigns the access-time sort, the execute bit, or recursion to `-a`."
+  },
+  {
+    "id": 268,
+    "category": "Command Line",
+    "question": "What does `chmod 755 script.sh` set on that file?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "The owner gets read, write, and execute (7). The group and everyone else get read and execute, not write (5 and 5).",
+          "`755` is `rwxr-xr-x`: the owner can change the file, and others can read and run it.",
+          "Numeric mode 7 is `rwx` for the owner, and each 5 is `r-x` for the group and for others."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "`777` is `rwx` for all three classes. `755` does not grant write to the group or to others.",
+          "The owner is the class that receives write. The group does not.",
+          "The owner keeps execute. Others do not receive write."
+        ],
+        "variants": [
+          "`755` gives read, write, and execute to everyone, the same as `777`.",
+          "The owner can only read the file, and the group can write it.",
+          "`755` removes the execute bit from the owner and adds write for others."
+        ]
+      },
+      {
+        "id": "C",
+        "reasons": [
+          "`chmod` changes mode bits, not the owner. Changing the owner is `chown`.",
+          "A numeric mode is permissions, not an account id.",
+          "Setuid would be a leading `4` on a four-digit mode, such as `4755`, and the other bits still change."
+        ],
+        "variants": [
+          "`chmod 755` changes the owner of the file to user id 755.",
+          "The number is a user id, so `chown` and `chmod` do the same job here.",
+          "`755` sets the setuid bit and leaves the permission bits untouched."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Root-only read would be something like `400` or `600`, not `755`.",
+          "The sticky bit is a different flag, often seen on `/tmp` as `1777`.",
+          "`chmod` does not schedule a later restore."
+        ],
+        "variants": [
+          "`755` means the file is readable by root only.",
+          "Only the sticky bit is set, so anyone can run the file and nobody can delete it.",
+          "The command clears every permission, then the shell restores them on the next login."
+        ]
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• In `755`, 7 is `rwx` for the owner, and each 5 is `r-x` for the group and for others. The owner can write the file. Everyone can read and execute it.\n\nWhy other options are incorrect:\n• B describes `777` or swaps who can write.\n• C uses `chmod` as if it were `chown`.\n• D describes a private mode or the sticky bit."
+  },
+  {
+    "id": 269,
+    "category": "Command Line",
+    "question": "Which TWO statements describe `>`, `>>`, and `|`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`>` sends standard output to a file and truncates that file first. `>>` appends to the file instead.",
+          "`cmd > out.txt` replaces `out.txt` with the command's stdout. `cmd >> out.txt` adds to the end.",
+          "A single `>` overwrites the target file. A double `>>` keeps what was already there and writes after it."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A pipe connects two processes. It does not create a file named after the right-hand command.",
+          "Nothing is written to disk unless one of the commands does that itself.",
+          "`>` names a file. `|` names the next command."
+        ],
+        "variants": [
+          "`|` appends stdout to a file whose name is the next command.",
+          "A pipe writes a file in the current directory and then runs the command on the right.",
+          "`cmd1 | cmd2` is another spelling of `cmd1 > cmd2`."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`|` connects the standard output of the command on the left to the standard input of the command on the right.",
+          "`grep error app.log | wc -l` feeds the matching lines into `wc`. No file is required between them.",
+          "A pipeline passes stdout along. The right-hand command reads that stream as its stdin."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`>` is stdout (descriptor 1). `2>` is stderr (descriptor 2).",
+          "`>>` appends stdout. It does not mean stderr.",
+          "Descriptor 1 is stdout and descriptor 2 is stderr."
+        ],
+        "variants": [
+          "`2>` redirects standard output, and `>` redirects standard error.",
+          "`2>` appends stdout to a file, and `>>` redirects stderr.",
+          "File descriptor 2 is stdout, so `2>` captures normal output and leaves errors on the terminal."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `>` overwrites a file with stdout. `>>` appends stdout to that file.\n• `|` is a pipe: the left command's stdout becomes the right command's stdin.\n\nWhy other options are incorrect:\n• B treats a pipe as a file redirect.\n• D swaps stdout and stderr. `2>` is standard error."
+  },
+  {
+    "id": 270,
+    "category": "Command Line",
+    "question": "Which TWO statements distinguish `grep` from `find`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`grep` searches the text inside files for a pattern and prints the matching lines.",
+          "`grep error app.log` looks at the contents of `app.log`, not at the file's name.",
+          "`grep -r TODO src` walks files and prints lines whose contents match."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Searching by name is `find`. `grep` matches text.",
+          "A glob of file names is shell expansion or `find -name`, not what `grep` is for.",
+          "`grep` reads file contents."
+        ],
+        "variants": [
+          "`grep` selects files by name and does not look inside them.",
+          "`grep '*.log'` lists log files in the directory and ignores their contents.",
+          "`grep` is the command that finds a file whose name matches a glob."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`find` selects paths by name, type, size, or time. It does not by itself search the bytes inside a file.",
+          "`find . -name '*.log'` matches the file name. The contents are a separate step.",
+          "`find` walks the directory tree and prints paths that match its tests."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`find` and `grep -r` answer different questions: paths versus line contents.",
+          "`find` does not take a pattern and a file the way `grep` does.",
+          "`find -name` filters on the name. Content search is `grep`, often combined as `find ... -exec grep`."
+        ],
+        "variants": [
+          "`find` is another name for `grep -r`, and both print matching lines.",
+          "`find error app.log` prints every line in `app.log` that contains `error`.",
+          "`find` always searches file contents and never filters on the file name."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `grep` matches text inside files and prints those lines.\n• `find` matches paths, using tests such as `-name` or `-type`. Looking inside a file is a further command.\n\nWhy other options are incorrect:\n• B gives `grep` the job of `find`.\n• D treats `find` as a content search."
+  },
+  {
+    "id": 271,
+    "category": "Command Line",
+    "question": "What does `tail -f app.log` do?",
+    "options": [
+      {
+        "id": "A",
+        "reasons": [
+          "The first lines are `head`. `tail` starts at the end.",
+          "`-f` means follow. It does not mean first.",
+          "`tail` does not begin at the start of the file."
+        ],
+        "variants": [
+          "It prints the first ten lines of `app.log` and exits.",
+          "`-f` means the first lines, so the command is finished once those lines are shown.",
+          "`tail -f` reads from the start of the file until it has printed ten lines."
+        ]
+      },
+      {
+        "id": "B",
+        "variants": [
+          "It prints the end of `app.log` and keeps running, printing lines as they are appended.",
+          "`-f` follows the file. New lines written by the application show up until you stop the command.",
+          "`tail -f` is the usual way to watch a growing log without reopening it by hand."
+        ]
+      },
+      {
+        "id": "C",
+        "reasons": [
+          "`tail` only reads. It does not delete the file.",
+          "Truncating a log is a redirect or `truncate`, not `tail -f`.",
+          "Rotation is a separate tool, such as `logrotate`."
+        ],
+        "variants": [
+          "It deletes `app.log` after printing the last ten lines.",
+          "`-f` truncates the file so the next write starts from an empty log.",
+          "The command renames `app.log` to `app.log.1` and starts a new empty file."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Follow watches the file. The writer can be any process.",
+          "`tail` does not attach a debugger.",
+          "It streams lines to the terminal. It does not copy the file aside."
+        ],
+        "variants": [
+          "It follows the log only while the writer is a foreground job of the same shell.",
+          "`-f` attaches a debugger to the process that has the file open.",
+          "The command copies the whole file to your home directory and then exits."
+        ]
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• `tail` shows the end of the file. `-f` keeps the command running and prints lines as they are appended, which is how you watch a live log.\n\nWhy other options are incorrect:\n• A describes `head`.\n• C deletes or rotates the file. `tail` does not write it.\n• D requires a foreground writer, a debugger, or a copy."
+  },
+  {
+    "id": 272,
+    "category": "Command Line",
+    "question": "Which TWO statements distinguish `df` from `du`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`df` reports used and free space on mounted filesystems.",
+          "`df -h` shows how full each mount is, in human-readable sizes.",
+          "`df` answers 'how much space is left on this disk?', not 'how big is this folder?'."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A directory total is `du`. `df` looks at filesystems.",
+          "`df` does not walk one folder to add up file sizes.",
+          "Summarising a tree is `du -s` or `du -h`."
+        ],
+        "variants": [
+          "`df src` sums the size of the files under `src` and ignores other mounts.",
+          "`df` is the command that prints the size of one directory tree.",
+          "`df -s` is how you see which subdirectory is using the space."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`du` estimates the space used by a file or a directory tree.",
+          "`du -sh logs` prints one total for that directory.",
+          "`du` walks the files you name. It does not list free space on the disk."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Mounts and free space are `df`.",
+          "`du` does not report filesystem free space.",
+          "They answer different questions: tree usage versus filesystem capacity."
+        ],
+        "variants": [
+          "`du` shows which device is mounted on `/` and how much of that device is free.",
+          "`du -h` is the free-space report for every filesystem.",
+          "`du` and `df` print the same table. The shorter name is the only difference."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `df` reports capacity and free space of mounted filesystems.\n• `du` adds up the space used by the files and directories you point it at.\n\nWhy other options are incorrect:\n• B asks `df` for a directory total.\n• D asks `du` for the mount table."
+  },
+  {
+    "id": 273,
+    "category": "Command Line",
+    "question": "Which TWO statements describe `kill` and `kill -9`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`kill` with no signal sends SIGTERM (15). A process can catch that signal and shut down cleanly.",
+          "The default signal is SIGTERM, which asks the process to exit and gives it a chance to handle the signal.",
+          "`kill 1234` is a termination request. The process may catch it, flush work, and then exit."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "`kill` signals a process id. It does not delete a file.",
+          "There is no file removed by the default `kill`.",
+          "The default signal is SIGTERM, not SIGHUP. SIGHUP is signal 1."
+        ],
+        "variants": [
+          "`kill 1234` deletes the file whose inode is 1234.",
+          "`kill` with no signal removes the process name from disk.",
+          "The default `kill` sends SIGHUP, which only tells a daemon to reload its configuration."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`kill -9` sends SIGKILL. The process cannot catch or ignore it, and the kernel stops it.",
+          "Signal 9 does not give the process a cleanup handler. Use it when SIGTERM did not work.",
+          "`kill -9 1234` is a forced stop. Open files and in-memory work are not flushed by the process."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "SIGKILL cannot be caught or ignored.",
+          "A process never runs a handler for signal 9.",
+          "Reload is typically SIGHUP, and the process keeps running. SIGKILL does not."
+        ],
+        "variants": [
+          "`kill -9` is a polite request, and the process may ignore it the same way it ignores SIGTERM.",
+          "Signal 9 can be caught, so a Java process can shut its thread pools down before exiting.",
+          "`kill -9` reloads the process configuration and leaves the process running."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Plain `kill` sends SIGTERM. The process can catch it and exit in an orderly way.\n• `kill -9` sends SIGKILL. The kernel stops the process, and the process cannot handle that signal.\n\nWhy other options are incorrect:\n• B deletes a file or sends SIGHUP. The default is SIGTERM to a pid.\n• D says SIGKILL can be caught. It cannot."
+  },
+  {
+    "id": 274,
+    "category": "Command Line",
+    "question": "Which TWO statements describe `ln -s target link`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "It creates a symbolic link. The new name stores a path that points at `target`.",
+          "`ln -s` makes a symlink. Opening the link follows the stored path.",
+          "The link is a small file that contains the target path, not a second copy of the target's bytes."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A symlink stores a path. `cp` is what copies bytes.",
+          "Writing through a symlink writes the target, unless the link is broken.",
+          "`-s` means symbolic. It is not a content snapshot."
+        ],
+        "variants": [
+          "`ln -s` copies the target's bytes into a new regular file called `link`.",
+          "A symlink is a full copy, so editing the link does not change the target.",
+          "`-s` means a snapshot of the file contents at the moment you run `ln`."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "If you delete the target, the symlink remains and becomes dangling. The next open fails because the path no longer resolves.",
+          "Removing the target does not remove the link name. The link still points at the missing path.",
+          "A symlink can outlive its target. That is different from a hard link, which shares the inode."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "A hard link is `ln` without `-s`. It shares an inode.",
+          "The symlink and the target are different directory entries. Deleting the target leaves the link behind.",
+          "Symlinks can point across filesystems. Hard links generally cannot."
+        ],
+        "variants": [
+          "`ln -s` creates a hard link, so both names share an inode and the data stays until every name is removed.",
+          "Deleting either name always deletes the data, because a symlink and its target are the same directory entry.",
+          "A symbolic link cannot cross filesystems, and `ln -s /tmp/a ./a` fails for that reason."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `ln -s` creates a symbolic link that stores a path to the target.\n• If the target is removed, the link name remains and the path dangles.\n\nWhy other options are incorrect:\n• B describes a copy.\n• D describes a hard link. Hard links share an inode and normally stay on one filesystem."
+  },
+  {
+    "id": 275,
+    "category": "Command Line",
+    "question": "Which TWO statements distinguish `chmod` from `chown`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`chmod` changes permission bits: who can read, write, or execute the file.",
+          "`chmod 644 notes.txt` changes the mode. It does not change which account owns the file.",
+          "The mode string `u+x` is a `chmod` change. It adds execute for the owner."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Changing the owner is `chown`.",
+          "`chmod` does not transfer ownership.",
+          "The `user:group` form belongs to `chown`."
+        ],
+        "variants": [
+          "`chmod alice file` makes alice the owner of the file.",
+          "`chmod` is how you give a file to another user and another group.",
+          "`chmod user:staff file` sets the owner and the group."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`chown alice file` changes the owner. `chown alice:staff file` changes the owner and the group.",
+          "`chown` updates ownership metadata. It does not set the `rwx` bits.",
+          "Giving a directory to another account is `chown`, often with `-R` for the tree."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "A numeric mode is `chmod`. `chown` expects an owner or `owner:group`.",
+          "`u+x` is symbolic mode for `chmod`.",
+          "The two commands are not aliases."
+        ],
+        "variants": [
+          "`chown 644 file` sets the same permission bits as `chmod 644 file`.",
+          "`chown u+x file` adds the execute bit for the owner.",
+          "`chown` and `chmod` are aliases. Both accept a numeric mode and an owner name."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `chmod` changes the permission bits.\n• `chown` changes the owner, and `chown user:group` also changes the group.\n\nWhy other options are incorrect:\n• B uses `chmod` to change ownership.\n• D uses `chown` as a numeric mode."
+  },
+  {
+    "id": 276,
+    "category": "Command Line",
+    "question": "Which TWO statements describe `&&`, `||`, and `;` between commands?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`cmd1 && cmd2` runs `cmd2` only when `cmd1` exits 0.",
+          "With `&&`, a failing command stops the rest of that chain.",
+          "`mkdir build && cd build` changes directory only if `mkdir` succeeded."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "`&&` is sequential and conditional. It is not parallel.",
+          "The second command is skipped when the first exits non-zero.",
+          "Running the next command on failure is `||`, not `&&`."
+        ],
+        "variants": [
+          "`&&` runs both commands in parallel and waits for the slower one.",
+          "`cmd1 && cmd2` always runs `cmd2`, then reports the exit code of `cmd1`.",
+          "`&&` runs `cmd2` only when `cmd1` fails."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`cmd1 || cmd2` runs `cmd2` only when `cmd1` exits non-zero.",
+          "`||` is the failure path. A successful `cmd1` skips `cmd2`.",
+          "`test -f config || cp config.example config` copies the example only when `config` is missing."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`;` always runs the next command, success or failure.",
+          "A zero exit is the condition for `&&`, not for `;`.",
+          "`;` does not look at the exit code. `&&` does."
+        ],
+        "variants": [
+          "`;` stops the second command when the first one fails.",
+          "`cmd1 ; cmd2` runs `cmd2` only after a zero exit from `cmd1`.",
+          "A semicolon is the same control flow as `&&`."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `&&` runs the next command only after a zero exit.\n• `||` runs the next command only after a non-zero exit.\n\nWhy other options are incorrect:\n• B runs the commands in parallel or on the wrong condition.\n• D gives `;` the condition of `&&`. A semicolon runs the next command either way."
+  },
+  {
+    "id": 277,
+    "category": "Command Line",
+    "question": "Which TWO statements describe `git add` and `git commit`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`git add` copies the selected changes into the index. Those changes are staged, and they are not a commit yet.",
+          "`git add -p` lets you stage part of a file. The rest stays unstaged in the working tree.",
+          "After `git add`, `git status` shows the change under 'Changes to be committed'."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Publishing a branch is `git push`.",
+          "`git add` only stages. Commit and push are separate commands.",
+          "`git add` does not talk to GitHub."
+        ],
+        "variants": [
+          "`git add` publishes the branch to the remote named `origin`.",
+          "`git add .` creates a commit and pushes it.",
+          "`git add` sends the files to GitHub and updates the pull request."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`git commit` records a new commit from what is in the index. Edits you have not staged stay in the working tree.",
+          "A commit after a partial `git add` includes only the staged hunks.",
+          "`git commit -m 'fix'` writes the commit on your local repository."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "The commit is local. The remote update is `git push`.",
+          "You can commit with no upstream. Push is what needs the remote branch.",
+          "Untracked files are not in the commit unless you stage them."
+        ],
+        "variants": [
+          "`git commit` uploads the commit to `origin` and needs a network connection.",
+          "`git commit` fails unless the current branch has an upstream.",
+          "A commit includes every untracked file in the working tree, staged or not."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `git add` stages changes in the index. It does not create a commit and it does not push.\n• `git commit` records the staged snapshot locally. Unstaged and untracked changes stay out of that commit.\n\nWhy other options are incorrect:\n• B treats `git add` as a push.\n• D treats `git commit` as a push and includes untracked files automatically."
+  },
+  {
+    "id": 278,
+    "category": "Command Line",
+    "question": "Which TWO statements distinguish `git commit` from `git push`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`git commit` writes a commit object in your local repository and moves your current branch to it.",
+          "A commit is local history. Other clones do not see it until something sends it to them.",
+          "`git commit` works with no network, as long as the local repository is writable."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Teammates see the commit after it is pushed and they fetch it.",
+          "The commit object, including the message, is written locally first.",
+          "Commit does not need the remote to be reachable."
+        ],
+        "variants": [
+          "`git commit` creates the commit on the remote and updates every teammate's branch immediately.",
+          "The commit message is stored only on the server. Your laptop keeps the files.",
+          "`git commit` is rejected when you are offline."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`git push` sends commits that your local branch has, and that the remote does not, to the remote repository.",
+          "`git push -u origin feature` publishes `feature` and sets it to track `origin/feature`.",
+          "Push updates the remote branch. It does not create the commit message."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "The message is written by `git commit`. Push sends commits that already exist.",
+          "Push does not run `git add` or `git commit` for you.",
+          "Making the local branch match the remote and dropping local commits is `git reset`, not push. A rejected non-fast-forward push leaves your commits in place."
+        ],
+        "variants": [
+          "`git push` opens an editor for the commit message and then commits whatever is staged.",
+          "`git push` stages every local change and commits it before sending.",
+          "Push rewrites your working tree to match `origin` and drops local commits."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `git commit` records history in the local repository.\n• `git push` sends commits you already have to a remote. It does not write the commit message.\n\nWhy other options are incorrect:\n• B says the commit is created on the server.\n• D makes `git push` stage, commit, or throw away local commits."
+  },
+  {
+    "id": 279,
+    "category": "Command Line",
+    "question": "Which TWO statements distinguish `git fetch` from `git pull`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`git fetch` downloads new commits and updates remote-tracking branches such as `origin/main`. Your current branch stays where it is.",
+          "After a fetch you can inspect `origin/main` and diff it against your branch before you integrate.",
+          "Fetch does not merge and does not rebase. It only brings remote state into the remote-tracking refs."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Fetch does not merge into the current branch.",
+          "Moving your branch and discarding commits is a reset, not a fetch.",
+          "Fetch updates remote-tracking refs. It does not require a clean tree and it does not rewrite your files."
+        ],
+        "variants": [
+          "`git fetch` merges `origin/main` into the branch you have checked out.",
+          "Fetch moves your local `main` to the same commit as `origin/main` and discards local commits.",
+          "`git fetch` is refused unless your working tree is clean, because it rewrites your files."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`git pull` fetches and then integrates those commits into the current branch, by merge or by rebase if you configured pull to rebase.",
+          "A pull can change your current branch and your working tree. A fetch alone does not.",
+          "`git pull origin main` brings remote commits in and then joins them with the branch you have checked out."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "That is fetch. Pull also integrates into the current branch.",
+          "Pull includes the integration step. Fetch is the download alone.",
+          "Pull does not delete `origin/main`."
+        ],
+        "variants": [
+          "`git pull` only updates `origin/main` and never changes the branch you are on.",
+          "Pull downloads objects and leaves integration for a later `git merge` that you must run yourself.",
+          "`git pull` deletes the remote-tracking branch after a successful download."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `git fetch` updates remote-tracking branches and leaves your current branch alone.\n• `git pull` fetches and then merges, or rebases if that is how pull is configured.\n\nWhy other options are incorrect:\n• B says fetch merges or resets your branch.\n• D says pull stops after the download. The integration is the rest of pull."
+  },
+  {
+    "id": 280,
+    "category": "Command Line",
+    "question": "Which TWO statements distinguish `git merge` from `git rebase`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "When two branches have diverged, `git merge` joins them and can record a merge commit with both parents.",
+          "Merge keeps the existing commits on both sides and adds a commit that ties the histories together.",
+          "`git merge feature` from `main` does not rewrite the commits that are already on `main` or on `feature`."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Merge does not delete the other branch.",
+          "A merge commit is new. The commits being joined keep their hashes.",
+          "Merge exists specifically to join diverged histories."
+        ],
+        "variants": [
+          "`git merge feature` deletes the `feature` branch and throws away its commits after copying the files.",
+          "A merge always rewrites every commit hash on the branch you have checked out.",
+          "Merge refuses to run if the branches diverged, and rebase is the only command that can join them."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`git rebase main` replays your branch's commits on top of `main`, and those replayed commits get new hashes.",
+          "Rebase rewrites the commits that are moved. Teammates who already pulled the old hashes will not see a fast-forward.",
+          "After a rebase, your branch looks as if you started the work from the new tip of `main`."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Replayed commits have new hashes. A merge commit is what merge adds.",
+          "Rebasing published commits forces other people to reconcile the rewritten history.",
+          "Rebase does not delete the branch you rebase onto."
+        ],
+        "variants": [
+          "`git rebase` never changes a commit hash. It only adds a merge commit.",
+          "Rebase is safe to use on commits that other people have already based work on, because their history stays put.",
+          "`git rebase main` deletes `main` after moving your commits."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `git merge` joins two lines of history and can create a merge commit. Existing commits keep their hashes.\n• `git rebase` replays your commits onto a new base, which writes new commit hashes.\n\nWhy other options are incorrect:\n• B says merge deletes the other branch or rewrites hashes.\n• D says rebase keeps hashes and is always safe for commits other people have pulled."
+  },
+  {
+    "id": 281,
+    "category": "Command Line",
+    "question": "Which TWO statements distinguish `git revert` from `git reset --hard`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`git revert` adds a new commit that undoes an earlier commit. History that was already pushed can stay in place.",
+          "Revert does not remove the old commit. The undo is a later commit, so other clones can pull it.",
+          "`git revert HEAD` is the usual way to undo a commit on a branch other people are using."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "The old commit stays. A new commit applies the inverse.",
+          "Revert does not rewrite existing hashes.",
+          "Revert is useful precisely because the commit may already be on the remote."
+        ],
+        "variants": [
+          "`git revert` deletes the old commit from history and leaves no record of it.",
+          "Revert rewrites the branch so the bad commit hash never existed.",
+          "`git revert` can only undo a commit that has never been pushed."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`git reset --hard HEAD~1` moves the branch back and throws away the commit and the working-tree changes after that point.",
+          "`--hard` makes the index and the working tree match the commit you reset to. Uncommitted work in tracked files is discarded.",
+          "Reset rewrites the local branch pointer. Using it to remove a commit you already pushed means the next push is not a fast-forward."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "The safe shared undo is revert. Hard reset removes commits locally.",
+          "`--hard` discards uncommitted changes in tracked files. `--soft` and `--mixed` keep more of them.",
+          "Reset does not push, and it does not create a revert commit."
+        ],
+        "variants": [
+          "`git reset --hard` is the safe undo for a commit that teammates have already pulled, because it only adds a new commit.",
+          "`--hard` keeps your uncommitted edits and only moves the branch pointer.",
+          "`git reset --hard origin/main` publishes a revert commit to the remote."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `git revert` adds a new commit that undoes an older one, so pushed history can stay.\n• `git reset --hard` moves the branch and discards the later commits and the tracked working-tree changes. That rewrites local history.\n\nWhy other options are incorrect:\n• B says revert erases the old commit.\n• D treats a hard reset as a safe shared undo. It is not."
+  },
+  {
+    "id": 282,
+    "category": "Command Line",
+    "question": "Which TWO statements describe `git branch` and `git switch`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`git branch feature` creates a branch pointer at the current commit. HEAD stays on the branch you were already on.",
+          "Creating a branch does not check it out. `git status` still shows the old branch until you switch.",
+          "`git branch` with a name writes a ref. It does not commit, and it does not move HEAD."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "`git branch` does not commit or push.",
+          "It does not delete the branch you are on.",
+          "Checkout is a separate step. Nothing is merged."
+        ],
+        "variants": [
+          "`git branch feature` commits every local change onto `feature` and pushes that branch.",
+          "`git branch feature` deletes the current branch and renames HEAD to `feature`.",
+          "Creating a branch checks it out and merges `main` into it."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`git switch feature` moves HEAD to that branch. `git checkout feature` does the same move.",
+          "After `git switch feature`, new commits land on `feature`.",
+          "`git switch -c feature` creates the branch and checks it out in one step."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "The previous branch remains. You only moved HEAD.",
+          "`--hard` is not required to switch, and switching does not delete the other branch's commits.",
+          "Publishing the branch is `git push`."
+        ],
+        "variants": [
+          "`git switch feature` deletes the branch you left.",
+          "`git switch` refuses to change branches unless you pass `--hard`, and then it discards the other branch's commits.",
+          "Switch publishes `feature` to `origin` and sets the upstream."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `git branch feature` creates the ref and leaves you on the current branch.\n• `git switch feature` (or `git checkout feature`) moves HEAD there. `git switch -c` creates and switches in one command.\n\nWhy other options are incorrect:\n• B says creating a branch commits, pushes, or deletes the old branch.\n• D says switching deletes the old branch or pushes the new one."
+  },
+  {
+    "id": 283,
+    "category": "Command Line",
+    "question": "What does `git stash` do?",
+    "options": [
+      {
+        "id": "A",
+        "reasons": [
+          "Stash does not commit and does not push.",
+          "A stash is local. It is not a branch other people fetch.",
+          "The changes leave the working tree without a commit on your branch."
+        ],
+        "variants": [
+          "`git stash` commits the staged files and pushes that commit to `origin`.",
+          "Stash publishes a temporary branch that teammates can pull.",
+          "`git stash` creates a commit on the current branch with the message `WIP`."
+        ]
+      },
+      {
+        "id": "B",
+        "variants": [
+          "`git stash` sets aside uncommitted changes and restores a clean working tree for those tracked files. `git stash pop` brings the latest stash back.",
+          "Stash saves the dirty tracked work on a stack so you can switch branches, then reapply it later.",
+          "By default tracked modifications are stashed. `git stash -u` also includes untracked files."
+        ]
+      },
+      {
+        "id": "C",
+        "reasons": [
+          "`git stash pop` or `git stash apply` restores the saved changes.",
+          "`pop` applies the stash onto the working tree and then drops that stash entry.",
+          "Stash does not rewrite existing commits."
+        ],
+        "variants": [
+          "`git stash` permanently deletes uncommitted work. There is no way to get it back.",
+          "`git stash pop` deletes the stash entry and does not touch the working tree.",
+          "Stash clears the repository history and leaves one empty commit."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Stash is for uncommitted local changes, not for remote commits.",
+          "It does not take commits that are already pushed.",
+          "Fetch downloads remote objects. Stash shelves local edits."
+        ],
+        "variants": [
+          "`git stash` only works on commits that are already on the remote.",
+          "Stash saves pushed commits so you can `git pull` without a merge.",
+          "`git stash` is another name for `git fetch`."
+        ]
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• `git stash` shelves uncommitted tracked changes and gives you a clean tree for those files. `git stash pop` applies the latest stash again. `git stash -u` also takes untracked files.\n\nWhy other options are incorrect:\n• A commits and pushes.\n• C deletes the work with no restore.\n• D stashes remote commits. Stash is for local uncommitted work."
+  },
+  {
+    "id": 284,
+    "category": "Command Line",
+    "question": "Which TWO statements distinguish `git diff` from `git diff --staged`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`git diff` shows unstaged changes: the working tree compared with the index.",
+          "If you edited a file and have not run `git add` since, `git diff` shows that edit.",
+          "`git diff` does not show the snapshot that is already staged."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "The comparison against the remote-tracking branch is `git diff origin/main` or similar, not plain `git diff`.",
+          "Unpushed commits are `git log origin/main..HEAD`, not `git diff`.",
+          "`git diff` shows a patch, not the HEAD message."
+        ],
+        "variants": [
+          "`git diff` compares your branch with `origin` and ignores local unstaged edits.",
+          "`git diff` lists only commits that have not been pushed.",
+          "`git diff` prints the commit message of HEAD."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`git diff --staged` shows the index compared with HEAD: what the next commit would record.",
+          "`git diff --cached` is the same comparison as `git diff --staged`.",
+          "After `git add`, the staged patch shows up in `git diff --staged` and drops out of a plain `git diff`."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Untracked files are listed by `git status`. They are not in `git diff --staged`.",
+          "The command compares the index with HEAD, not with every remote.",
+          "Unstaged edits are plain `git diff`. `--staged` is the index."
+        ],
+        "variants": [
+          "`git diff --staged` lists untracked files that have never been added.",
+          "`--staged` shows the difference between your branch and every remote.",
+          "`git diff --staged` includes unstaged edits and hides the index."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `git diff` is the working tree versus the index: unstaged edits.\n• `git diff --staged` (also `--cached`) is the index versus HEAD: what is ready to commit.\n\nWhy other options are incorrect:\n• B makes plain `git diff` a remote comparison.\n• D says `--staged` lists untracked files or unstaged edits."
+  },
+  {
+    "id": 285,
+    "category": "Command Line",
+    "question": "Which TWO statements describe `git clone`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`git clone url` copies the repository, checks out the default branch, and names that url `origin`.",
+          "Clone brings the commit history, not an empty project. You can `git log` immediately after.",
+          "The new directory contains a working tree and a `.git` directory pointed at the remote you cloned."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "An empty repo is `git init`. Clone copies an existing repository.",
+          "The history comes with the clone.",
+          "`git init` starts a new repo. Clone downloads one."
+        ],
+        "variants": [
+          "`git clone` creates an empty repository with no commits and no remote.",
+          "Clone copies only the latest files and throws away the history.",
+          "`git clone` is the same command as `git init`."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "After a clone, `git remote -v` shows fetch and push urls for `origin`.",
+          "The remote is configured for you. You do not run `git remote add origin` after a normal clone.",
+          "`origin` is the conventional name of the remote that clone just set."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Clone downloads. It does not commit your current directory.",
+          "You clone into a new directory, or into an empty one. It is not a way to replace a repo you are already in.",
+          "The remote repository is left in place."
+        ],
+        "variants": [
+          "`git clone` commits whatever is in the current directory and pushes it to the url.",
+          "Clone requires a clean existing repo in the current folder and then overwrites `.git`.",
+          "`git clone url` deletes the remote repository after the copy finishes."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `git clone` copies the history, checks out the default branch, and sets `origin` to that url.\n• `git remote -v` then shows the fetch and push urls for `origin`.\n\nWhy other options are incorrect:\n• B describes `git init` or a copy with no history.\n• D says clone commits local files or deletes the remote."
+  },
+  {
+    "id": 286,
+    "category": "Command Line",
+    "question": "Which TWO statements contrast Git with Subversion (SVN)?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "Git is distributed. `git commit` records the change in your local repository. A network is needed for `git push` or `git pull`, not for the commit itself.",
+          "Every Git clone has the history. You can commit, branch, and diff while the server is unreachable.",
+          "In Git, publishing a commit is a separate step from creating it."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "`git commit` is local. `svn commit` is the one that sends the change to the central repository.",
+          "A clone contains the commit history.",
+          "Git does not ask a central server for a revision number at commit time."
+        ],
+        "variants": [
+          "`git commit` writes straight to the central server, the same way `svn commit` does.",
+          "Git has no local history. The `.git` directory stores only the files you have not pushed.",
+          "A Git commit fails when the central server is down, because that server assigns the revision number."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "SVN is centralized. `svn commit` sends the change to the central repository. You need that server to make the commit.",
+          "An SVN working copy does not contain the full history the way a Git clone does.",
+          "In SVN, the committed revision lives on the server. Teammates update from that server."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "That reverses the two tools. Git clones carry history. A typical SVN working copy does not.",
+          "Git branches are cheap local refs. SVN branches are directories in the central tree.",
+          "The commit direction is the other way around."
+        ],
+        "variants": [
+          "SVN keeps a full copy of the history on every developer machine, and Git stores history on only one server.",
+          "SVN branches are the cheap local pointers, and Git branches are expensive server-side copies.",
+          "`svn commit` only updates your laptop, and `git commit` always updates the central repository."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Git is distributed: `git commit` is local, and `git push` publishes it.\n• SVN is centralized: `svn commit` goes to the central server, and that server has to be reachable.\n\nWhy other options are incorrect:\n• B gives Git a central commit.\n• D swaps which tool keeps history on every machine."
+  },
+  {
+    "id": 287,
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements describe `kubectl get` and `kubectl describe` for a pod?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`kubectl get pods` lists pods with a short status. `-o wide` adds the node and the pod IP.",
+          "`kubectl get pod my-pod -o yaml` prints the object. It is still a listing, not the event history.",
+          "`get` is the quick table or the object document. It does not print why a schedule failed."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Logs are `kubectl logs`.",
+          "A shell is `kubectl exec`.",
+          "Applying files is `kubectl apply -f`."
+        ],
+        "variants": [
+          "`kubectl get pods` prints the logs of every container.",
+          "`kubectl get` opens a shell in the first pod.",
+          "`get` applies the manifests in the current directory."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`kubectl describe pod my-pod` shows the spec plus recent events, which is where a Pending or crashing pod explains itself.",
+          "Describe includes events such as a failed pull or a container that was killed.",
+          "When `get` says CrashLoopBackOff, `describe` is the next command for the reason."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Describe adds status details and events. It is not a wider `get` table.",
+          "Streaming logs is `kubectl logs -f`.",
+          "Describe does not delete the pod."
+        ],
+        "variants": [
+          "`kubectl describe` is only a wider table with the same columns as `kubectl get -o wide`.",
+          "Describe follows the logs and streams them until you press Ctrl-C.",
+          "`kubectl describe pod` deletes the pod after printing it."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `kubectl get` lists objects or prints one object. `-o wide` adds node and IP.\n• `kubectl describe` adds the recent events, which is how you see why a pod is Pending or restarting.\n\nWhy other options are incorrect:\n• B assigns logs, a shell, or apply to `get`.\n• D reduces describe to a wide table, a log follow, or a delete."
+  },
+  {
+    "id": 288,
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements describe `kubectl logs`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`kubectl logs my-pod` prints stdout and stderr from a container. `-f` keeps streaming new lines.",
+          "`kubectl logs -f deploy/api` follows logs from a pod of that Deployment.",
+          "`-f` on `kubectl logs` is the follow flag, the same idea as `tail -f`."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "The command fetches container output from the cluster.",
+          "YAML is `kubectl get pod my-pod -o yaml`.",
+          "Describe shows events. Logs show the container's stdout and stderr."
+        ],
+        "variants": [
+          "`kubectl logs` reads a file you name on your laptop and never contacts the cluster.",
+          "`kubectl logs my-pod` prints the YAML of the pod.",
+          "Logs are stored only in `kubectl describe`, and the `logs` command opens a shell."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`kubectl logs my-pod --previous` prints the output of the container instance that just crashed, after Kubernetes restarted it.",
+          "When a container restarts, `--previous` is how you see the logs from before the restart.",
+          "`--previous` does not follow the new process. It shows the terminated one's logs."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`--previous` reads logs. It does not delete the pod.",
+          "A rollout undo is `kubectl rollout undo`.",
+          "`-f` follows. It does not mean first, and it does not exit after ten lines."
+        ],
+        "variants": [
+          "`--previous` deletes the pod and starts a new one so the logs are empty.",
+          "`kubectl logs --previous` rolls the Deployment back to the older ReplicaSet.",
+          "`-f` means the first container only, and it prints ten lines and exits."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `kubectl logs` prints a container's stdout and stderr. `-f` follows new lines.\n• `--previous` shows the logs from the container instance that already exited, which you need after a crash restart.\n\nWhy other options are incorrect:\n• B reads a local file or prints YAML.\n• D says `--previous` deletes the pod or rolls back a Deployment."
+  },
+  {
+    "id": 289,
+    "category": "Docker & Kubernetes",
+    "question": "What does `kubectl exec -it my-pod -- bash` do?",
+    "options": [
+      {
+        "id": "A",
+        "reasons": [
+          "`exec` does not build an image or roll a Deployment.",
+          "There is no image build. `bash` is the process to start in the container.",
+          "Applying a file is `kubectl apply -f`."
+        ],
+        "variants": [
+          "It rebuilds the image of `my-pod` and restarts the Deployment.",
+          "`exec` runs `docker build` on the node and tags the result `bash`.",
+          "The command applies a file named `bash` to the cluster."
+        ]
+      },
+      {
+        "id": "B",
+        "variants": [
+          "It starts an interactive `bash` in a running container of `my-pod`. Commands you type run inside that container.",
+          "`-it` allocates a terminal and keeps stdin open, so the shell is usable.",
+          "The `--` separates kubectl's own flags from the command that runs in the container."
+        ]
+      },
+      {
+        "id": "C",
+        "reasons": [
+          "The process runs in the container, on the cluster.",
+          "Exec does not download the filesystem or stop the pod.",
+          "Your local shell is only the terminal. The `bash` process is remote."
+        ],
+        "variants": [
+          "It copies `my-pod` to your laptop and runs `bash` on the copy.",
+          "`kubectl exec` downloads the container's filesystem and leaves the pod stopped.",
+          "The shell runs on your machine with the pod's environment variables exported into it."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`--` is the separator before the remote command. It does not delete anything.",
+          "`-it` attaches a terminal. It does not recreate the pod.",
+          "Exec needs a running container. A succeeded or pending pod has nothing to attach to."
+        ],
+        "variants": [
+          "The `--` deletes the pod when `bash` exits.",
+          "`-it` means the pod is recreated from scratch before the shell starts.",
+          "`kubectl exec` without a running container still works, because it starts the pod in the Completed phase."
+        ]
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• `kubectl exec -it my-pod -- bash` runs an interactive shell inside a running container. `-it` attaches your terminal, and `--` marks the start of the remote command.\n\nWhy other options are incorrect:\n• A rebuilds an image.\n• C runs the shell on your laptop.\n• D says `--` or `-it` deletes or recreates the pod."
+  },
+  {
+    "id": 290,
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements distinguish `kubectl apply -f` from `kubectl create -f`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`kubectl apply -f app.yaml` creates the objects or updates them so the cluster matches the file. Running it again is how you ship a change.",
+          "Apply is declarative. A second apply of an edited Deployment updates the live object.",
+          "`kubectl apply` records the applied configuration and can patch an object that is already there."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Apply updates the existing object. It does not delete and recreate it on every run.",
+          "Apply does not scale to zero as part of reading the file.",
+          "Updating an existing object is what apply is for."
+        ],
+        "variants": [
+          "`kubectl apply -f` deletes every object in the file and creates a new one, so a pod's name changes on every run.",
+          "Apply always scales the workload to zero before it reads the file.",
+          "`kubectl apply` refuses to change an existing object. You must delete it first."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`kubectl create -f app.yaml` creates the objects. A second run fails if those objects already exist.",
+          "Create is for a resource that is not there yet. It is not the command you repeat to edit a live Deployment.",
+          "`AlreadyExists` on a second `kubectl create -f` is expected. Apply would have updated the object."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Repeating create against an existing object fails. CI that reapplies a file uses apply.",
+          "They are not aliases. Create will not update an existing object.",
+          "Create does not delete the namespace."
+        ],
+        "variants": [
+          "`kubectl create -f` updates a live object in place and is the command CI should run on every deploy.",
+          "Create and apply are aliases when `-f` is present.",
+          "`kubectl create -f` deletes the namespace and then creates the objects."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `kubectl apply -f` creates or updates objects to match the file, so you can run it again when the file changes.\n• `kubectl create -f` creates objects and fails if they already exist.\n\nWhy other options are incorrect:\n• B says apply deletes and recreates on every run.\n• D says create updates a live object and can be repeated in CI."
+  },
+  {
+    "id": 291,
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements describe `kubectl get pods -n` and `-A`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`kubectl get pods -n payments` lists pods in the `payments` namespace only.",
+          "`-n` selects the namespace. It is not the pod's name.",
+          "A namespaced `get` hides pods that sit in other namespaces."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A pod name is a positional argument, as in `kubectl get pod api`. `-n` is the namespace.",
+          "Nodes are `kubectl get nodes`.",
+          "Following logs is `kubectl logs -f`."
+        ],
+        "variants": [
+          "`-n payments` filters to a pod whose name is `payments`.",
+          "`kubectl get pods -n` lists nodes, because `-n` means nodes.",
+          "`-n` follows logs for that namespace."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`kubectl get pods -A` lists pods in every namespace.",
+          "`-A` is all namespaces. The namespace column appears so you can see where each pod sits.",
+          "`kubectl get pods --all-namespaces` is the same listing as `-A`."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`kube-system` is one namespace. `-A` includes the others too.",
+          "`get pods` does not list Deployments and Services.",
+          "`-A` is a listing flag. It does not delete."
+        ],
+        "variants": [
+          "`-A` shows only the `kube-system` namespace.",
+          "`kubectl get pods -A` lists Deployments, Services, and pods in the default namespace.",
+          "`-A` deletes every pod in the current namespace."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `-n payments` limits `kubectl get pods` to that namespace.\n• `-A` lists pods in all namespaces. `--all-namespaces` is the same flag.\n\nWhy other options are incorrect:\n• B treats `-n` as a pod name, a node list, or a log follow.\n• D limits `-A` to `kube-system` or turns it into a delete."
+  },
+  {
+    "id": 292,
+    "category": "Docker & Kubernetes",
+    "question": "What does `kubectl port-forward pod/my-pod 8080:80` do?",
+    "options": [
+      {
+        "id": "A",
+        "reasons": [
+          "The forward lasts while the command runs. It is not a node firewall rule.",
+          "A LoadBalancer is a Service type. Port-forward does not create one.",
+          "The pod spec is unchanged."
+        ],
+        "variants": [
+          "It opens port 8080 on every node and leaves that rule in place after the command exits.",
+          "`port-forward` creates a LoadBalancer Service on port 8080.",
+          "The command changes the container's `containerPort` in the pod spec to 8080."
+        ]
+      },
+      {
+        "id": "B",
+        "variants": [
+          "It listens on port 8080 on your machine and forwards that traffic to port 80 in the pod, for as long as the command runs.",
+          "The left port is local. The right port is the port inside the pod.",
+          "`kubectl port-forward` is a temporary tunnel. Stopping the command closes it."
+        ]
+      },
+      {
+        "id": "C",
+        "reasons": [
+          "The order is local port, then pod port. 8080 is on your machine and 80 is in the pod.",
+          "Nothing is published on the cluster for other clients.",
+          "The direction is from your machine into the pod, not the other way around."
+        ],
+        "variants": [
+          "`8080:80` means port 8080 in the container and port 80 on your laptop.",
+          "The same numbers publish a Docker-style host port permanently in the cluster.",
+          "Traffic to the pod's port 8080 is sent to your laptop's port 80."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "The pod keeps running on the cluster. Your machine only holds the tunnel.",
+          "There is no shell. Exec is a different command.",
+          "The pod is not restarted and no environment variable is set."
+        ],
+        "variants": [
+          "The command copies the pod to your laptop and runs it locally on port 8080.",
+          "`port-forward` execs `bash` and binds port 80 in that shell.",
+          "It restarts the pod and sets an environment variable named `8080`."
+        ]
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• `kubectl port-forward pod/my-pod 8080:80` opens local port 8080 and forwards it to port 80 in the pod. The tunnel lasts while the command is running.\n\nWhy other options are incorrect:\n• A opens a permanent port on every node or edits the pod.\n• C swaps the local port and the pod port.\n• D copies the pod locally or starts a shell."
+  },
+  {
+    "id": 293,
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements describe `docker build -t app:1.0 .`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "It builds an image from the Dockerfile in the build context and names that image `app` with the tag `1.0`.",
+          "`-t app:1.0` sets the repository name and the tag. Without a tag, Docker uses `latest`.",
+          "The command does not push the image. A later `docker push` would send it to a registry."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "An interactive terminal is `docker run -it`. `-t` on build is the tag.",
+          "Build does not switch into a test runner because of `-t`.",
+          "Tagging does not delete an older image as a first step. A reused tag moves the name when the build finishes."
+        ],
+        "variants": [
+          "`-t` starts a container with an interactive terminal after the build.",
+          "`docker build -t` means 'test' and runs the image's tests instead of building.",
+          "The `-t` flag deletes the previous image named `app` before reading the Dockerfile."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "The `.` is the build context: that directory is sent to the daemon. Files excluded by `.dockerignore` are left out.",
+          "The context is why a huge directory makes the build start slowly. The daemon receives the files that are not ignored.",
+          "`docker build -t app:1.0 .` uses a Dockerfile in that context unless you point somewhere else with `-f`."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`.` is the current directory used as the context. It is not a pull from Docker Hub.",
+          "`COPY` and `ADD` use files from the context, so those files are sent.",
+          "The context is a directory on the client side, not a running container."
+        ],
+        "variants": [
+          "The `.` means there is no context, and the Dockerfile is pulled from Docker Hub.",
+          "`docker build` reads only the Dockerfile. The rest of the directory is never sent.",
+          "The context is the running container's filesystem, so the command requires a container named `.`."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `-t app:1.0` names the image. The build does not push it.\n• `.` is the build context sent to the daemon. `.dockerignore` keeps files out of that context.\n\nWhy other options are incorrect:\n• B treats `-t` as an interactive run.\n• D says there is no context or that the context is a container."
+  },
+  {
+    "id": 294,
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements describe `docker run -d -p 8080:80 --name web app:1.0`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`-d` starts the container in the background and prints the container id. Your shell prompt comes back.",
+          "Detached mode keeps the container running after `docker run` returns.",
+          "`-d` does not delete the image when the container exits."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Detached is not a delete. Removing an image is `docker rmi`.",
+          "Foreground is the default. `-d` detaches.",
+          "Building is `docker build`. This command runs an image that already exists."
+        ],
+        "variants": [
+          "`-d` deletes the image `app:1.0` as soon as the container exits.",
+          "`-d` means the container runs in the foreground and your terminal is attached to its stdout.",
+          "`-d` builds the image before it runs, using a Dockerfile in the current directory."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`-p 8080:80` publishes container port 80 on host port 8080. The left side is the host.",
+          "Traffic to `localhost:8080` on the host is forwarded to port 80 in the container.",
+          "`--name web` names the container `web`, so later commands can use that name."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "The order is host port, then container port.",
+          "Publishing a port is `-p`. An environment variable is `-e`.",
+          "`--name` names the container. An image tag is set at build time with `-t`, or by the name you run."
+        ],
+        "variants": [
+          "`-p 8080:80` means port 8080 in the container and port 80 on the host.",
+          "`-p` sets an environment variable and does not publish a port.",
+          "`--name web` tags the image as `web:latest` and does not name the container."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `-d` runs the container in the background.\n• `-p 8080:80` maps host port 8080 to container port 80. `--name web` names the container.\n\nWhy other options are incorrect:\n• B says `-d` deletes the image, attaches the terminal, or builds.\n• D swaps the host and container ports."
+  },
+  {
+    "id": 295,
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements describe `docker ps` and `docker ps -a`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`docker ps` lists containers that are running.",
+          "A container that has exited does not appear in a plain `docker ps`.",
+          "`docker ps` is a container list, not an image list."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Images are `docker images` or `docker image ls`.",
+          "The Dockerfile is not reconstructed by `docker ps`.",
+          "Processes inside a container are `docker top` or a shell. `docker ps` lists containers."
+        ],
+        "variants": [
+          "`docker ps` lists images on the machine.",
+          "`docker ps` prints the Dockerfile instructions for every image.",
+          "`docker ps` shows running processes inside one container you already exec'd into."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`docker ps -a` also lists containers that have stopped.",
+          "`-a` means all containers, whatever their status, not all images.",
+          "A container with status Exited shows up in `docker ps -a` and not in `docker ps`."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Listing does not delete. Removing a container is `docker rm`.",
+          "`-a` does not start anything. Starting a stopped container is `docker start`.",
+          "Unused images are removed with `docker image prune` or `docker rmi`."
+        ],
+        "variants": [
+          "`docker ps -a` deletes every stopped container.",
+          "`-a` starts the containers that are stopped.",
+          "`docker ps -a` removes unused images."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `docker ps` lists running containers.\n• `docker ps -a` includes stopped containers as well.\n\nWhy other options are incorrect:\n• B lists images or in-container processes.\n• D says `-a` deletes, starts, or prunes."
+  },
+  {
+    "id": 296,
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements describe `docker stop`, `docker rm`, and `docker rmi`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`docker stop web` asks the container to shut down. It sends SIGTERM, then SIGKILL if the process does not exit. The container object remains, stopped.",
+          "Stop does not remove the container and does not remove the image.",
+          "After `docker stop`, `docker ps` hides it and `docker ps -a` still shows it."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "The image stays. Removing it is `docker rmi`.",
+          "The stopped container still occupies the name until you remove it.",
+          "Stop affects the containers you name, not every stopped container."
+        ],
+        "variants": [
+          "`docker stop web` deletes the image that the container was created from.",
+          "Stop removes the container name so `docker run --name web` is never needed again.",
+          "`docker stop` prunes every stopped container on the machine."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`docker rm web` removes a stopped container. `docker rmi app:1.0` removes an image, and it fails while a container still references that image.",
+          "You remove the container and the image with different commands. `rm` is the container. `rmi` is the image.",
+          "`docker rm` refuses a running container unless you force it. Stop comes first in the normal sequence."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`docker rmi` does not stop and delete your containers for you. A reference from a container blocks the remove.",
+          "The names match the objects: `rm` removes a container, `rmi` removes an image.",
+          "A running container that uses the image causes `docker rmi` to fail."
+        ],
+        "variants": [
+          "`docker rmi app:1.0` stops every container and deletes those containers before it removes the image.",
+          "`docker rm` deletes the image, and `docker rmi` deletes the container.",
+          "`docker rmi` always succeeds while containers are still running that image."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `docker stop` sends SIGTERM and then SIGKILL. The container remains in the stopped state.\n• `docker rm` removes a container. `docker rmi` removes an image and fails if a container still references it.\n\nWhy other options are incorrect:\n• B says stop deletes the image or every stopped container.\n• D swaps `rm` and `rmi`, or says `rmi` silently removes containers that are still using the image."
   }
 ];

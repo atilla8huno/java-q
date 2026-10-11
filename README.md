@@ -52,13 +52,13 @@ Navigation rules:
 
 - **Next** and **Previous** are always visible and unlocked, allowing free navigation between questions at any time without being blocked on wrong answers.
 - After submitting an answer (correct or incorrect), an **Answer again** button appears, allowing you to reset that question back to unanswered and practice it afresh.
-- Use the **Topic** dropdown to take a **Quick Exam 1–10** (each is 26 unique mixed questions covering the full bank with no overlap, and every exam includes every topic), filter by topic, select **Wrong Answers**, or select **Saved** to review questions you bookmarked.
+- Use the **Topic** dropdown to take a **Quick Exam 1–10** (each is 29 unique mixed questions covering the full bank with no overlap, and every exam includes every topic), filter by topic, select **Wrong Answers**, or select **Saved** to review questions you bookmarked.
 - The bookmark next to the topic name saves the current question for later. Click it again to remove it.
 - The stats header displays current question, score, live **Success %**, and total answered. **Reset progress** clears answers and score. Saved questions stay.
 
 ## Topics
 
-260 high-yield questions, plus 10 **Quick Exams** of 26 unique mixed questions each (every question appears in exactly one exam, and every exam includes every topic). Topics:
+290 high-yield questions, plus 10 **Quick Exams** of 29 unique mixed questions each (every question appears in exactly one exam, and every exam includes every topic). Topics:
 
 - Core Java & JVM (Inheritance, overloading, string pool, try-with-resources, generics, records, sealed classes, heap versus stack, garbage collection, safepoints, heap dumps, JIT warmup)
 - Collections & Streams (PECS wildcards, HashMap, unmodifiable lists, sequenced collections, lazy streams, `Collectors.toMap`, `Optional`)
@@ -71,7 +71,8 @@ Navigation rules:
 - System Design (read-your-writes, back-pressure, microservices, horizontal scale, tracing, observability, cache stampede and cache strategies, idempotent APIs, sharding, rate limiting, circuit breakers, database-per-service, RPO versus RTO, at-least-once delivery)
 - Design Patterns (Gang of Four creational: Singleton, Factory Method, Abstract Factory, Builder, Prototype; structural: Decorator, Facade, Composite, Bridge, Flyweight, Proxy, Adapter; behavioral: Strategy, Observer, Command, Chain of Responsibility, State, Template Method, Iterator, Mediator, Memento, Visitor, Interpreter)
 - SOLID & DDD (test doubles, TDD, SOLID, entities and value objects, aggregates, domain versus integration events, bounded contexts, anti-corruption layer, unit of work, data mapper versus active record, CQRS, event sourcing)
-- Docker & Kubernetes (Image versus container, Dockerfile layer cache, CMD versus ENTRYPOINT, multi-stage builds, volumes versus bind mounts; probes, graceful shutdown, CPU throttling versus OOMKilled, rolling updates, StatefulSet, DaemonSet, Service types, ConfigMaps and Secrets, Horizontal Pod Autoscaler, kubectl drain and PodDisruptionBudgets)
+- Command Line (Linux `ls`, `chmod`, pipes and redirects, `grep` versus `find`, `tail -f`, `df` versus `du`, `kill`, symlinks, `chown`; Git add, commit, push, fetch versus pull, merge versus rebase, revert versus reset, branch, stash, diff, clone; Git versus SVN)
+- Docker & Kubernetes (Image versus container, Dockerfile layer cache, CMD versus ENTRYPOINT, multi-stage builds, volumes versus bind mounts; probes, graceful shutdown, CPU throttling versus OOMKilled, rolling updates, StatefulSet, DaemonSet, Service types, ConfigMaps and Secrets, Horizontal Pod Autoscaler, kubectl drain and PodDisruptionBudgets, `kubectl get` and `describe`, `logs`, `exec`, `apply` versus `create`, `port-forward`, `docker build`, `docker run`, `docker ps`, `docker stop` / `rm` / `rmi`)
 - Algorithms (Hash collisions, LRU cache, binary search, BFS versus DFS, Floyd cycle detection, sliding window, top-K with a heap, sorting, BST in-order traversal, trie, stack versus queue, adjacency list versus matrix)
 
 ## Project layout
