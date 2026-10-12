@@ -17002,4 +17002,568 @@ const QUESTIONS = [
     "requiredCount": 2,
     "explanation": "Why this is correct:\n• `docker stop` sends SIGTERM and then SIGKILL. The container remains in the stopped state.\n• `docker rm` removes a container. `docker rmi` removes an image and fails if a container still references it.\n\nWhy other options are incorrect:\n• B says stop deletes the image or every stopped container.\n• D swaps `rm` and `rmi`, or says `rmi` silently removes containers that are still using the image."
   }
+,
+  {
+    "id": 297,
+    "category": "Databases",
+    "question": "Which TWO statements about SQL `NULL` are correct?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`column = NULL` does not match nulls. Use `IS NULL` or `IS NOT NULL` to test for a null value.",
+          "A comparison with `=` never selects nulls. The predicates that do are `IS NULL` and `IS NOT NULL`.",
+          "Nulls fail an equality test. Filter them with `IS NULL` or `IS NOT NULL`, not with `= NULL`."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Equality with null is unknown, not true, so `WHERE a = NULL` does not return those rows.",
+          "`COALESCE(a, a)` stays null when `a` is null. It does not become zero, and `= NULL` still does not match.",
+          "If a `NOT IN` list contains a null, the comparison is unknown and the filter drops the rows."
+        ],
+        "variants": [
+          "`NULL = NULL` is true in standard SQL, so `WHERE a = NULL` returns every row where `a` is null.",
+          "`COALESCE(a, a)` turns a null into zero before the comparison, and `a = NULL` then matches that zero.",
+          "A `NOT IN` list that contains a null still returns every non-null row that is absent from the list."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`COUNT(column)` skips nulls in that column. `COUNT(*)` counts rows, including rows where the column is null.",
+          "Nulls are omitted by `COUNT(column)`. `COUNT(*)` still counts the row.",
+          "`COUNT(*)` counts every row. `COUNT` of one column does not count rows where that column is null."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "A null is not zero. `COUNT(column)` skips it, so the two counts differ when the column has nulls.",
+          "`COUNT(DISTINCT column)` ignores null. It does not add an extra count for the null.",
+          "`SUM` ignores nulls. If every value is null, the sum is null, not zero."
+        ],
+        "variants": [
+          "`COUNT(*)` and `COUNT(column)` always return the same number, because a null is stored as zero.",
+          "`COUNT(DISTINCT column)` counts null as its own distinct value and adds one for it.",
+          "`SUM(column)` treats each null as zero, so a column of only nulls sums to zero rather than null."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• A comparison with null yields unknown, so `IS NULL` is the test.\n• `COUNT(column)` skips nulls. `COUNT(*)` counts the row anyway.\n\nWhy other options are incorrect:\n• B treats `NULL = NULL` as true, or expects `COALESCE(a, a)` to become zero.\n• D treats null as zero in `COUNT` or `SUM`, or counts null as a distinct value."
+  },
+  {
+    "id": 298,
+    "category": "Databases",
+    "question": "Which TWO statements correctly contrast `DELETE`, `TRUNCATE`, and `DROP`?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "`DELETE` removes the rows you filter, can be rolled back, and can fire row-level triggers.",
+          "A filtered `DELETE` runs in the transaction and can be rolled back. Row triggers can run for it.",
+          "`DELETE` is the statement for chosen rows. Rollback undoes it, and row triggers may fire."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "`TRUNCATE` releases the table data in bulk. It is not a per-row `DELETE` with a full undo record each time.",
+          "`TRUNCATE` empties the table. It does not accept a `WHERE` clause.",
+          "`DELETE` without a `WHERE` removes every row and leaves the table, its columns, and its indexes."
+        ],
+        "variants": [
+          "`TRUNCATE` deletes one row at a time and writes a full undo record for each row, just as `DELETE` does.",
+          "`TRUNCATE` can include a `WHERE` clause and remove only the rows that match the predicate.",
+          "`DELETE` without a `WHERE` drops the table definition and removes its indexes."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "`DROP TABLE` removes the table itself. `TRUNCATE` keeps the table and removes its rows.",
+          "After `TRUNCATE` the table still exists and is empty. `DROP TABLE` removes that table.",
+          "`TRUNCATE` clears rows and leaves the table. `DROP TABLE` removes the table definition."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "`DROP TABLE` removes the table. The columns and indexes of that table are removed with it.",
+          "`TRUNCATE` does not remove the table name. The next insert uses that same table.",
+          "`DROP TABLE` is not skipped because a transaction is open. Commit keeps the drop; it is not a no-op."
+        ],
+        "variants": [
+          "`DROP TABLE` only deletes the rows and leaves the columns, indexes, and privileges in place.",
+          "`TRUNCATE` removes the table name, and the next insert creates a new table with that name.",
+          "`DROP TABLE` is ignored while a transaction is open, so the table is still there after commit."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• `DELETE` removes selected rows inside a transaction and can fire row triggers.\n• `TRUNCATE` empties a table that still exists. `DROP TABLE` removes the table.\n\nWhy other options are incorrect:\n• B describes `TRUNCATE` as a per-row `DELETE`, or gives `TRUNCATE` a `WHERE` clause.\n• D says `DROP TABLE` only clears rows, or that `TRUNCATE` deletes the table name."
+  },
+  {
+    "id": 299,
+    "category": "Databases",
+    "question": "Which TWO statements correctly describe primary keys, unique constraints, and foreign keys?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "A primary key identifies each row and rejects nulls. A table has one primary key.",
+          "One primary key per table identifies the row, and every column in that key rejects null.",
+          "The primary key is the row's identity. Nulls are not allowed in it, and a table has only one."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A foreign key stores the key value, not a copy of the parent row, and the insert fails when no parent matches.",
+          "A primary key rejects null in every column of the key, even when the other columns would be unique.",
+          "Each table has its own primary key. Two tables do not share one primary-key object."
+        ],
+        "variants": [
+          "A foreign key copies the parent row into the child table and does not check that the parent exists.",
+          "A primary key may contain nulls when the other columns in that key are unique.",
+          "Two tables can share one primary key object, so altering one table's key alters the other."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "A unique constraint rejects duplicate values. Unlike a primary key, it can allow nulls.",
+          "Unique forbids duplicate values. A primary key also forbids nulls, which unique need not do.",
+          "Duplicate non-null values fail a unique constraint. Nulls can still be stored, which a primary key rejects."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "A child insert must find a matching parent unless the foreign key is null. The parent row is not frozen against updates.",
+          "A unique constraint rejects a duplicate value. A second transaction does not make that duplicate legal.",
+          "A foreign key depends on the parent's key. Adding the foreign key does not disable that key."
+        ],
+        "variants": [
+          "A foreign key blocks every update to the parent and does not require the child value to exist there.",
+          "A unique constraint allows the same value twice when the two writes use different transactions.",
+          "Adding a foreign key disables the parent's primary key so the child can store any value."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• A table has one primary key. It identifies the row and rejects nulls.\n• A unique constraint rejects duplicate values and, unlike a primary key, can allow null.\n\nWhy other options are incorrect:\n• B says a foreign key copies the parent row, or that a primary key allows nulls.\n• D says a foreign key does not check the parent, or that unique allows duplicates across transactions."
+  },
+  {
+    "id": 300,
+    "category": "Databases",
+    "question": "Which statement describes how a prepared statement keeps a value out of the SQL text?",
+    "options": [
+      {
+        "id": "A",
+        "reasons": [
+          "Doubling quotes and concatenating still builds one SQL string. Parameters are sent apart from that text.",
+          "A bound value may contain a quote or a semicolon. The database treats it as data, not as illegal SQL syntax.",
+          "Preparing a statement does not run it and cache the rows. Each execution still uses its own parameters."
+        ],
+        "variants": [
+          "The driver doubles every quote in the value, then concatenates that text into the SQL string.",
+          "The database rejects a parameter that contains a quote, a semicolon, or a comment marker.",
+          "Preparation runs the query once and reuses those result rows for later callers with different parameters."
+        ]
+      },
+      {
+        "id": "B",
+        "variants": [
+          "The SQL is parsed with placeholders. The values travel separately, so they are not parsed as SQL.",
+          "Placeholders stay in the statement text. Bound values are data, not more SQL for the parser.",
+          "The server parses the statement first. Parameters bind afterward and cannot change it."
+        ]
+      },
+      {
+        "id": "C",
+        "reasons": [
+          "Preparation does not encrypt the SQL, and a quote inside a bound value is ordinary data.",
+          "A comment is not a parameter binding. Commenting the value out removes it from the query.",
+          "The database receives the statement and the parameters as separate fields, not one concatenated string."
+        ],
+        "variants": [
+          "A prepared statement encrypts the SQL, and the server refuses any text that still contains a quote.",
+          "The safe binding wraps the value in a SQL comment so the server skips it while parsing.",
+          "Prepared statements change only the client display. The database still receives one concatenated SQL string."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Execution reuses the parsed statement and sends the value as a parameter. It does not interpolate a new SQL string.",
+          "A bound parameter keeps its declared type. It does not cast every value to text and drop the index.",
+          "The client does not paste the value into the SQL before sending. The server binds it after parsing."
+        ],
+        "variants": [
+          "Each execution sends a new SQL string with the value already interpolated, and only the result is cached.",
+          "Binding a parameter casts every value to text and disables any index on the compared column.",
+          "The client replaces the placeholder by concatenation before the request is sent on the network."
+        ]
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "requiredCount": 1,
+    "explanation": "Why this is correct:\n• The statement is parsed with placeholders. Parameter values are bound as data and are not part of the SQL text.\n\nWhy other options are incorrect:\n• A still concatenates the value, or treats quotes inside a parameter as syntax errors.\n• C encrypts the SQL or hides the value in a comment.\n• D interpolates a new SQL string on each call, or pastes the value in on the client."
+  },
+  {
+    "id": 301,
+    "category": "Databases",
+    "question": "Which TWO statements about relational normalization are accurate?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "Third normal form keeps each non-key fact in one place, so changing that fact updates one row.",
+          "In third normal form a non-key fact is stored once. An update does not rewrite a value repeated on many rows.",
+          "Third normal form stores a fact that depends on the whole key once, instead of repeating it across rows."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Normal form is about dependencies between columns, not a fixed column count. Foreign keys belong in a normalized schema.",
+          "Indexes and the lack of a primary key do not define third normal form.",
+          "A list of ids in one column violates first normal form. Third normal form does not ask you to keep that list."
+        ],
+        "variants": [
+          "Third normal form means each table has exactly three columns and no foreign keys in the schema.",
+          "A table is in third normal form when every column is indexed and the table has no primary key.",
+          "First normal form allows a list of ids in one column, and third normal form requires that list."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "A comma-separated list of ids in one column is a repeating group. That violates first normal form.",
+          "First normal form puts each value in its own row, not in a list packed into a single column.",
+          "Several ids packed into one column break first normal form. Each id belongs in its own row."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Normalization stores the fact once and joins to it. Copying it into every reader is denormalization.",
+          "A foreign key points at the one stored fact. Third normal form does not forbid that key.",
+          "Denormalization copies a fact to speed reads. Third normal form is the choice to avoid that copy."
+        ],
+        "variants": [
+          "Normalization copies each fact into every table that reads it, so a query never needs a join.",
+          "Third normal form forbids a foreign key, because the key would duplicate the parent fact.",
+          "Denormalization and third normal form are the same rule, one for columns and one for tables."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Third normal form stores each non-key fact once, so a change is one update.\n• A repeating list inside one column violates first normal form.\n\nWhy other options are incorrect:\n• B reduces third normal form to a column count, or treats a packed list as required.\n• D copies facts into every table, which is denormalization, or forbids foreign keys."
+  },
+  {
+    "id": 302,
+    "category": "HTTP & REST",
+    "question": "Which TWO statements correctly contrast TCP and UDP?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "TCP sets up a connection, retransmits lost data, and delivers the bytes to the application in order.",
+          "A TCP byte stream is ordered and reliable. Segments that are lost are retransmitted.",
+          "TCP is connection-oriented. The application reads an ordered stream, and loss is repaired by retransmission."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "Retransmission and order are what TCP provides. UDP does not retransmit and does not promise order.",
+          "UDP has no handshake and does not add ordering. The three-way handshake belongs to TCP.",
+          "TCP fills a lost segment back into the stream. It does not leave a gap for the application to notice."
+        ],
+        "variants": [
+          "UDP retransmits lost datagrams and delivers them in order. TCP does not retransmit or order the bytes.",
+          "TCP and UDP both begin with a three-way handshake, and UDP then guarantees order.",
+          "A lost TCP segment is skipped, and the application is expected to detect the gap itself."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "UDP sends datagrams without a connection. Delivery and order are not guaranteed.",
+          "Each UDP datagram stands alone. UDP does not connect, retransmit, or put datagrams back in order.",
+          "UDP is connectionless. A lost or reordered datagram is not repaired by UDP."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Both TCP and UDP are routed between networks. TCP is not limited to a single local network.",
+          "UDP does not reserve a connection until a close. There is no TCP-style session to release.",
+          "TCP and UDP keep separate port numbers. One host can bind the same number in each."
+        ],
+        "variants": [
+          "TCP cannot cross a router onto another network. Any traffic that leaves the local network has to use UDP.",
+          "UDP holds a reserved connection on the server until the client closes it, in the same way TCP does.",
+          "A port number belongs to only one of TCP or UDP, so the same number cannot be open for both on one host."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• TCP is a connection-oriented, ordered, retransmitted byte stream.\n• UDP sends independent datagrams, with no connection and no delivery or order guarantee.\n\nWhy other options are incorrect:\n• B swaps the guarantees, or gives UDP the TCP handshake.\n• D confines TCP to one network, or gives UDP a connection that must be closed."
+  },
+  {
+    "id": 303,
+    "category": "HTTP & REST",
+    "question": "Which TWO statements about TCP connections and the handshake are correct?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "One TCP connection is the client address and port together with the server address and port.",
+          "Both IP addresses and both port numbers identify the connection, one pair for each end.",
+          "Client IP, client port, server IP, and server port are the four fields that name one TCP connection."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A port is a number in the transport header, not a cable. One host listens on many ports at once.",
+          "The destination port selects the service. An IP address alone does not say which program should accept it.",
+          "The client's port is chosen per connection. Clients are not all fixed on port 80."
+        ],
+        "variants": [
+          "The port number selects the physical cable, and two processes on one host cannot listen on different ports.",
+          "The server port can be omitted. The client connects to an IP address and the kernel chooses the service.",
+          "Every TCP connection uses port 80 on the client, which is how the server tells the clients apart."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "Setup is a three-way handshake: the client sends SYN, the server replies SYN-ACK, and the client sends ACK.",
+          "The handshake is SYN, then SYN-ACK, then ACK. The connection is established after that third segment.",
+          "TCP connects with three segments: SYN from the client, SYN-ACK from the server, and ACK from the client."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "TCP's handshake is three segments, not a SYN plus one ACK, and UDP does not use it.",
+          "The client sends the first SYN. The connection is not opened by a server announcement followed by raw data.",
+          "The client is established when its ACK is sent and accepted. A missing final ACK leaves the server in SYN-RECEIVED until it is retransmitted."
+        ],
+        "variants": [
+          "The handshake is one SYN from the client and one ACK from the server, and UDP uses that same exchange.",
+          "The server sends SYN to publish its port, and the client answers with the first data and no ACK.",
+          "The server is fully established at SYN-ACK, and a lost final ACK also leaves the client established."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• A TCP connection is named by the two addresses and the two ports.\n• The handshake is SYN, SYN-ACK, ACK.\n\nWhy other options are incorrect:\n• B treats a port as a cable, or drops the server port from the connection.\n• D shortens the handshake to two segments, or assigns that handshake to UDP."
+  },
+  {
+    "id": 304,
+    "category": "HTTP & REST",
+    "question": "Which TWO statements about SSH are correct?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "SSH provides an encrypted login and a channel for remote commands. It runs over TCP, usually on port 22.",
+          "An SSH session is encrypted remote access over TCP. The conventional server port is 22.",
+          "SSH carries an encrypted shell on TCP. Port 22 is the usual port the server listens on."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "SSH runs on TCP and encrypts the session. It is not cleartext, and it is not UDP.",
+          "Keystrokes are not separate UDP datagrams, and encryption covers the session rather than only the password.",
+          "Telnet is the cleartext login historically associated with port 23. SSH conventionally uses TCP 22."
+        ],
+        "variants": [
+          "SSH is connectionless, uses UDP port 22, and leaves the session unencrypted.",
+          "SSH sends each keystroke as its own UDP datagram and encrypts only the password packet.",
+          "Port 22 belongs to Telnet, and SSH is required to listen on port 23."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "SSH checks the server with a host key and the user with a password or a key, then encrypts the session.",
+          "The server is authenticated by its host key, the user by a password or a key, and the session is then encrypted.",
+          "After the host key and the user check succeed, the SSH session traffic is encrypted."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Pages are fetched with HTTP over TLS. SSH is not the transport a browser uses for HTTPS.",
+          "Bytes forwarded through SSH are encrypted inside the tunnel. The tunnel does not turn that encryption off.",
+          "SSH authenticates the server with a host key, often trusted on first use. It does not use the public web certificate authorities the way HTTPS does."
+        ],
+        "variants": [
+          "SSH replaces TLS in the browser for ordinary page loads, and loading each page is an SSH GET request to port 443.",
+          "An SSH tunnel turns encryption off on the forwarded connection so the inner protocol can always run faster.",
+          "The SSH server proves itself with a certificate from a public web authority, the same check a browser makes for HTTPS."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• SSH is an encrypted remote-login channel over TCP, conventionally on port 22.\n• The server is checked with a host key, the user with a password or a key, and the session is encrypted.\n\nWhy other options are incorrect:\n• B puts SSH on UDP, leaves it unencrypted, or swaps its port with Telnet.\n• D uses SSH as the browser's HTTPS transport, or treats the host check as a public web certificate."
+  },
+  {
+    "id": 305,
+    "category": "System Design",
+    "question": "Which THREE pairings of workload and database are the better fit?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "Orders, payments, and stock that must commit together fit a relational database, where one transaction can update all three.",
+          "A checkout that writes the order, the payment, and the stock level in one commit fits a relational database.",
+          "Rows that must succeed or fail as one unit are a relational transaction, rather than three writes that can land separately."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A ledger needs the two sides of a transfer to commit together. Modeling it as an edge does not remove that requirement.",
+          "Both accounts in a transfer have to move consistently. Storing only edges, with no transaction, drops that constraint.",
+          "A transfer is an ordinary relational row, or a pair of rows. A relationship is not something a relational database is unable to store."
+        ],
+        "variants": [
+          "A ledger of money transfers fits a graph database best, because storing an edge removes the need for a transaction.",
+          "Balances should exist only as graph edges, so a transfer never has to lock or reconcile the two accounts.",
+          "A relational database cannot store a transfer, because a transfer is a relationship and not a row."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "A catalog whose products carry different attributes fits a document store better than one table of every possible column.",
+          "When each product has its own set of fields, a document database matches that shape better than one wide table.",
+          "Sparse attributes that differ by product are a document fit. A single table of mostly empty columns is the awkward form."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "Walking friendship edges across several hops is a standard graph workload. A graph database can follow those edges.",
+          "Friendship can be stored and indexed. Ranking neighbors does not require a full scan of every user on each request.",
+          "Hop count is not something a document store computes as its join model. A graph store, or a relational edge table, fits the traversal."
+        ],
+        "variants": [
+          "Ranking friends of friends fits only a relational database, because a graph database cannot follow an edge.",
+          "Each recommendation hop should scan every user row, because no database can index a friendship.",
+          "A document database ranks people by hop count as part of its join, so it is the usual store for that social walk."
+        ]
+      },
+      {
+        "id": "E",
+        "variants": [
+          "A session record looked up by one id, with no joins, fits a key-value store.",
+          "Get and put by a single session id, and no join, is a key-value operation.",
+          "When the only access is the session key, a key-value store matches the read and the write."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C",
+      "E"
+    ],
+    "requiredCount": 3,
+    "explanation": "Why this is correct:\n• A checkout that commits order, payment, and stock together is a relational transaction.\n• Products with different attributes fit documents better than one rigid table.\n• A session fetched by a single id, with no joins, fits a key-value store.\n\nWhy other options are incorrect:\n• B uses a graph edge as a substitute for a ledger transaction.\n• D claims a graph database cannot walk friendships, or that a document join computes hop count."
+  },
+  {
+    "id": 306,
+    "category": "System Design",
+    "question": "Which TWO database choices match the access pattern?",
+    "options": [
+      {
+        "id": "A",
+        "variants": [
+          "Ranking people a member may know, by walking several hops of friendship, fits a graph database.",
+          "A multi-hop walk over friendships is a graph workload. The query follows edges instead of scanning one flat list.",
+          "People-you-may-know across several hops fits a graph store whose edges are those friendships."
+        ]
+      },
+      {
+        "id": "B",
+        "reasons": [
+          "A comma-separated list is not an index of hops. Each request would scan it, and it gets worse as the graph grows.",
+          "Adding a column for every new friend does not scale, and it is not how an edge is stored.",
+          "Sorting every key does not record who knows whom. The friendship itself has to be stored."
+        ],
+        "variants": [
+          "That hop walk should read one text column of comma-separated ids and scan the text from the start on every request.",
+          "Store each friendship as another column on the user row, and add a column whenever the person gains a friend.",
+          "A key-value entry of the user's name is enough, because friends can be derived by sorting all of the keys."
+        ]
+      },
+      {
+        "id": "C",
+        "variants": [
+          "Recent events for one device, read as a time range, fit a wide-column or time-series store keyed by device and time.",
+          "Append-only events for a device, queried over a recent time window, fit a time-series or wide-column store.",
+          "The access key is the device plus the time, and the read is a range of the latest events. That fits a time-ordered store."
+        ]
+      },
+      {
+        "id": "D",
+        "reasons": [
+          "The read is a range on device and time. Walking an entire graph that has no such key does not serve it.",
+          "A time window should be selected by a key or an index, not by loading an unindexed table into the application.",
+          "Replacing one document drops the previous event unless history is modeled. Overwrite is not an event log."
+        ],
+        "variants": [
+          "Those device events should be edges in a graph with no device or time key, and every read walks the whole graph.",
+          "Store each event in a table with no time column and no index, and do the time filter in application code.",
+          "Keep one document per device and overwrite it. History remains because every field value is kept forever."
+        ]
+      }
+    ],
+    "correct": [
+      "A",
+      "C"
+    ],
+    "requiredCount": 2,
+    "explanation": "Why this is correct:\n• Several hops across friendships are a graph traversal.\n• A range of recent events for one device fits a store keyed by device and time.\n\nWhy other options are incorrect:\n• B packs friendships into a scanned text column, or into an ever-growing set of columns.\n• D walks an entire graph for a time range, or overwrites one document and calls that a history."
+  }
 ];
