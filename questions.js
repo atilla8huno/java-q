@@ -8716,54 +8716,54 @@ const QUESTIONS = [
   },
   {
     "id": 151,
-    "category": "Concurrency",
-    "question": "How does the `ForkJoinPool` work-stealing algorithm optimize multi-core CPU utilization?",
+    "category": "HTTP & REST",
+    "question": "Which statement correctly describes the OAuth 2.0 authorization code flow with PKCE?",
     "options": [
       {
         "id": "A",
         "reasons": [
-          "Work-stealing workers do not take turns under one centralized monitor lock in a round-robin schedule.",
-          "Each worker has its own deque, and another worker may steal a task rather than leaving it only to the forking worker.",
-          "A thief takes a task from the other deque; it does not copy that entire deque before it can run anything."
+          "The access token is not returned in the redirect fragment, and PKCE is not limited to client-credentials calls between backend services.",
+          "PKCE does not make the authorization code optional, and the browser is not given the access token in the URL hash.",
+          "PKCE does not put the access token in the redirect, and a public client still calls the token endpoint."
         ],
         "variants": [
-          "Threads take turns executing tasks in a round-robin schedule coordinated by a single centralized monitor lock.",
-          "Every worker shares one FIFO queue, and only the worker that forked a task is allowed to pop that task.",
-          "An idle worker first copies a busy worker's entire deque into a private queue, then runs the copied tasks."
+          "The access token is placed in the redirect URL fragment, and PKCE is used only when two backend services call each other with client credentials.",
+          "The browser receives the access token in the URL hash, and enabling PKCE makes the authorization code optional for that public client.",
+          "PKCE puts the access token in the redirect fragment, so a public client skips the token endpoint after the user has signed in."
         ]
       },
       {
         "id": "B",
         "variants": [
-          "Worker threads maintain private deques; when a worker finishes its tasks, it steals tasks from the tail of another busy worker's deque.",
-          "Each worker keeps a private deque, and a worker that has finished its own tasks steals from the tail of another busy worker's deque.",
-          "Workers hold private deques; once a worker has no tasks left, it steals work from the tail of a busy worker's deque."
+          "The user signs in at the authorization server. The redirect returns a code, which the client exchanges with the PKCE verifier for an access token.",
+          "After sign-in, the redirect carries only a short-lived code, and the client exchanges that code plus the PKCE verifier for an access token.",
+          "The authorization server sends the browser back with a code, and the client redeems that code and the PKCE verifier for an access token."
         ]
       },
       {
         "id": "C",
         "reasons": [
-          "Tasks move between workers inside the JVM, and they are not serialized over local TCP loopback sockets.",
-          "Work-stealing does not ship tasks through a `ProcessBuilder` pipe into a child process.",
-          "Idle workers steal tasks from busy workers, so a task is not confined to the core where it was forked."
+          "The client does not post the user's password to the token endpoint, and PKCE does not encrypt that password in place of TLS.",
+          "PKCE does not replace TLS, and the client does not send the resource owner's password to the API.",
+          "The resource-owner password grant is not the recommended browser flow, and PKCE is not a cipher for that password."
         ],
         "variants": [
-          "Work is serialized and transmitted to idle worker processes over local TCP loopback network sockets.",
-          "A stolen task is written to a pipe opened with `ProcessBuilder` and runs in a separate child process.",
-          "Each worker stays pinned to one core for the pool's lifetime, and a task forked on that core never moves."
+          "The client posts the user's password to the token endpoint on each login, and PKCE is what encrypts that password instead of TLS.",
+          "PKCE stands in for TLS here, so the client sends the resource owner's password straight to the API it wants to call.",
+          "Browsers should use the resource-owner password grant, and PKCE is the cipher that hides the password on that token request."
         ]
       },
       {
         "id": "D",
         "reasons": [
-          "A `ForkJoinPool` sizes its parallelism from available processors and does not start one thousand native threads per core.",
-          "Workers are pooled and reused, rather than being created in pairs per task and destroyed when that task finishes.",
-          "Submitted tasks run on pool workers, not only on the caller and not only for the duration of a `synchronized` block."
+          "The authorization code is not the bearer token the API accepts, and the client does not keep the user's password to mint a replacement.",
+          "The API does not treat the authorization code as the access token, and the client does exchange that code at the token endpoint.",
+          "The redirect code is not stored as the refresh token, and the client does call the token endpoint for an access token."
         ],
         "variants": [
-          "The pool spawns one thousand native threads per CPU core to prevent any thread idle time during execution.",
-          "The pool creates two worker threads for each submitted task and terminates those threads when the task returns.",
-          "The caller runs every task itself, and a pool thread is used only while that task is inside a `synchronized` block."
+          "The authorization code is the bearer token the API accepts, and the client keeps the user's password so it can mint a replacement when the code expires.",
+          "The API treats the authorization code from the redirect as the access token, so the client never exchanges that code itself at the token endpoint.",
+          "The code from the redirect is stored as the long-lived refresh token, and the client never calls the token endpoint to obtain an access token."
         ]
       }
     ],
@@ -8771,7 +8771,7 @@ const QUESTIONS = [
       "B"
     ],
     "requiredCount": 1,
-    "explanation": "Why this is correct:\n• `ForkJoinPool` Work-Stealing Algorithm:\n  1. Each worker thread maintains its own double-ended queue (deque) of tasks.\n  2. The owning worker thread pushes and pops tasks from the HEAD of its own deque in LIFO (Last-In, First-Out) order to optimize CPU data cache locality.\n  3. When a worker thread runs out of tasks, it becomes a \"thief\" and steals tasks from the TAIL of another busy worker's deque in FIFO order.\n  4. This access pattern minimizes lock contention between owner and thief threads and maximizes multi-core CPU utilization.\n\nWhy other options are incorrect:\n• It does not allocate tasks to a single global FIFO queue; that would cause extreme lock contention across cores.\n• Tasks are not preempted by aborting OS threads."
+    "explanation": "Why this is correct:\n• In the authorization code flow the user authenticates at the authorization server. The redirect carries a short-lived code, not the access token. The client sends that code and the PKCE code verifier to the token endpoint and receives an access token. PKCE stops someone who stole the code from exchanging it without the verifier.\n\nWhy other options are incorrect:\n• A describes the old implicit grant, which put the token in the URL. PKCE does not replace the code exchange, and it is not the client-credentials grant.\n• C is the resource-owner password grant. The client should not collect the user's password, and PKCE is not a substitute for TLS.\n• D treats the authorization code as the access token. The API receives the token from the token response, not the code from the redirect."
   },
   {
     "id": 152,

@@ -62,10 +62,10 @@ Navigation rules:
 
 - Core Java & JVM (Inheritance, overloading, string pool, try-with-resources, generics, records, sealed classes, heap versus stack, garbage collection, safepoints, heap dumps, JIT warmup)
 - Collections & Streams (PECS wildcards, HashMap, unmodifiable lists, sequenced collections, lazy streams, `Collectors.toMap`, `Optional`)
-- Concurrency (ThreadLocal leaks, volatile double-checked locking, CompletableFuture, virtual threads, pinning, latches, ForkJoinPool)
+- Concurrency (ThreadLocal leaks, volatile double-checked locking, CompletableFuture, virtual threads, pinning, latches)
 - Spring & Hibernate (ProxyBeanMethods, transactional propagation and the self-invocation proxy, bean lifecycle, first-level cache, second-level cache, query cache, bulk updates)
 - Kotlin (`val` versus `var`, extension functions, `object` and `companion object`, scope functions, `suspend`, coroutines, `async`, cold `Flow`, `withContext`, cancellation, `runBlocking` versus `coroutineScope`, `reified` inline functions, sealed `when`, `Sequence`, interface delegation, platform types, data classes)
-- HTTP & REST (HTTP method semantics, safe and idempotent methods, status codes, PUT versus PATCH, OAuth, TCP versus UDP, the TCP handshake, SSH)
+- HTTP & REST (HTTP method semantics, safe and idempotent methods, status codes, PUT versus PATCH, OAuth 2.0 authorization code flow with PKCE, TCP versus UDP, the TCP handshake, SSH)
 - Databases (ACID, isolation anomalies, indexes and the leftmost prefix, N+1 queries, connection pool sizing, read-replica lag, slow-query diagnosis, `NULL`, `DELETE` versus `TRUNCATE` versus `DROP`, keys, prepared statements, normalization)
 - Build Tools (Maven scopes and transitive dependencies, the default lifecycle, `package` versus `install` versus `deploy`, phase bindings, the `clean` lifecycle, reactor builds, Gradle configuration versus `doLast`)
 - System Design (read-your-writes, back-pressure, microservices, horizontal scale, tracing, observability, cache stampede and cache strategies, idempotent APIs, sharding, rate limiting, circuit breakers, database-per-service, at-least-once delivery, relational versus document versus graph versus key-value)
