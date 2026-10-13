@@ -10547,49 +10547,49 @@ const QUESTIONS = [
   },
   {
     "id": 182,
-    "category": "System Design",
-    "question": "Which TWO definitions correctly contrast Recovery Point Objective (RPO) and Recovery Time Objective (RTO) in disaster recovery planning?",
+    "category": "Docker & Kubernetes",
+    "question": "Which TWO statements correctly contrast a Dockerfile and a Compose file?",
     "options": [
       {
         "id": "A",
         "reasons": [
-          "RPO is not the cloud billing cost incurred while a disaster-recovery failover is in progress.",
-          "RPO does not count how many standby regions must be online before failover may start.",
-          "RPO is not a commit quorum of transactions that a standby must acknowledge before the primary commits."
+          "A Dockerfile builds an image and does not start the containers of a multi-service app, and a Compose file is not a layer cache.",
+          "The Dockerfile does not start the stack, and a Compose file is not the saved cache of one `RUN` layer.",
+          "A Compose file is not a cache manifest, and the Dockerfile does not create and start every service container."
         ],
         "variants": [
-          "RPO measures the total monetary cost in cloud infrastructure billing incurred during a disaster recovery failover event.",
-          "RPO counts how many standby regions must already be online before a disaster failover is allowed to begin at the recovery site.",
-          "RPO is the number of transactions a standby replica must acknowledge before the primary database is permitted to commit any write."
+          "A Dockerfile is what starts the containers of a multi-service app, and a Compose file only stores the layer cache for a single `RUN` instruction.",
+          "The multi-service stack is started by the Dockerfile itself, while the Compose file is only the saved cache of one `RUN` layer from the last build.",
+          "`docker-compose.yml` is only a layer-cache manifest, and the Dockerfile is the file that creates and then starts every service container."
         ]
       },
       {
         "id": "B",
         "reasons": [
-          "RTO is not the percentage of TCP packets a firewall drops during a volumetric DDoS attack.",
-          "RTO does not measure replication lag during normal operation, which is outside the downtime target after a disaster.",
-          "RTO is not a success-rate target for requests after traffic moves to the recovery site."
+          "Compose does not replace the Dockerfile. A service can point its build context at a Dockerfile, and that image is still built.",
+          "`FROM` and `COPY` stay in the Dockerfile. A build context makes Compose run `docker build` rather than applying those instructions from the YAML.",
+          "Setting a build context does not skip the image build. Compose uses the Dockerfile in that context."
         ],
         "variants": [
-          "RTO defines the percentage of network TCP packets dropped by firewalls during peak volumetric DDoS attacks.",
-          "RTO is the largest replication lag a standby is allowed to show while the system is still in normal operation.",
-          "RTO is the share of requests that must succeed after the recovery site has taken over production traffic."
+          "A Compose file replaces the Dockerfile, so `docker compose up` applies `FROM` and `COPY` from the YAML and never builds an image from a Dockerfile.",
+          "`FROM` and `COPY` belong in the Compose file, and `docker compose up` applies those instructions directly without building an image from a Dockerfile.",
+          "The image recipe lives only in `docker-compose.yml`, so Compose skips `docker build` even when a service sets a build context pointing at a Dockerfile."
         ]
       },
       {
         "id": "C",
         "variants": [
-          "RTO defines the maximum acceptable duration of system downtime to restore operations and services after a disaster occurs.",
-          "After a disaster occurs, RTO is the maximum acceptable duration of system downtime to restore operations and services.",
-          "Restoring operations and services after a disaster is bounded by RTO, the maximum acceptable duration of system downtime."
+          "A Dockerfile is a recipe for one image. Instructions such as `FROM`, `COPY`, and `RUN` become layers, and `docker build` produces that image.",
+          "`docker build` reads a Dockerfile and produces one image, and each instruction such as `FROM`, `COPY`, or `RUN` becomes a layer in that image.",
+          "One image is what a Dockerfile builds: `FROM`, `COPY`, and `RUN` each become a layer, and `docker build` is the command that produces the image."
         ]
       },
       {
         "id": "D",
         "variants": [
-          "RPO defines the maximum acceptable amount of data loss measured in time (e.g. data lost between the last backup and disaster).",
-          "Measured in time, RPO is the maximum acceptable amount of data loss, such as data lost between the last backup and the disaster.",
-          "Data lost between the last backup and the disaster illustrates RPO, the maximum acceptable amount of data loss measured in time."
+          "A Compose file declares the services to run together, with each image or build context, plus ports, networks, and volumes. `docker compose up` creates those containers.",
+          "`docker compose up` creates the containers named in a Compose file: the services, their images or build contexts, and their ports, networks, and volumes.",
+          "Services that should run together are declared in a Compose file, including images or build contexts, ports, networks, and volumes, and `docker compose up` starts them."
         ]
       }
     ],
@@ -10598,7 +10598,7 @@ const QUESTIONS = [
       "D"
     ],
     "requiredCount": 2,
-    "explanation": "Why this is correct:\n• RPO (Recovery Point Objective):\n  - Answers: *\"How much data can we afford to lose?\"*\n  - Measured in time: If your database is backed up every 1 hour, your maximum data loss in a catastrophic failure is 1 hour of transactions (RPO = 1  hour). If business mandates zero data loss, you need synchronous multi-region replication (RPO = 0).\n• RTO (Recovery Time Objective):\n  - Answers: *\"How long can we afford to be down?\"*\n  - Measured in time: If a disaster strikes at 12:00 PM and services must be fully operational by 12:30 PM, your RTO = 30  minutes.\n\nWhy other options are incorrect:\n• RPO is not monetary cloud billing cost.\n• RTO is not network packet loss percentage."
+    "explanation": "Why this is correct:\n• A Dockerfile builds one image. Each instruction, such as `FROM`, `COPY`, or `RUN`, becomes a layer, and `docker build` produces the image.\n• A Compose file describes services that should run together, with images or build contexts, ports, networks, and volumes. `docker compose up` creates those containers. A service with a `build` section still uses a Dockerfile; Compose does not replace it.\n\nWhy other options are incorrect:\n• A says the Dockerfile starts the stack and that Compose is a layer cache. The Dockerfile only builds an image, and Compose declares the services to run.\n• B says Compose replaces the Dockerfile. `FROM` and `COPY` stay in the Dockerfile, and a build context tells Compose to build that image."
   },
   {
     "id": 183,
